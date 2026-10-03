@@ -9,9 +9,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
@@ -34,18 +34,20 @@ jobs:
       - run: flutter pub get
 
       - name: Generate code (drift)
-        run: dart run build_runner build --delete-conflicting-outputs
+        run: bash tool/ci_annotate.sh "Codegen" "error|Error|SEVERE" dart run build_runner build --delete-conflicting-outputs
 
+      # Errors are also written as annotations so they can be read without
+      # opening the full log (tool/ci_annotate.sh).
       - name: Analyze
-        run: flutter analyze --no-fatal-infos --no-fatal-warnings
+        run: bash tool/ci_annotate.sh "Analyze" "^ *error " flutter analyze --no-fatal-infos --no-fatal-warnings
 
       - name: Test
-        run: flutter test
+        run: bash tool/ci_annotate.sh "Test" "Error|error:|\[E\]|Expected|Actual|Which:" flutter test --reporter expanded
 
       # Google Drive backup needs the Web OAuth client id (PRD D-7). Add it as a
       # repository secret named GOOGLE_SERVER_CLIENT_ID; the app builds without it.
       - name: Build debug APK
-        run: flutter build apk --debug --dart-define=GOOGLE_SERVER_CLIENT_ID=${{ secrets.GOOGLE_SERVER_CLIENT_ID }}
+        run: bash tool/ci_annotate.sh "Build" "error|Error|FAILURE|What went wrong" flutter build apk --debug --dart-define=GOOGLE_SERVER_CLIENT_ID=${{ secrets.GOOGLE_SERVER_CLIENT_ID }}
 
       - uses: actions/upload-artifact@v4
         with:
