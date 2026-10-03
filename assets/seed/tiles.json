@@ -1,0 +1,28 @@
+{
+  "roles": ["Tile Mistri"],
+  "expenseCategories": ["Tile Cutter Rent", "Tile Material"],
+  "items": [
+    {"name": "Floor tiling", "unit": "sqft", "kind": "workRate"},
+    {"name": "Wall dado tiling", "unit": "sqft", "kind": "workRate"},
+    {"name": "Large vitrified tile", "unit": "sqft", "kind": "workRate"},
+    {"name": "Marble / granite laying", "unit": "sqft", "kind": "workRate"},
+    {"name": "Skirting", "unit": "rft", "kind": "workRate"},
+    {"name": "Kitchen platform granite", "unit": "rft", "kind": "workRate"},
+    {"name": "Staircase step", "unit": "nos", "kind": "workRate"},
+    {"name": "Epoxy grouting", "unit": "sqft", "kind": "workRate"},
+    {"name": "Old tile removal", "unit": "sqft", "kind": "workRate"},
+    {"name": "Floor tiles", "unit": "box", "kind": "material"},
+    {"name": "Wall tiles", "unit": "box", "kind": "material"},
+    {"name": "Tile adhesive", "unit": "bag", "kind": "material"},
+    {"name": "Grout / epoxy", "unit": "kg", "kind": "material"},
+    {"name": "Cement", "unit": "bag", "kind": "material"},
+    {"name": "Sand", "unit": "brass", "kind": "material"},
+    {"name": "Tile spacers", "unit": "nos", "kind": "material"}
+  ],
+  "templates": [
+    {"name": "Kitchen + Bathroom Tiles", "lines": ["Floor tiling", "Wall dado tiling", "Skirting", "Kitchen platform granite", "Tile adhesive", "Grout / epoxy"]},
+    {"name": "2BHK Flooring", "lines": ["Large vitrified tile", "Skirting", "Old tile removal", "Tile adhesive"]},
+    {"name": "Bathroom Dado", "lines": ["Wall dado tiling", "Floor tiling", "Epoxy grouting"]},
+    {"name": "Granite Kitchen Platform", "lines": ["Kitchen platform granite"]}
+  ]
+}

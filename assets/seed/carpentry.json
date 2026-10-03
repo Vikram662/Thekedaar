@@ -1,0 +1,31 @@
+{
+  "roles": ["Carpenter", "Polish Mistri"],
+  "expenseCategories": ["Plywood / Hardware"],
+  "items": [
+    {"name": "Wardrobe", "unit": "sqft", "kind": "workRate"},
+    {"name": "Modular kitchen base", "unit": "rft", "kind": "workRate"},
+    {"name": "Modular kitchen wall unit", "unit": "rft", "kind": "workRate"},
+    {"name": "TV unit", "unit": "sqft", "kind": "workRate"},
+    {"name": "Bed with storage", "unit": "nos", "kind": "workRate"},
+    {"name": "Door fitting", "unit": "nos", "kind": "workRate"},
+    {"name": "Door frame", "unit": "nos", "kind": "workRate"},
+    {"name": "Wall paneling", "unit": "sqft", "kind": "workRate"},
+    {"name": "Laminate pasting", "unit": "sqft", "kind": "workRate"},
+    {"name": "Hardware fitting", "unit": "lot", "kind": "workRate"},
+    {"name": "Plywood 18mm", "unit": "sqft", "kind": "material"},
+    {"name": "Plywood 12mm", "unit": "sqft", "kind": "material"},
+    {"name": "Laminate", "unit": "nos", "kind": "material"},
+    {"name": "Edge banding", "unit": "m", "kind": "material"},
+    {"name": "Hinges", "unit": "nos", "kind": "material"},
+    {"name": "Drawer channel", "unit": "set", "kind": "material"},
+    {"name": "Handles", "unit": "nos", "kind": "material"},
+    {"name": "Adhesive / Fevicol", "unit": "kg", "kind": "material"},
+    {"name": "Screws / nails", "unit": "box", "kind": "material"}
+  ],
+  "templates": [
+    {"name": "Bedroom Wardrobe", "lines": ["Wardrobe", "Laminate pasting", "Hardware fitting"]},
+    {"name": "Modular Kitchen", "lines": ["Modular kitchen base", "Modular kitchen wall unit", "Hardware fitting"]},
+    {"name": "2BHK Interior", "lines": ["Wardrobe", "TV unit", "Bed with storage", "Modular kitchen base", "Modular kitchen wall unit", "Wall paneling"]},
+    {"name": "Door Fitting", "lines": ["Door frame", "Door fitting"]}
+  ]
+}

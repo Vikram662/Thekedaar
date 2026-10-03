@@ -1,0 +1,24 @@
+{
+  "roles": ["POP Mistri"],
+  "expenseCategories": ["Scaffolding Rent"],
+  "items": [
+    {"name": "Gypsum false ceiling", "unit": "sqft", "kind": "workRate"},
+    {"name": "POP false ceiling", "unit": "sqft", "kind": "workRate"},
+    {"name": "PVC ceiling", "unit": "sqft", "kind": "workRate"},
+    {"name": "Grid ceiling", "unit": "sqft", "kind": "workRate"},
+    {"name": "Cove / border", "unit": "rft", "kind": "workRate"},
+    {"name": "POP punning on wall", "unit": "sqft", "kind": "workRate"},
+    {"name": "Light cut-out", "unit": "nos", "kind": "workRate"},
+    {"name": "Gypsum board", "unit": "nos", "kind": "material"},
+    {"name": "POP", "unit": "bag", "kind": "material"},
+    {"name": "GI channel", "unit": "nos", "kind": "material"},
+    {"name": "Ceiling angle", "unit": "nos", "kind": "material"},
+    {"name": "Screws", "unit": "box", "kind": "material"},
+    {"name": "Joint tape", "unit": "nos", "kind": "material"}
+  ],
+  "templates": [
+    {"name": "Hall False Ceiling", "lines": ["Gypsum false ceiling", "Cove / border", "Light cut-out"]},
+    {"name": "Bedroom False Ceiling", "lines": ["Gypsum false ceiling", "Cove / border", "Light cut-out"]},
+    {"name": "Office Grid Ceiling", "lines": ["Grid ceiling", "Light cut-out"]}
+  ]
+}

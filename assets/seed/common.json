@@ -1,0 +1,40 @@
+{
+  "roles": ["Helper", "Mistri", "Supervisor", "Driver"],
+  "units": [
+    {"code": "nos", "name": "Nos", "dimension": "count"},
+    {"code": "point", "name": "Point", "dimension": "count"},
+    {"code": "set", "name": "Set", "dimension": "count"},
+    {"code": "box", "name": "Box", "dimension": "count"},
+    {"code": "bag", "name": "Bag", "dimension": "count"},
+    {"code": "trip", "name": "Trip", "dimension": "count"},
+    {"code": "lot", "name": "Lot", "dimension": "other"},
+    {"code": "m", "name": "Meter", "dimension": "length", "toBase": 1},
+    {"code": "rft", "name": "Running ft", "dimension": "length", "toBase": 0.3048},
+    {"code": "sqft", "name": "Sq.ft", "dimension": "area", "toBase": 0.09290304},
+    {"code": "sqm", "name": "Sq.m", "dimension": "area", "toBase": 1},
+    {"code": "cuft", "name": "Cu.ft", "dimension": "volume", "toBase": 0.028316846592},
+    {"code": "cum", "name": "Cu.m", "dimension": "volume", "toBase": 1},
+    {"code": "brass", "name": "Brass", "dimension": "volume", "toBase": 2.8316846592},
+    {"code": "kg", "name": "Kg", "dimension": "weight", "toBase": 1},
+    {"code": "ton", "name": "Ton", "dimension": "weight", "toBase": 1000},
+    {"code": "litre", "name": "Litre", "dimension": "other"},
+    {"code": "day", "name": "Day", "dimension": "time"},
+    {"code": "hour", "name": "Hour", "dimension": "time"}
+  ],
+  "expenseCategories": [
+    "Material", "Petrol / Diesel", "Food / Chai", "Transport / Bhada",
+    "Tools", "Machine Rent", "Mobile Recharge", "Other"
+  ],
+  "items": [
+    {"name": "Labour per day", "unit": "day", "kind": "labour"},
+    {"name": "Mistri per day", "unit": "day", "kind": "labour"},
+    {"name": "OT", "unit": "hour", "kind": "labour"}
+  ],
+  "templates": [],
+  "defaultTerms": [
+    "50% advance before work starts.",
+    "Material by client unless written otherwise.",
+    "Extra work will be billed separately.",
+    "This quotation is valid for 15 days."
+  ]
+}

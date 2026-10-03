@@ -1,0 +1,40 @@
+{
+  "roles": ["Electrician", "Wireman"],
+  "expenseCategories": ["Electrical Material"],
+  "items": [
+    {"name": "Light point", "unit": "point", "kind": "workRate"},
+    {"name": "Fan point", "unit": "point", "kind": "workRate"},
+    {"name": "6A socket point", "unit": "point", "kind": "workRate"},
+    {"name": "16A power point", "unit": "point", "kind": "workRate"},
+    {"name": "AC point", "unit": "point", "kind": "workRate"},
+    {"name": "Geyser point", "unit": "point", "kind": "workRate"},
+    {"name": "DB fitting", "unit": "nos", "kind": "workRate"},
+    {"name": "Conduit concealed", "unit": "rft", "kind": "workRate"},
+    {"name": "Conduit surface", "unit": "rft", "kind": "workRate"},
+    {"name": "Earthing", "unit": "set", "kind": "workRate"},
+    {"name": "Light / fan fitting", "unit": "nos", "kind": "workRate"},
+    {"name": "Inverter wiring", "unit": "lot", "kind": "workRate"},
+    {"name": "Wire 1 sq.mm", "unit": "m", "kind": "material"},
+    {"name": "Wire 1.5 sq.mm", "unit": "m", "kind": "material"},
+    {"name": "Wire 2.5 sq.mm", "unit": "m", "kind": "material"},
+    {"name": "Wire 4 sq.mm", "unit": "m", "kind": "material"},
+    {"name": "PVC conduit 20mm", "unit": "nos", "kind": "material"},
+    {"name": "Switch 6A", "unit": "nos", "kind": "material"},
+    {"name": "Socket 6A", "unit": "nos", "kind": "material"},
+    {"name": "Socket 16A", "unit": "nos", "kind": "material"},
+    {"name": "Switch plate", "unit": "nos", "kind": "material"},
+    {"name": "MCB SP", "unit": "nos", "kind": "material"},
+    {"name": "MCB DP", "unit": "nos", "kind": "material"},
+    {"name": "RCCB", "unit": "nos", "kind": "material"},
+    {"name": "DB 8-way", "unit": "nos", "kind": "material"},
+    {"name": "LED panel", "unit": "nos", "kind": "material"},
+    {"name": "Ceiling fan", "unit": "nos", "kind": "material"}
+  ],
+  "templates": [
+    {"name": "1BHK Full Wiring", "lines": ["Light point", "Fan point", "6A socket point", "16A power point", "DB fitting", "Conduit concealed", "Earthing"]},
+    {"name": "2BHK Full Wiring", "lines": ["Light point", "Fan point", "6A socket point", "16A power point", "AC point", "Geyser point", "DB fitting", "Conduit concealed", "Earthing"]},
+    {"name": "3BHK Full Wiring", "lines": ["Light point", "Fan point", "6A socket point", "16A power point", "AC point", "Geyser point", "DB fitting", "Conduit concealed", "Earthing"]},
+    {"name": "Shop Wiring", "lines": ["Light point", "6A socket point", "16A power point", "DB fitting", "Conduit surface", "Earthing"]},
+    {"name": "Rewiring (Old House)", "lines": ["Light point", "Fan point", "6A socket point", "Conduit surface", "Light / fan fitting"]}
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "roles": ["Painter"],
+  "expenseCategories": ["Scaffolding / Ladder Rent", "Paint Material"],
+  "items": [
+    {"name": "Wall putty 2 coat", "unit": "sqft", "kind": "workRate"},
+    {"name": "Primer coat", "unit": "sqft", "kind": "workRate"},
+    {"name": "Interior emulsion 2 coat", "unit": "sqft", "kind": "workRate"},
+    {"name": "Exterior emulsion 2 coat", "unit": "sqft", "kind": "workRate"},
+    {"name": "Texture paint", "unit": "sqft", "kind": "workRate"},
+    {"name": "Enamel on doors / grill", "unit": "sqft", "kind": "workRate"},
+    {"name": "Wood polish", "unit": "sqft", "kind": "workRate"},
+    {"name": "Waterproof coating", "unit": "sqft", "kind": "workRate"},
+    {"name": "Repainting, only paint", "unit": "sqft", "kind": "workRate"},
+    {"name": "Wall putty", "unit": "bag", "kind": "material"},
+    {"name": "Primer", "unit": "litre", "kind": "material"},
+    {"name": "Interior emulsion", "unit": "litre", "kind": "material"},
+    {"name": "Exterior emulsion", "unit": "litre", "kind": "material"},
+    {"name": "Enamel", "unit": "litre", "kind": "material"},
+    {"name": "Thinner", "unit": "litre", "kind": "material"},
+    {"name": "Sandpaper", "unit": "nos", "kind": "material"},
+    {"name": "Masking tape", "unit": "nos", "kind": "material"}
+  ],
+  "templates": [
+    {"name": "1BHK Interior Paint", "lines": ["Wall putty 2 coat", "Primer coat", "Interior emulsion 2 coat"]},
+    {"name": "2BHK Interior Paint", "lines": ["Wall putty 2 coat", "Primer coat", "Interior emulsion 2 coat", "Enamel on doors / grill"]},
+    {"name": "Exterior Paint", "lines": ["Primer coat", "Exterior emulsion 2 coat", "Waterproof coating"]},
+    {"name": "Repainting", "lines": ["Repainting, only paint", "Enamel on doors / grill"]}
+  ]
+}

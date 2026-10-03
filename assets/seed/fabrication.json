@@ -1,0 +1,29 @@
+{
+  "roles": ["Welder", "Fitter", "Grinder Operator"],
+  "expenseCategories": ["Welding Machine / Generator Rent", "Gas Cylinder"],
+  "items": [
+    {"name": "MS grill", "unit": "kg", "kind": "workRate"},
+    {"name": "MS gate", "unit": "sqft", "kind": "workRate"},
+    {"name": "Window grill", "unit": "sqft", "kind": "workRate"},
+    {"name": "MS railing", "unit": "rft", "kind": "workRate"},
+    {"name": "SS railing", "unit": "rft", "kind": "workRate"},
+    {"name": "Tin / sheet shed", "unit": "sqft", "kind": "workRate"},
+    {"name": "Staircase", "unit": "lot", "kind": "workRate"},
+    {"name": "Fabrication labour, theka", "unit": "kg", "kind": "workRate"},
+    {"name": "Site welding", "unit": "day", "kind": "workRate"},
+    {"name": "MS pipe", "unit": "kg", "kind": "material"},
+    {"name": "MS angle", "unit": "kg", "kind": "material"},
+    {"name": "MS flat", "unit": "kg", "kind": "material"},
+    {"name": "Square pipe", "unit": "kg", "kind": "material"},
+    {"name": "Roofing sheet", "unit": "sqft", "kind": "material"},
+    {"name": "Welding rod", "unit": "box", "kind": "material"},
+    {"name": "Cutting wheel", "unit": "nos", "kind": "material"},
+    {"name": "Red oxide primer", "unit": "litre", "kind": "material"}
+  ],
+  "templates": [
+    {"name": "Main Gate", "lines": ["MS gate"]},
+    {"name": "Window Grills", "lines": ["Window grill"]},
+    {"name": "Terrace Shed", "lines": ["Tin / sheet shed", "Roofing sheet"]},
+    {"name": "Railing", "lines": ["MS railing", "SS railing"]}
+  ]
+}

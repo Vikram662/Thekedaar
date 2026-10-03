@@ -1,0 +1,35 @@
+{
+  "roles": ["Beldar (Labour)", "Mason", "Shuttering Carpenter", "Bar Bender", "Machine Operator"],
+  "expenseCategories": ["Shuttering Rent", "Mixer / Vibrator Rent", "Water Tanker", "JCB / Tractor"],
+  "items": [
+    {"name": "Excavation", "unit": "cuft", "kind": "workRate"},
+    {"name": "PCC", "unit": "cuft", "kind": "workRate"},
+    {"name": "RCC work", "unit": "cum", "kind": "workRate"},
+    {"name": "Brickwork 9 inch", "unit": "cuft", "kind": "workRate"},
+    {"name": "Brickwork 4.5 inch", "unit": "sqft", "kind": "workRate"},
+    {"name": "Block work", "unit": "sqft", "kind": "workRate"},
+    {"name": "Internal plaster", "unit": "sqft", "kind": "workRate"},
+    {"name": "External plaster", "unit": "sqft", "kind": "workRate"},
+    {"name": "Shuttering", "unit": "sqft", "kind": "workRate"},
+    {"name": "Steel binding", "unit": "kg", "kind": "workRate"},
+    {"name": "Slab casting", "unit": "sqft", "kind": "workRate"},
+    {"name": "Waterproofing", "unit": "sqft", "kind": "workRate"},
+    {"name": "Construction labour rate, theka", "unit": "sqft", "kind": "workRate"},
+    {"name": "Cement", "unit": "bag", "kind": "material"},
+    {"name": "Sand", "unit": "brass", "kind": "material"},
+    {"name": "Aggregate 20mm", "unit": "brass", "kind": "material"},
+    {"name": "Bricks", "unit": "nos", "kind": "material"},
+    {"name": "AAC block", "unit": "nos", "kind": "material"},
+    {"name": "TMT steel", "unit": "kg", "kind": "material"},
+    {"name": "Binding wire", "unit": "kg", "kind": "material"},
+    {"name": "Ready-mix concrete", "unit": "cum", "kind": "material"},
+    {"name": "Waterproofing chemical", "unit": "litre", "kind": "material"}
+  ],
+  "templates": [
+    {"name": "Slab Work", "lines": ["Shuttering", "Steel binding", "Slab casting", "Cement", "Sand", "Aggregate 20mm", "TMT steel"]},
+    {"name": "Boundary Wall", "lines": ["Excavation", "PCC", "Brickwork 9 inch", "External plaster", "Cement", "Sand", "Bricks"]},
+    {"name": "Room Construction", "lines": ["Excavation", "PCC", "RCC work", "Brickwork 9 inch", "Internal plaster", "External plaster", "Slab casting"]},
+    {"name": "Plaster Work", "lines": ["Internal plaster", "External plaster", "Cement", "Sand"]},
+    {"name": "Labour-rate Construction (per sq.ft)", "lines": ["Construction labour rate, theka"]}
+  ]
+}

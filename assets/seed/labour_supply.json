@@ -1,0 +1,17 @@
+{
+  "roles": ["Labour", "Skilled Labour", "Mukadam (Gang Leader)"],
+  "expenseCategories": ["Labour Transport", "Labour Food"],
+  "items": [
+    {"name": "Unskilled labour", "unit": "day", "kind": "labour"},
+    {"name": "Skilled labour", "unit": "day", "kind": "labour"},
+    {"name": "Supervisor charges", "unit": "day", "kind": "labour"},
+    {"name": "OT", "unit": "hour", "kind": "labour"},
+    {"name": "Loading / unloading", "unit": "trip", "kind": "workRate"},
+    {"name": "Debris removal", "unit": "trip", "kind": "workRate"},
+    {"name": "Cleaning", "unit": "sqft", "kind": "workRate"}
+  ],
+  "templates": [
+    {"name": "Monthly Labour Bill", "lines": ["Unskilled labour", "Skilled labour", "Supervisor charges", "OT"]},
+    {"name": "Daily Labour Bill", "lines": ["Unskilled labour", "Skilled labour"]}
+  ]
+}

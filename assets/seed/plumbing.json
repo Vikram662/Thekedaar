@@ -1,0 +1,34 @@
+{
+  "roles": ["Plumber"],
+  "expenseCategories": ["Plumbing Material"],
+  "items": [
+    {"name": "Water point", "unit": "point", "kind": "workRate"},
+    {"name": "CPVC line concealed", "unit": "rft", "kind": "workRate"},
+    {"name": "PVC drain line", "unit": "rft", "kind": "workRate"},
+    {"name": "WC / commode fitting", "unit": "nos", "kind": "workRate"},
+    {"name": "Wash basin fitting", "unit": "nos", "kind": "workRate"},
+    {"name": "Kitchen sink fitting", "unit": "nos", "kind": "workRate"},
+    {"name": "Geyser fitting", "unit": "nos", "kind": "workRate"},
+    {"name": "Overhead tank fitting", "unit": "nos", "kind": "workRate"},
+    {"name": "Motor / pump fitting", "unit": "nos", "kind": "workRate"},
+    {"name": "Pressure testing", "unit": "lot", "kind": "workRate"},
+    {"name": "CPVC pipe 1/2 inch", "unit": "nos", "kind": "material"},
+    {"name": "CPVC pipe 3/4 inch", "unit": "nos", "kind": "material"},
+    {"name": "CPVC pipe 1 inch", "unit": "nos", "kind": "material"},
+    {"name": "PVC pipe 4 inch", "unit": "nos", "kind": "material"},
+    {"name": "Elbow / Tee", "unit": "nos", "kind": "material"},
+    {"name": "Ball valve", "unit": "nos", "kind": "material"},
+    {"name": "Concealed valve", "unit": "nos", "kind": "material"},
+    {"name": "Tap / Bib cock", "unit": "nos", "kind": "material"},
+    {"name": "Angle cock", "unit": "nos", "kind": "material"},
+    {"name": "Floor trap", "unit": "nos", "kind": "material"},
+    {"name": "Solvent cement", "unit": "nos", "kind": "material"},
+    {"name": "Teflon tape", "unit": "nos", "kind": "material"}
+  ],
+  "templates": [
+    {"name": "Bathroom Plumbing", "lines": ["Water point", "CPVC line concealed", "PVC drain line", "WC / commode fitting", "Wash basin fitting", "Geyser fitting", "Pressure testing"]},
+    {"name": "Kitchen Plumbing", "lines": ["Water point", "CPVC line concealed", "PVC drain line", "Kitchen sink fitting", "Pressure testing"]},
+    {"name": "2BHK Full Plumbing", "lines": ["Water point", "CPVC line concealed", "PVC drain line", "WC / commode fitting", "Wash basin fitting", "Kitchen sink fitting", "Geyser fitting", "Overhead tank fitting", "Pressure testing"]},
+    {"name": "Tank + Motor Fitting", "lines": ["Overhead tank fitting", "Motor / pump fitting", "CPVC line concealed"]}
+  ]
+}
