@@ -1,4 +1,4 @@
-import 'dart:ui';
+import 'dart:ui' show DartPluginRegistrant;
 
 import 'package:flutter/widgets.dart';
 import 'package:workmanager/workmanager.dart';

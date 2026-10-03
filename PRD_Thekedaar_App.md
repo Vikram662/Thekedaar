@@ -78,7 +78,7 @@
 | Connectivity | `connectivity_plus` | App khula ho to internet aate hi turant pending backup |
 | Google login + Drive | `google_sign_in` + `googleapis` (Drive v3) | Official Google packages |
 | Encryption | `cryptography` (AES-256-GCM + Argon2id) | Backup encrypt karne ke liye |
-| Zip | `archive` | DB + manifest ko ek file mein pack karna |
+| Compression | `dart:io` gzip | DB ko chhota karna; manifest file ke header mein (alag package nahi chahiye) |
 | App lock | `local_auth` + `flutter_secure_storage` | Fingerprint/Face, aur PIN hash secure storage mein |
 | PDF | `pdf` + `printing` | Invoice, quotation, pay-slip |
 | Share | `share_plus` | PDF **file seedha WhatsApp** par attach hoti hai |
@@ -368,7 +368,7 @@ Data badla (koi bhi entry / edit)
 2. device.json padho → activeDeviceId == ye phone? Nahi to STOP + warning (I-M5)
 3. VACUUM INTO cache/snap.db                ← consistent copy, app chalta rahe
 4. PRAGMA integrity_check (snap.db)         ← corrupt copy upload na ho
-5. zip(snap.db + manifest.json) → AES-256-GCM encrypt → .tkbak
+5. header(manifest + keyring) + AES-256-GCM(gzip(snap.db)) → .tkbak   (header GCM ka associated data hai, badla nahi ja sakta)
 6. Drive par upload (resumable, 3 retries, exponential backoff)
 7. Nayi photos: hash → Drive par nahi hai to encrypt + upload (incremental)
 8. device.json update (lastBackupAt), BackupLog = SUCCESS

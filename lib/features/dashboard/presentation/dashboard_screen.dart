@@ -4,100 +4,242 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
+import '../../../core/backup/backup_providers.dart';
+import '../../../core/db/database.dart';
 import '../../../core/db/enums.dart';
 import '../../../core/db/providers.dart';
-import '../../../core/widgets/coming_soon.dart';
+import '../../../core/utils/money.dart';
+import '../../../core/widgets/common.dart';
+import '../../attendance/data/attendance_repository.dart';
+import '../../billing/data/billing_repository.dart';
 
-/// PRD E2 Dashboard. Only "Add Worker" works so far; the rest are stubs.
+final _presentTodayProvider = StreamProvider<List<Worker>>(
+  (ref) =>
+      ref.watch(attendanceRepositoryProvider).watchPresentOn(DateTime.now()),
+);
+
+/// PRD E2 / DB-01..DB-03.
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(businessProfileProvider).valueOrNull;
-    final textTheme = Theme.of(context).textTheme;
-    final trades = profile == null ? <Trade>{} : Trade.decode(profile.trades);
+    final outstanding = ref.watch(outstandingProvider).valueOrNull ?? 0;
+    final backup = ref.watch(backupStateProvider).valueOrNull;
+    final present = ref.watch(_presentTodayProvider).valueOrNull ?? const [];
 
     return Scaffold(
-      appBar: AppBar(title: Text(profile?.name ?? 'Thekedaar')),
-      body: ListView(
-        padding: const EdgeInsets.all(AppSizes.gutter),
-        children: [
-          const _BackupBanner(),
-          const SizedBox(height: AppSizes.gutter),
-          Text('Quick actions', style: textTheme.titleMedium),
-          const SizedBox(height: AppSizes.gap),
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: AppSizes.gap,
-            crossAxisSpacing: AppSizes.gap,
-            childAspectRatio: 1.6,
-            children: [
-              _QuickAction(
-                icon: Icons.receipt_long,
-                label: '+ New Bill',
-                onTap: () => showComingSoon(context),
+      appBar: AppBar(
+        title: Text(profile?.name ?? 'Thekedaar'),
+        actions: [
+          if (backup != null) _BackupDot(state: backup),
+          PopupMenuButton<String>(
+            onSelected: (route) => context.push(route),
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: Routes.attendance(),
+                child: const ListTile(
+                  leading: Icon(Icons.fact_check),
+                  title: Text('Attendance'),
+                ),
               ),
-              _QuickAction(
-                icon: Icons.payments,
-                label: '+ Advance',
-                onTap: () => showComingSoon(context),
-              ),
-              _QuickAction(
-                icon: Icons.fact_check,
-                label: "Today's Attendance",
-                onTap: () => showComingSoon(context),
-              ),
-              _QuickAction(
-                icon: Icons.person_add,
-                label: 'Add Worker',
-                onTap: () => context.push(Routes.addWorker),
+              const PopupMenuItem(
+                value: Routes.settings,
+                child: ListTile(
+                  leading: Icon(Icons.settings),
+                  title: Text('Settings'),
+                ),
               ),
             ],
           ),
-          if (trades.isNotEmpty) ...[
-            const SizedBox(height: AppSizes.gutter),
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.handyman),
-                title: const Text('Your work'),
-                subtitle: Text(trades.map((t) => t.label).join(', ')),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(AppSizes.gutter),
+        children: [
+          if (backup != null) _BackupBanner(state: backup),
+          InkWell(
+            borderRadius: BorderRadius.circular(AppSizes.radius),
+            onTap: () => context.go(Routes.billing),
+            child: Panel(
+              child: Row(
+                children: [
+                  const Icon(Icons.pending_actions, color: AppColors.warningText),
+                  const SizedBox(width: 12),
+                  const Expanded(child: Text('Pending from clients')),
+                  Text(
+                    formatPaise(outstanding),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.warningText,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
+          const SectionTitle('Quick actions'),
+          Row(
+            children: [
+              Expanded(
+                child: _QuickAction(
+                  icon: Icons.receipt_long,
+                  label: '+ New Bill',
+                  onTap: () =>
+                      context.push(Routes.newDocument(DocumentKind.invoice)),
+                ),
+              ),
+              const SizedBox(width: AppSizes.gap),
+              Expanded(
+                child: _QuickAction(
+                  icon: Icons.payments,
+                  label: '+ Advance',
+                  onTap: () => context.push(
+                      Routes.ledgerEntry(type: LedgerType.advance)),
+                ),
+              ),
+              const SizedBox(width: AppSizes.gap),
+              Expanded(
+                child: _QuickAction(
+                  icon: Icons.fact_check,
+                  label: "Today's Attendance",
+                  onTap: () => context.push(Routes.attendance()),
+                ),
+              ),
+            ],
+          ),
+          SectionTitle(
+            'Present today (${present.length})',
+            trailing: TextButton(
+              onPressed: () => context.push(Routes.attendance()),
+              child: const Text('Mark'),
+            ),
+          ),
+          if (present.isEmpty)
+            const Text('No one marked present yet today.',
+                style: TextStyle(color: AppColors.slate600))
+          else
+            SizedBox(
+              height: 76,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: present.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 12),
+                itemBuilder: (context, i) {
+                  final w = present[i];
+                  return InkWell(
+                    onTap: () => context.push(Routes.worker(w.id)),
+                    child: SizedBox(
+                      width: 56,
+                      child: Column(
+                        children: [
+                          Badge(
+                            backgroundColor: AppColors.successFill,
+                            label: const Icon(Icons.check,
+                                size: 10, color: Colors.white),
+                            child: CircleAvatar(
+                              backgroundColor: AppColors.amber100,
+                              foregroundColor: AppColors.slate900,
+                              child: Text(initials(w.name)),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            w.name.split(' ').first,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          const SizedBox(height: 32),
         ],
       ),
     );
   }
 }
 
-/// Backup is not built yet, so say so plainly (PRD D1: red banner until set up).
-class _BackupBanner extends StatelessWidget {
-  const _BackupBanner();
+/// Backup dot in the header (PRD DB-01, D3.1): green / amber / red.
+class _BackupDot extends StatelessWidget {
+  const _BackupDot({required this.state});
+
+  final BackupState state;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.dangerSurface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSizes.radius),
-        side: const BorderSide(color: AppColors.dangerFill),
-      ),
-      child: ListTile(
-        leading: const Icon(Icons.cloud_off, color: AppColors.dangerText),
-        title: const Text(
-          'Backup not set up',
-          style: TextStyle(
-            color: AppColors.dangerText,
-            fontWeight: FontWeight.w700,
+    final (color, label) = switch (state.health) {
+      BackupHealth.synced => (AppColors.successFill, 'Backed up'),
+      BackupHealth.pending => (AppColors.amber500, 'Backup pending'),
+      BackupHealth.failed => (AppColors.dangerFill, 'Backup problem'),
+      BackupHealth.notSetUp => (AppColors.dangerFill, 'Backup not set up'),
+    };
+    return IconButton(
+      tooltip: label,
+      onPressed: () => context.push(Routes.backup),
+      icon: Stack(
+        alignment: Alignment.bottomRight,
+        children: [
+          const Icon(Icons.cloud),
+          Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 1.5),
+            ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Red banner when backup is missing, failing or stuck (PRD D1, I-M2, D3.1).
+class _BackupBanner extends StatelessWidget {
+  const _BackupBanner({required this.state});
+
+  final BackupState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final String? message = switch (state.health) {
+      BackupHealth.notSetUp => 'Backup not set up. Your data is only on this phone.',
+      BackupHealth.failed => state.blocked
+          ? 'Backup stopped: this data was restored on another phone.'
+          : 'No backup in the last 24 hours. ${state.lastError ?? ''}',
+      BackupHealth.pending => state.pendingTooLong
+          ? 'Backup pending for over a day. Connect to the internet.'
+          : null,
+      BackupHealth.synced => null,
+    };
+    if (message == null) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSizes.gutter),
+      child: Material(
+        color: AppColors.dangerSurface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSizes.radius),
+          side: const BorderSide(color: AppColors.dangerFill),
         ),
-        subtitle: const Text('Your data is only on this phone.'),
-        trailing: TextButton(
-          onPressed: () => showComingSoon(context),
-          child: const Text('Set up'),
+        child: ListTile(
+          leading: const Icon(Icons.cloud_off, color: AppColors.dangerText),
+          title: Text(
+            message,
+            style: const TextStyle(
+              color: AppColors.dangerText,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push(Routes.backup),
         ),
       ),
     );
@@ -117,29 +259,34 @@ class _QuickAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shape = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(AppSizes.radius),
-      side: const BorderSide(color: AppColors.border),
-    );
     return Material(
-      color: AppColors.surface,
-      shape: shape,
+      color: AppColors.amber500,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSizes.radius),
+      ),
       child: InkWell(
-        customBorder: shape,
+        borderRadius: BorderRadius.circular(AppSizes.radius),
         onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 32, color: AppColors.slate900),
-              const SizedBox(height: AppSizes.gap),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-            ],
+        child: SizedBox(
+          height: 96,
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 30, color: AppColors.slate900),
+                const SizedBox(height: 6),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  style: const TextStyle(
+                    color: AppColors.slate900,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

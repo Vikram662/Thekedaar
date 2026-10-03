@@ -1,0 +1,267 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../app/theme.dart';
+import '../../../core/db/audit.dart';
+import '../../../core/db/database.dart';
+import '../../../core/db/enums.dart';
+import '../../../core/utils/dates.dart';
+import '../../../core/widgets/common.dart';
+import '../data/attendance_repository.dart';
+
+/// Icon + short label + colour per status (PRD I-D3: never colour alone).
+class StatusStyle {
+  const StatusStyle(this.short, this.label, this.icon, this.color);
+
+  final String short;
+  final String label;
+  final IconData icon;
+  final Color color;
+}
+
+StatusStyle statusStyle(AttendanceStatus status) => switch (status) {
+      AttendanceStatus.present =>
+        const StatusStyle('P', 'Present', Icons.check, AppColors.successText),
+      AttendanceStatus.half =>
+        const StatusStyle('½', 'Half day', Icons.timelapse, AppColors.warningText),
+      AttendanceStatus.absent =>
+        const StatusStyle('A', 'Absent', Icons.close, AppColors.dangerText),
+      AttendanceStatus.leavePaid =>
+        const StatusStyle('PL', 'Paid leave', Icons.beach_access, AppColors.blue700),
+      AttendanceStatus.leaveUnpaid =>
+        const StatusStyle('UL', 'Unpaid leave', Icons.event_busy, AppColors.slate600),
+      AttendanceStatus.off =>
+        const StatusStyle('Off', 'Weekly off', Icons.weekend, AppColors.slate600),
+    };
+
+/// Sets one worker's status for one day, showing lock errors as a message.
+Future<void> markAttendance(
+  BuildContext context,
+  WidgetRef ref, {
+  required String workerId,
+  required DateTime date,
+  required AttendanceStatus? status,
+  int? otMilliHours,
+}) async {
+  try {
+    final repo = ref.read(attendanceRepositoryProvider);
+    if (status == null) {
+      await repo.clear(workerId, date);
+    } else {
+      await repo.setStatus(
+        workerId: workerId,
+        date: date,
+        status: status,
+        otMilliHours: otMilliHours,
+      );
+    }
+    HapticFeedback.mediumImpact();
+  } on PeriodLockedException catch (e) {
+    if (context.mounted) showMessage(context, e.message);
+  }
+}
+
+/// Bottom sheet with every status, for the calendar and long-press.
+Future<void> showStatusSheet(
+  BuildContext context,
+  WidgetRef ref, {
+  required String workerId,
+  required DateTime date,
+  AttendanceStatus? current,
+}) async {
+  final choice = await showModalBottomSheet<Object>(
+    context: context,
+    showDragHandle: true,
+    builder: (context) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(dayFormat.format(date),
+              style: Theme.of(context).textTheme.titleMedium),
+          for (final status in AttendanceStatus.values)
+            ListTile(
+              leading: Icon(statusStyle(status).icon,
+                  color: statusStyle(status).color),
+              title: Text(statusStyle(status).label),
+              trailing: status == current
+                  ? const Icon(Icons.check_circle, color: AppColors.successText)
+                  : null,
+              onTap: () => Navigator.of(context).pop(status),
+            ),
+          if (current != null)
+            ListTile(
+              leading: const Icon(Icons.remove_circle_outline),
+              title: const Text('Clear mark'),
+              onTap: () => Navigator.of(context).pop('clear'),
+            ),
+        ],
+      ),
+    ),
+  );
+  if (choice == null || !context.mounted) return;
+  await markAttendance(
+    context,
+    ref,
+    workerId: workerId,
+    date: date,
+    status: choice is AttendanceStatus ? choice : null,
+  );
+}
+
+/// Month grid for one worker (PRD AT-04). Tap a day to change it.
+class AttendanceCalendar extends ConsumerStatefulWidget {
+  const AttendanceCalendar({super.key, required this.worker});
+
+  final Worker worker;
+
+  @override
+  ConsumerState<AttendanceCalendar> createState() => _AttendanceCalendarState();
+}
+
+class _AttendanceCalendarState extends ConsumerState<AttendanceCalendar> {
+  late DateTime _month = DateTime(DateTime.now().year, DateTime.now().month);
+
+  void _shift(int months) => setState(
+        () => _month = DateTime(_month.year, _month.month + months),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    final marks = ref.watch(workerMonthAttendanceProvider((
+          workerId: widget.worker.id,
+          year: _month.year,
+          month: _month.month,
+        ))).valueOrNull ??
+        const <String, Attendance>{};
+    final today = dateOnly(DateTime.now());
+    final joined = parseIsoDate(widget.worker.joinDate);
+    final firstWeekday = DateTime(_month.year, _month.month).weekday; // Mon=1
+    final days = daysInMonth(_month);
+    final isCurrentMonth =
+        _month.year == today.year && _month.month == today.month;
+
+    return Panel(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              IconButton(
+                tooltip: 'Previous month',
+                onPressed: () => _shift(-1),
+                icon: const Icon(Icons.chevron_left),
+              ),
+              Expanded(
+                child: Text(
+                  monthFormat.format(_month),
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+              IconButton(
+                tooltip: 'Next month',
+                onPressed: isCurrentMonth ? null : () => _shift(1),
+                icon: const Icon(Icons.chevron_right),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              for (final d in const ['M', 'T', 'W', 'T', 'F', 'S', 'S'])
+                Expanded(
+                  child: Center(
+                    child: Text(d, style: const TextStyle(color: AppColors.slate600)),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          GridView.count(
+            crossAxisCount: 7,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 4,
+            crossAxisSpacing: 4,
+            children: [
+              for (var i = 1; i < firstWeekday; i++) const SizedBox(),
+              for (var day = 1; day <= days; day++)
+                _DayCell(
+                  date: DateTime(_month.year, _month.month, day),
+                  mark: marks[isoDate(DateTime(_month.year, _month.month, day))],
+                  enabled: !DateTime(_month.year, _month.month, day)
+                          .isAfter(today) &&
+                      !DateTime(_month.year, _month.month, day)
+                          .isBefore(joined),
+                  onTap: (date, mark) => showStatusSheet(
+                    context,
+                    ref,
+                    workerId: widget.worker.id,
+                    date: date,
+                    current: mark?.status,
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DayCell extends StatelessWidget {
+  const _DayCell({
+    required this.date,
+    required this.mark,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  final DateTime date;
+  final Attendance? mark;
+  final bool enabled;
+  final void Function(DateTime date, Attendance? mark) onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = mark == null ? null : statusStyle(mark!.status);
+    return Semantics(
+      label: '${date.day}: ${style?.label ?? 'not marked'}',
+      button: enabled,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: enabled ? () => onTap(date, mark) : null,
+        child: Container(
+          decoration: BoxDecoration(
+            color: style?.color.withAlpha(30),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: style?.color ?? AppColors.border,
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '${date.day}',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: enabled ? AppColors.slate900 : AppColors.border,
+                ),
+              ),
+              if (style != null)
+                Text(
+                  style.short,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: style.color,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

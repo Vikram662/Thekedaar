@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import 'package:drift/native.dart';
 
-import '../config.dart';
 import '../db/database.dart';
 import '../db/meta_store.dart';
 import '../security/secure_store.dart';
@@ -144,7 +143,7 @@ class RestoreService {
     if (password != null && password.isNotEmpty) {
       masterKey = await _unlockWithPassword(ring, header, password);
     } else if (recoveryKey != null && recoveryKey.isNotEmpty) {
-      masterKey = await ring.unlockWithRecoveryKey(recoveryKey);
+      masterKey = await _unlockWithRecoveryKey(ring, header, recoveryKey);
     } else {
       throw const RestoreException('Enter the Backup Password or Recovery Key');
     }
@@ -169,6 +168,21 @@ class RestoreService {
     } on WrongSecretException {
       final fileRing = Keyring.fromJson(header.keyringJson);
       return fileRing.unlockWithPassword(password);
+    }
+  }
+
+  /// Backup set up again on a reinstall gets a new recovery key, so an
+  /// older file may only open with the key from its own keyring.
+  Future<List<int>> _unlockWithRecoveryKey(
+    Keyring ring,
+    BackupHeader header,
+    String recoveryKey,
+  ) async {
+    try {
+      return await ring.unlockWithRecoveryKey(recoveryKey);
+    } on WrongSecretException {
+      final fileRing = Keyring.fromJson(header.keyringJson);
+      return fileRing.unlockWithRecoveryKey(recoveryKey);
     }
   }
 
@@ -207,12 +221,19 @@ class RestoreService {
 
   /// Runs on the reopened database: keeps backups going from this phone
   /// and makes it the active device on Drive (PRD D6 step 8, I-M5).
-  Future<void> afterRestore(AppDatabase db, PreparedRestore restore) async {
+  Future<void> afterRestore(
+    AppDatabase db,
+    PreparedRestore restore, {
+    String? driveEmail,
+  }) async {
     final meta = MetaStore(db);
     await secure.write(
         SecureStore.backupMasterKey, encodeMasterKey(restore.masterKey));
     await meta.set(MetaKeys.keyring, restore.keyring.toJsonString());
-    await meta.setBool(MetaKeys.backupConfigured, AppConfig.driveConfigured);
+    if (driveEmail != null) {
+      await meta.set(MetaKeys.driveEmail, driveEmail);
+      await meta.setBool(MetaKeys.backupConfigured, true);
+    }
     await meta.setBool(MetaKeys.claimDevice, true);
     await meta.remove(MetaKeys.backupBlocked);
     await meta.remove(MetaKeys.backupLockUntil);
