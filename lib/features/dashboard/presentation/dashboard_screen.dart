@@ -42,6 +42,20 @@ class DashboardScreen extends ConsumerWidget {
                   title: Text('Attendance'),
                 ),
               ),
+              const PopupMenuItem(
+                value: Routes.expenses,
+                child: ListTile(
+                  leading: Icon(Icons.receipt),
+                  title: Text('Expenses'),
+                ),
+              ),
+              const PopupMenuItem(
+                value: Routes.suppliers,
+                child: ListTile(
+                  leading: Icon(Icons.store),
+                  title: Text('Suppliers'),
+                ),
+              ),
               PopupMenuItem(
                 value: Routes.dues(),
                 child: const ListTile(

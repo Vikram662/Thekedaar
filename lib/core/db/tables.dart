@@ -354,6 +354,35 @@ class Expenses extends Table with Timestamps {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+// ─── Suppliers (schema v2, PRD EX-02) ───────────────────────────────────────
+
+@DataClassName('Supplier')
+class Suppliers extends Table with Timestamps {
+  TextColumn get id => text()();
+  TextColumn get name => text()();
+  TextColumn get phone => text().nullable()();
+  TextColumn get address => text().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+/// Purchase on credit raises the due; payment lowers it.
+@DataClassName('SupplierEntry')
+class SupplierLedger extends Table with Timestamps {
+  TextColumn get id => text()();
+  TextColumn get supplierId => text().references(Suppliers, #id)();
+  TextColumn get entryType => textEnum<SupplierEntryType>()();
+  IntColumn get amountPaise => integer()();
+  TextColumn get mode => textEnum<PaymentMode>().nullable()();
+  TextColumn get date => text()();
+  TextColumn get billNo => text().nullable()();
+  TextColumn get remarks => text().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 // ─── Audit & backup ─────────────────────────────────────────────────────────
 
 @DataClassName('AuditLog')

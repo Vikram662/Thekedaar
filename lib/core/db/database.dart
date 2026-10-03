@@ -36,6 +36,8 @@ Future<String> databaseFilePath() async =>
   DocumentLines,
   PaymentsReceived,
   Expenses,
+  Suppliers,
+  SupplierLedger,
   AuditLogs,
   BackupLogs,
 ])
@@ -44,7 +46,9 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _open());
 
   /// Bump on every schema change and add a step in [migration] (PRD Part F).
-  static const currentSchemaVersion = 1;
+  ///
+  /// v1: first release. v2: suppliers + supplier khata.
+  static const currentSchemaVersion = 2;
 
   @override
   int get schemaVersion => currentSchemaVersion;
@@ -52,6 +56,12 @@ class AppDatabase extends _$AppDatabase {
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) => m.createAll(),
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            await m.createTable(suppliers);
+            await m.createTable(supplierLedger);
+          }
+        },
         beforeOpen: (details) async {
           await customStatement('PRAGMA foreign_keys = ON');
           await customStatement('PRAGMA journal_mode = WAL');

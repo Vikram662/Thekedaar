@@ -63,6 +63,9 @@ enum DocumentStatus { draft, sent, partiallyPaid, paid, cancelled }
 
 enum JobStatus { planned, inProgress, completed }
 
+/// Supplier khata (PRD EX-02): material on credit, or money paid.
+enum SupplierEntryType { purchase, payment }
+
 enum AuditAction { create, update, reverse, delete }
 
 enum BackupTrigger { scheduled, onChange, manual, internetBack, preRestore }

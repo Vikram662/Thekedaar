@@ -13,6 +13,9 @@ import '../features/billing/presentation/document_detail_screen.dart';
 import '../features/billing/presentation/document_editor_screen.dart';
 import '../features/billing/presentation/payment_screen.dart';
 import '../features/dashboard/presentation/dashboard_screen.dart';
+import '../features/expenses/presentation/expense_entry_screen.dart';
+import '../features/expenses/presentation/expenses_screen.dart';
+import '../features/expenses/presentation/suppliers_screen.dart';
 import '../features/khata/presentation/khata_screen.dart';
 import '../features/khata/presentation/ledger_entry_screen.dart';
 import '../features/khata/presentation/piece_work_screen.dart';
@@ -76,6 +79,15 @@ abstract final class Routes {
     ].join('&');
     return query.isEmpty ? '/payment/new' : '/payment/new?$query';
   }
+
+  static const expenses = '/expenses';
+  static const addExpense = '/expenses/new';
+  static const suppliers = '/suppliers';
+  static const addSupplier = '/supplier/new';
+  static String supplier(String id) => '/supplier/$id';
+  static String editSupplier(String id) => '/supplier/$id/edit';
+  static String supplierEntry(String id, SupplierEntryType type) =>
+      '/supplier/$id/entry?type=${type.name}';
 
   /// Lena / Dena report; tab 0 = to receive, 1 = to pay.
   static String dues([int tab = 0]) => '/dues?tab=$tab';
@@ -222,6 +234,45 @@ GoRouter buildRouter({required String initialLocation}) {
           clientId: q(state, 'clientId'),
           documentId: q(state, 'documentId'),
         ),
+      ),
+      GoRoute(
+        path: Routes.expenses,
+        builder: (context, state) => const ExpensesScreen(),
+        routes: [
+          GoRoute(
+            path: 'new',
+            builder: (context, state) => const ExpenseEntryScreen(),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: Routes.suppliers,
+        builder: (context, state) => const SuppliersScreen(),
+      ),
+      GoRoute(
+        path: Routes.addSupplier,
+        builder: (context, state) => const SupplierFormScreen(),
+      ),
+      GoRoute(
+        path: '/supplier/:id',
+        builder: (context, state) =>
+            SupplierDetailScreen(supplierId: id(state)),
+        routes: [
+          GoRoute(
+            path: 'edit',
+            builder: (context, state) =>
+                SupplierFormScreen(supplierId: id(state)),
+          ),
+          GoRoute(
+            path: 'entry',
+            builder: (context, state) => SupplierEntryScreen(
+              supplierId: id(state),
+              type: q(state, 'type') == SupplierEntryType.payment.name
+                  ? SupplierEntryType.payment
+                  : SupplierEntryType.purchase,
+            ),
+          ),
+        ],
       ),
       GoRoute(
         path: '/dues',

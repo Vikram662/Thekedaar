@@ -1,9 +1,10 @@
 import '../../../core/db/enums.dart';
 import '../../../core/utils/dates.dart';
 import '../../billing/data/billing_repository.dart';
+import '../../expenses/data/expenses_repository.dart';
 import '../../khata/data/khata_repository.dart';
 
-enum DueParty { client, worker }
+enum DueParty { client, worker, supplier }
 
 /// One person in the Lena (to receive) or Dena (to pay) list.
 class DueItem {
@@ -32,7 +33,7 @@ class DuesReport {
   /// Money to receive: clients' pending bills, workers who took extra.
   final List<DueItem> lena;
 
-  /// Money to pay: workers' balances, advances taken from clients.
+  /// Money to pay: workers' balances, supplier dues, client advances.
   final List<DueItem> dena;
 
   int get lenaTotal => lena.fold(0, (sum, d) => sum + d.amountPaise);
@@ -44,6 +45,7 @@ DuesReport buildDuesReport({
   required List<ClientBalance> clients,
   required List<DocumentListItem> invoices,
   required List<WorkerBalance> workers,
+  List<SupplierBalance> suppliers = const [],
   DateTime? today,
 }) {
   final todayIso = isoDate(today ?? DateTime.now());
@@ -97,6 +99,18 @@ DuesReport buildDuesReport({
       phone: w.worker.phone,
     );
     (balance > 0 ? dena : lena).add(item);
+  }
+  for (final s in suppliers) {
+    final due = s.duePaise;
+    if (due == 0) continue;
+    final item = DueItem(
+      party: DueParty.supplier,
+      id: s.supplier.id,
+      name: s.supplier.name,
+      amountPaise: due.abs(),
+      phone: s.supplier.phone,
+    );
+    (due > 0 ? dena : lena).add(item);
   }
   int byAmount(DueItem a, DueItem b) => b.amountPaise.compareTo(a.amountPaise);
   lena.sort(byAmount);

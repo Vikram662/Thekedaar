@@ -12,6 +12,7 @@ import '../../../core/utils/money.dart';
 import '../../../core/widgets/common.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../billing/data/billing_repository.dart';
+import '../../expenses/data/expenses_repository.dart';
 import '../../khata/data/khata_repository.dart';
 import '../../lock/app_lock_controller.dart';
 import '../domain/dues_pdf.dart';
@@ -22,19 +23,24 @@ final duesReportProvider = Provider<AsyncValue<DuesReport>>((ref) {
   final clients = ref.watch(clientsProvider);
   final invoices = ref.watch(documentsProvider(DocumentKind.invoice));
   final workers = ref.watch(allWorkerBalancesProvider);
-  for (final value in [clients, invoices, workers]) {
+  final suppliers = ref.watch(suppliersProvider);
+  for (final value in [clients, invoices, workers, suppliers]) {
     if (value.hasError) {
       return AsyncValue.error(
           value.error!, value.stackTrace ?? StackTrace.current);
     }
   }
-  if (!clients.hasValue || !invoices.hasValue || !workers.hasValue) {
+  if (!clients.hasValue ||
+      !invoices.hasValue ||
+      !workers.hasValue ||
+      !suppliers.hasValue) {
     return const AsyncValue.loading();
   }
   return AsyncValue.data(buildDuesReport(
     clients: clients.requireValue,
     invoices: invoices.requireValue,
     workers: workers.requireValue,
+    suppliers: suppliers.requireValue,
   ));
 });
 
@@ -149,7 +155,7 @@ class _DueList extends ConsumerWidget {
         title: receive ? 'Nothing to receive' : 'Nothing to pay',
         message: receive
             ? 'No client or worker owes you money right now.'
-            : 'All workers are paid up.',
+            : 'All workers and suppliers are paid up.',
       );
     }
     final color = receive ? AppColors.warningText : AppColors.successText;
@@ -175,13 +181,11 @@ class _DueList extends ConsumerWidget {
             leading: CircleAvatar(
               backgroundColor: AppColors.amber100,
               foregroundColor: AppColors.slate900,
-              child: Icon(item.party == DueParty.client
-                  ? Icons.person_outline
-                  : Icons.engineering),
+              child: Icon(dueParty(item.party).icon),
             ),
             title: Text(item.name),
             subtitle: Text([
-              item.party == DueParty.client ? 'Client' : 'Worker',
+              dueParty(item.party).label,
               if (item.overduePaise > 0)
                 'Overdue ${formatPaise(item.overduePaise)}',
               if (!receive && item.party == DueParty.client)
@@ -206,9 +210,11 @@ class _DueList extends ConsumerWidget {
                   ),
               ],
             ),
-            onTap: () => context.push(item.party == DueParty.client
-                ? Routes.client(item.id)
-                : Routes.worker(item.id)),
+            onTap: () => context.push(switch (item.party) {
+              DueParty.client => Routes.client(item.id),
+              DueParty.worker => Routes.worker(item.id),
+              DueParty.supplier => Routes.supplier(item.id),
+            }),
           ),
           const Divider(height: 1),
         ],
@@ -216,6 +222,12 @@ class _DueList extends ConsumerWidget {
     );
   }
 }
+
+({String label, IconData icon}) dueParty(DueParty party) => switch (party) {
+      DueParty.client => (label: 'Client', icon: Icons.person_outline),
+      DueParty.worker => (label: 'Worker', icon: Icons.engineering),
+      DueParty.supplier => (label: 'Supplier', icon: Icons.store),
+    };
 
 /// Lena / Dena summary card for the dashboard.
 class DuesSummaryCard extends ConsumerWidget {

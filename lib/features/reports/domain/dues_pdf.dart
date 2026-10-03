@@ -38,7 +38,11 @@ Future<Uint8List> buildDuesPdf(DuesReport report, BusinessProfile profile) {
             for (final item in items)
               pw.TableRow(children: [
                 pdfCell(item.name),
-                pdfCell(item.party == DueParty.client ? 'Client' : 'Worker'),
+                pdfCell(switch (item.party) {
+                  DueParty.client => 'Client',
+                  DueParty.worker => 'Worker',
+                  DueParty.supplier => 'Supplier',
+                }),
                 if (showOverdue)
                   pdfCell(
                     item.overduePaise == 0 ? '-' : pdfMoney(item.overduePaise),
