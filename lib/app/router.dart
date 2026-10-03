@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../core/db/enums.dart';
 import '../core/utils/dates.dart';
-import '../features/attendance/presentation/daily_attendance_screen.dart';
+import '../features/attendance/presentation/attendance_screen.dart';
 import '../features/backup/presentation/backup_screen.dart';
 import '../features/backup/presentation/restore_screen.dart';
 import '../features/billing/presentation/billing_screen.dart';
@@ -16,6 +16,7 @@ import '../features/dashboard/presentation/dashboard_screen.dart';
 import '../features/expenses/presentation/expense_entry_screen.dart';
 import '../features/expenses/presentation/expenses_screen.dart';
 import '../features/expenses/presentation/suppliers_screen.dart';
+import '../features/jobs/presentation/jobs_screens.dart';
 import '../features/khata/presentation/khata_screen.dart';
 import '../features/khata/presentation/ledger_entry_screen.dart';
 import '../features/khata/presentation/piece_work_screen.dart';
@@ -43,13 +44,23 @@ abstract final class Routes {
   static const khata = '/khata';
   static const workers = '/workers';
 
+  /// Billing tab on a sub-tab: 0 bills, 1 quotations, 2 clients, 3 payments.
+  static String billingTab(int tab) => '/billing?tab=$tab';
+
+  /// Khata tab on a sub-tab: 0 balances, 1 entries.
+  static String khataTab(int tab) => '/khata?tab=$tab';
+
   static const addWorker = '/worker/new';
   static String worker(String id) => '/worker/$id';
   static String editWorker(String id) => '/worker/$id/edit';
   static String changeWage(String id) => '/worker/$id/wage';
 
+  /// Attendance tab, "Mark today" view (optionally for [date]).
   static String attendance([DateTime? date]) =>
       date == null ? '/attendance' : '/attendance?date=${isoDate(date)}';
+
+  /// Attendance tab, all-workers month register.
+  static const attendanceMonth = '/attendance?view=month';
 
   static String ledgerEntry({String? workerId, LedgerType? type}) {
     final query = [
@@ -63,8 +74,10 @@ abstract final class Routes {
       workerId == null ? '/khata/piece' : '/khata/piece?workerId=$workerId';
   static String settle(String workerId) => '/khata/settle/$workerId';
 
-  static String newDocument(DocumentKind kind, {String? clientId}) =>
-      '/doc/new?kind=${kind.name}${clientId == null ? '' : '&clientId=$clientId'}';
+  static String newDocument(DocumentKind kind, {String? clientId, String? jobId}) =>
+      '/doc/new?kind=${kind.name}'
+      '${clientId == null ? '' : '&clientId=$clientId'}'
+      '${jobId == null ? '' : '&jobId=$jobId'}';
   static String document(String id) => '/doc/$id';
   static String editDocument(String id) => '/doc/$id/edit';
 
@@ -82,6 +95,12 @@ abstract final class Routes {
 
   static const expenses = '/expenses';
   static const addExpense = '/expenses/new';
+  static String expenseForJob(String jobId) => '/expenses/new?jobId=$jobId';
+  static const jobs = '/jobs';
+  static String addJob({String? clientId}) =>
+      clientId == null ? '/job/new' : '/job/new?clientId=$clientId';
+  static String job(String id) => '/job/$id';
+  static String editJob(String id) => '/job/$id/edit';
   static const suppliers = '/suppliers';
   static const addSupplier = '/supplier/new';
   static String supplier(String id) => '/supplier/$id';
@@ -127,14 +146,30 @@ GoRouter buildRouter({required String initialLocation}) {
           ]),
           StatefulShellBranch(routes: [
             GoRoute(
+              path: '/attendance',
+              builder: (context, state) {
+                final date = q(state, 'date');
+                return AttendanceScreen(
+                  date: date == null ? null : parseIsoDate(date),
+                  showMonth: q(state, 'view') == 'month',
+                );
+              },
+            ),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(
               path: Routes.billing,
-              builder: (context, state) => const BillingScreen(),
+              builder: (context, state) => BillingScreen(
+                tab: int.tryParse(q(state, 'tab') ?? ''),
+              ),
             ),
           ]),
           StatefulShellBranch(routes: [
             GoRoute(
               path: Routes.khata,
-              builder: (context, state) => const KhataScreen(),
+              builder: (context, state) => KhataScreen(
+                tab: int.tryParse(q(state, 'tab') ?? ''),
+              ),
             ),
           ]),
           StatefulShellBranch(routes: [
@@ -167,15 +202,6 @@ GoRouter buildRouter({required String initialLocation}) {
         ],
       ),
       GoRoute(
-        path: '/attendance',
-        builder: (context, state) {
-          final date = q(state, 'date');
-          return DailyAttendanceScreen(
-            initialDate: date == null ? null : parseIsoDate(date),
-          );
-        },
-      ),
-      GoRoute(
         path: '/khata/entry',
         builder: (context, state) {
           final type = q(state, 'type');
@@ -199,6 +225,7 @@ GoRouter buildRouter({required String initialLocation}) {
         builder: (context, state) => DocumentEditorScreen(
           kind: DocumentKind.values.byName(q(state, 'kind') ?? 'invoice'),
           clientId: q(state, 'clientId'),
+          jobId: q(state, 'jobId'),
         ),
       ),
       GoRoute(
@@ -241,7 +268,27 @@ GoRouter buildRouter({required String initialLocation}) {
         routes: [
           GoRoute(
             path: 'new',
-            builder: (context, state) => const ExpenseEntryScreen(),
+            builder: (context, state) =>
+                ExpenseEntryScreen(jobId: q(state, 'jobId')),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: Routes.jobs,
+        builder: (context, state) => const JobsScreen(),
+      ),
+      GoRoute(
+        path: '/job/new',
+        builder: (context, state) =>
+            JobFormScreen(clientId: q(state, 'clientId')),
+      ),
+      GoRoute(
+        path: '/job/:id',
+        builder: (context, state) => JobDetailScreen(jobId: id(state)),
+        routes: [
+          GoRoute(
+            path: 'edit',
+            builder: (context, state) => JobFormScreen(jobId: id(state)),
           ),
         ],
       ),

@@ -6,6 +6,7 @@ import 'package:drift/native.dart';
 import '../db/database.dart';
 import '../db/meta_store.dart';
 import '../security/secure_store.dart';
+import '../utils/photo_store.dart';
 import 'backup_engine.dart';
 import 'backup_format.dart';
 import 'drive_store.dart';
@@ -235,6 +236,7 @@ class RestoreService {
       await meta.setBool(MetaKeys.backupConfigured, true);
     }
     await meta.setBool(MetaKeys.claimDevice, true);
+    await meta.setBool(MetaKeys.photosRestorePending, true);
     await meta.remove(MetaKeys.backupBlocked);
     await meta.remove(MetaKeys.backupLockUntil);
     await meta.remove(MetaKeys.lastBackupError);
@@ -242,6 +244,39 @@ class RestoreService {
     await meta.setInt(MetaKeys.pendingChanges, 0);
     await meta.setInt(MetaKeys.lastBackupAt,
         restore.manifest.createdAt.millisecondsSinceEpoch);
+  }
+
+  /// Downloads photos missing on this phone (PRD D6 step 7). Returns how
+  /// many were restored. Needs the master key in secure storage.
+  Future<int> restorePhotos() async {
+    final encodedKey = await secure.read(SecureStore.backupMasterKey);
+    if (encodedKey == null) return 0;
+    final masterKey = encodedKey.split(',').map(int.parse).toList();
+    final client = await auth.client();
+    if (client == null) throw const RestoreException('Drive disconnected');
+    try {
+      final store = DriveStore(client);
+      final rootId = await store.findFolder(DriveStore.rootFolderName);
+      if (rootId == null) return 0;
+      final filesId = await store.findFolder(
+        DriveStore.filesFolderName,
+        parentId: rootId,
+      );
+      if (filesId == null) return 0;
+      final local = (await listPhotoNames()).toSet();
+      var restored = 0;
+      for (final remote in await store.listFiles(filesId)) {
+        if (!remote.name.endsWith('.jpg.enc')) continue;
+        final name = remote.name.substring(0, remote.name.length - 4);
+        if (local.contains(name)) continue;
+        final bytes = await decryptBlob(await store.download(remote.id), masterKey);
+        await (await photoFile(name)).writeAsBytes(bytes, flush: true);
+        restored++;
+      }
+      return restored;
+    } finally {
+      client.close();
+    }
   }
 
   static Future<void> _deleteWithSidecars(String path) async {

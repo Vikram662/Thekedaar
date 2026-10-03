@@ -260,6 +260,7 @@ class KhataRepository {
     required int ratePaise,
     String? itemId,
     String? unitId,
+    String? jobId,
   }) async {
     final id = newId();
     await _db.transaction(() async {
@@ -274,6 +275,7 @@ class KhataRepository {
             amountPaise: lineAmountPaise(qtyMilli, ratePaise),
             itemId: Value(itemId),
             unitId: Value(unitId),
+            jobId: Value(jobId),
           ));
       await writeAudit(_db,
           entity: 'piece_work', entityId: id, action: AuditAction.create);

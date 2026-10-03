@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/app_drawer.dart';
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/utils/phone.dart';
@@ -26,13 +27,14 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
     );
 
     return Scaffold(
+      drawer: const AppDrawer(),
       appBar: AppBar(
         title: Text(_showInactive ? 'Inactive workers' : 'Workers'),
         actions: [
           IconButton(
             tooltip: 'Today\'s attendance',
             icon: const Icon(Icons.fact_check),
-            onPressed: () => context.push(Routes.attendance()),
+            onPressed: () => context.go(Routes.attendance()),
           ),
           PopupMenuButton<bool>(
             onSelected: (value) => setState(() => _showInactive = value),

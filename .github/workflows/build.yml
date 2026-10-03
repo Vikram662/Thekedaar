@@ -8,6 +8,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # Release signing is used only when these secrets exist (docs/RELEASE.md).
+      HAS_SIGNING: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
     steps:
       - uses: actions/checkout@v5
 
@@ -31,6 +34,26 @@ jobs:
       - name: Patch Android project (biometric, permissions, minSdk)
         run: dart run tool/patch_android.dart
 
+      # Never committed: written fresh from secrets on every run.
+      - name: Set up release signing
+        if: env.HAS_SIGNING == 'true'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.p12
+          cat > android/key.properties <<EOF
+          storePassword=$KEYSTORE_PASSWORD
+          keyPassword=$KEYSTORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          storeFile=upload-keystore.p12
+          EOF
+          # SHA-1 is not secret; it is needed for the Google OAuth client (D-7).
+          sha1=$(keytool -list -v -keystore android/app/upload-keystore.p12 \
+            -storepass "$KEYSTORE_PASSWORD" | grep -m1 'SHA1:' | awk '{print $2}')
+          echo "::notice title=Release key SHA-1::$sha1"
+
       - run: flutter pub get
 
       - name: Generate code (drift)
@@ -53,3 +76,25 @@ jobs:
         with:
           name: thekedaar-debug-apk
           path: build/app/outputs/flutter-apk/app-debug.apk
+
+      # One small APK per CPU type; most phones need arm64-v8a.
+      - name: Build release APKs
+        run: bash tool/ci_annotate.sh "Release APK" "error|Error|FAILURE|What went wrong" flutter build apk --release --split-per-abi --dart-define=GOOGLE_SERVER_CLIENT_ID=${{ secrets.GOOGLE_SERVER_CLIENT_ID }}
+
+      # App bundle for the Play Store.
+      - name: Build release app bundle
+        run: bash tool/ci_annotate.sh "Release AAB" "error|Error|FAILURE|What went wrong" flutter build appbundle --release --dart-define=GOOGLE_SERVER_CLIENT_ID=${{ secrets.GOOGLE_SERVER_CLIENT_ID }}
+
+      - name: Warn if release is debug-signed
+        if: env.HAS_SIGNING != 'true'
+        run: echo "::warning title=Release signing::Signing secrets not set, so release files are signed with the debug key. Do not upload them to the Play Store."
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: thekedaar-release-apk
+          path: build/app/outputs/flutter-apk/app-*-release.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: thekedaar-release-aab
+          path: build/app/outputs/bundle/release/app-release.aab

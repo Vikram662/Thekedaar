@@ -85,9 +85,6 @@ class DuesScreen extends ConsumerWidget {
               ),
           ],
           bottom: TabBar(
-            labelColor: Colors.white,
-            unselectedLabelColor: const Color(0xFFCBD5E1),
-            indicatorColor: AppColors.amber500,
             tabs: [
               Tab(
                 text: report.hasValue

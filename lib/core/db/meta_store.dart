@@ -21,6 +21,10 @@ abstract final class MetaKeys {
   static const lastSlotRun = 'last_slot_run';
   static const driveRootFolderId = 'drive_root_folder_id';
   static const driveDbFolderId = 'drive_db_folder_id';
+  static const driveFilesFolderId = 'drive_files_folder_id';
+
+  /// Set after a restore: photos still need to come down from Drive.
+  static const photosRestorePending = 'photos_restore_pending';
 }
 
 /// Small typed wrapper over the `app_meta` key/value table.

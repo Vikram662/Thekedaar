@@ -7,14 +7,19 @@ import '../../../app/theme.dart';
 import '../../../core/db/enums.dart';
 import '../../../core/utils/dates.dart';
 import '../../../core/utils/money.dart';
+import '../../../core/utils/photos.dart';
 import '../../../core/widgets/amount_pad.dart';
 import '../../../core/widgets/common.dart';
 import '../../../core/widgets/pickers.dart';
+import '../../jobs/presentation/job_picker.dart';
+import '../../lock/app_lock_controller.dart';
 import '../data/expenses_repository.dart';
 
 /// PRD EX-01: amount → category → mode → Save.
 class ExpenseEntryScreen extends ConsumerStatefulWidget {
-  const ExpenseEntryScreen({super.key});
+  const ExpenseEntryScreen({super.key, this.jobId});
+
+  final String? jobId;
 
   @override
   ConsumerState<ExpenseEntryScreen> createState() => _ExpenseEntryScreenState();
@@ -23,15 +28,36 @@ class ExpenseEntryScreen extends ConsumerStatefulWidget {
 class _ExpenseEntryScreenState extends ConsumerState<ExpenseEntryScreen> {
   String _amount = '';
   String? _categoryId;
+  late String? _jobId = widget.jobId;
+  String? _photoName;
   PaymentMode _mode = PaymentMode.cash;
   DateTime _date = dateOnly(DateTime.now());
   final _note = TextEditingController();
   bool _saving = false;
 
+  bool _saved = false;
+
   @override
   void dispose() {
     _note.dispose();
+    // Photo taken but expense not saved: do not leave the file behind.
+    if (!_saved) deletePhoto(_photoName);
     super.dispose();
+  }
+
+  Future<void> _takePhoto(bool fromCamera) async {
+    final lock = ref.read(appLockProvider);
+    lock.suspendRelock = true;
+    try {
+      final name = await captureBillPhoto(fromCamera: fromCamera);
+      if (name == null) return;
+      await deletePhoto(_photoName); // replace the previous one
+      setState(() => _photoName = name);
+    } catch (e) {
+      if (mounted) showMessage(context, 'Could not take photo: $e');
+    } finally {
+      lock.suspendRelock = false;
+    }
   }
 
   Future<void> _newCategory() async {
@@ -82,7 +108,10 @@ class _ExpenseEntryScreenState extends ConsumerState<ExpenseEntryScreen> {
             mode: _mode,
             date: _date,
             remarks: _note.text.trim().isEmpty ? null : _note.text.trim(),
+            jobId: _jobId,
+            photoName: _photoName,
           );
+      _saved = true;
       if (!mounted) return;
       HapticFeedback.mediumImpact();
       showMessage(context, '✓ Expense ${formatPaise(paise)} saved');
@@ -133,9 +162,53 @@ class _ExpenseEntryScreenState extends ConsumerState<ExpenseEntryScreen> {
             onChanged: (m) => setState(() => _mode = m),
           ),
           const SizedBox(height: 12),
+          JobPickerField(
+            jobId: _jobId,
+            onChanged: (id) => setState(() => _jobId = id),
+          ),
+          const SizedBox(height: 12),
           TextField(
             controller: _note,
             decoration: const InputDecoration(labelText: 'Note (optional)'),
+          ),
+          const SectionTitle('Bill photo (optional)'),
+          Row(
+            children: [
+              if (_photoName != null) ...[
+                InkWell(
+                  onTap: () => showPhoto(context, _photoName!),
+                  child: PhotoThumb(name: _photoName!, size: 72),
+                ),
+                const SizedBox(width: AppSizes.gap),
+              ],
+              Expanded(
+                child: Wrap(
+                  spacing: AppSizes.gap,
+                  runSpacing: AppSizes.gap,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: () => _takePhoto(true),
+                      icon: const Icon(Icons.photo_camera),
+                      label: Text(_photoName == null ? 'Camera' : 'Retake'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: () => _takePhoto(false),
+                      icon: const Icon(Icons.photo_library),
+                      label: const Text('Gallery'),
+                    ),
+                    if (_photoName != null)
+                      IconButton(
+                        tooltip: 'Remove photo',
+                        icon: const Icon(Icons.delete_outline),
+                        onPressed: () async {
+                          await deletePhoto(_photoName);
+                          setState(() => _photoName = null);
+                        },
+                      ),
+                  ],
+                ),
+              ),
+            ],
           ),
           ListTile(
             contentPadding: EdgeInsets.zero,

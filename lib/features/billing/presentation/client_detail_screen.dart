@@ -7,6 +7,7 @@ import '../../../app/theme.dart';
 import '../../../core/db/enums.dart';
 import '../../../core/utils/phone.dart';
 import '../../../core/widgets/common.dart';
+import '../../jobs/data/jobs_repository.dart';
 import '../data/billing_repository.dart';
 import 'billing_screen.dart';
 import 'billing_widgets.dart';
@@ -32,6 +33,9 @@ class ClientDetailScreen extends ConsumerWidget {
     final client = balance.client;
     final bills = ref.watch(clientDocumentsProvider(clientId)).valueOrNull ?? const [];
     final payments = ref.watch(paymentsProvider(clientId)).valueOrNull ?? const [];
+    final jobs = (ref.watch(jobsProvider).valueOrNull ?? const <JobListItem>[])
+        .where((j) => j.job.clientId == clientId)
+        .toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -93,6 +97,31 @@ class ClientDetailScreen extends ConsumerWidget {
               ),
             ],
           ),
+          SectionTitle(
+            'Jobs / sites',
+            trailing: TextButton.icon(
+              onPressed: () => context.push(Routes.addJob(clientId: clientId)),
+              icon: const Icon(Icons.add),
+              label: const Text('New job'),
+            ),
+          ),
+          if (jobs.isEmpty)
+            const Text('No jobs yet.', style: TextStyle(color: AppColors.slate600))
+          else
+            Panel(
+              padding: EdgeInsets.zero,
+              child: Column(
+                children: [
+                  for (final j in jobs)
+                    ListTile(
+                      title: Text(j.job.title),
+                      subtitle: Text(jobStatusLabel(j.job.status)),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => context.push(Routes.job(j.job.id)),
+                    ),
+                ],
+              ),
+            ),
           const SectionTitle('Bills'),
           if (bills.isEmpty)
             const Text('No bills yet.', style: TextStyle(color: AppColors.slate600))

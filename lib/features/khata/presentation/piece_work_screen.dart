@@ -14,6 +14,7 @@ import '../../../core/widgets/common.dart';
 import '../../../core/widgets/pickers.dart';
 import '../../billing/data/billing_repository.dart';
 import '../../billing/presentation/measurement_sheet.dart';
+import '../../jobs/presentation/job_picker.dart';
 import '../../workers/presentation/worker_picker.dart';
 import '../data/khata_repository.dart';
 
@@ -33,6 +34,7 @@ class _PieceWorkScreenState extends ConsumerState<PieceWorkScreen> {
   final _qty = TextEditingController();
   final _rate = TextEditingController();
   String? _itemId;
+  String? _jobId;
   Unit? _unit;
   DateTime _date = dateOnly(DateTime.now());
   bool _saving = false;
@@ -122,6 +124,7 @@ class _PieceWorkScreenState extends ConsumerState<PieceWorkScreen> {
             ratePaise: rate!,
             itemId: _itemId,
             unitId: _unit?.id,
+            jobId: _jobId,
           );
       if (!mounted) return;
       HapticFeedback.mediumImpact();
@@ -209,6 +212,10 @@ class _PieceWorkScreenState extends ConsumerState<PieceWorkScreen> {
                   await pickDate(context, initial: _date, last: DateTime.now());
               if (picked != null) setState(() => _date = dateOnly(picked));
             },
+          ),
+          JobPickerField(
+            jobId: _jobId,
+            onChanged: (id) => setState(() => _jobId = id),
           ),
           const SizedBox(height: 8),
           Panel(

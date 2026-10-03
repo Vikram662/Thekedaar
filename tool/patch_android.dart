@@ -7,6 +7,7 @@
 // - permissions: INTERNET (Drive in release), ACCESS_NETWORK_STATE, USE_BIOMETRIC
 // - AppCompat launch theme + dependency (local_auth on Android 8 and below)
 // - minSdk 24 (local_auth 3.x)
+// - release signing from android/key.properties (see docs/RELEASE.md)
 import 'dart:io';
 
 void main() {
@@ -81,16 +82,62 @@ void _patchGradle() {
           '    implementation("androidx.appcompat:appcompat:1.7.0")\n'
           '}\n';
     }
-    kts.writeAsStringSync(text);
+    kts.writeAsStringSync(_addReleaseSigning(text));
   } else if (groovy.existsSync()) {
+    stderr.writeln('WARNING: Groovy build.gradle found; release signing '
+        'is only patched for build.gradle.kts.');
     var text = groovy.readAsStringSync();
     text = text.replaceAll('minSdkVersion flutter.minSdkVersion', 'minSdkVersion 24');
     text = text.replaceAll('minSdk = flutter.minSdkVersion', 'minSdk = 24');
     if (!text.contains('androidx.appcompat:appcompat')) {
-      text += "\ndependencies {\n"
+      text += '\ndependencies {\n'
           "    implementation 'androidx.appcompat:appcompat:1.7.0'\n"
-          "}\n";
+          '}\n';
     }
     groovy.writeAsStringSync(text);
   }
+}
+
+/// Release builds are signed with the upload key from `android/key.properties`
+/// (written by CI from GitHub secrets, never committed). Without that file
+/// they fall back to the debug key so `flutter build apk --release` still works.
+String _addReleaseSigning(String text) {
+  if (text.contains('keystorePropertiesFile')) return text;
+
+  const imports = 'import java.io.FileInputStream\n'
+      'import java.util.Properties\n\n';
+  const loadProperties = '''
+val keystorePropertiesFile = rootProject.file("key.properties")
+val keystoreProperties = Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
+''';
+  const signingConfigs = '''
+    signingConfigs {
+        create("release") {
+            keyAlias = keystoreProperties.getProperty("keyAlias")
+            keyPassword = keystoreProperties.getProperty("keyPassword")
+            storeFile = keystoreProperties.getProperty("storeFile")?.let { file(it) }
+            storePassword = keystoreProperties.getProperty("storePassword")
+        }
+    }
+
+''';
+
+  var out = imports + text;
+  out = out.replaceFirst('\nandroid {', '\n${loadProperties}android {');
+  out = out.replaceFirst('    buildTypes {', '$signingConfigs    buildTypes {');
+  out = out.replaceFirst(
+    'signingConfig = signingConfigs.getByName("debug")',
+    'signingConfig = if (keystorePropertiesFile.exists()) '
+        'signingConfigs.getByName("release") '
+        'else signingConfigs.getByName("debug")',
+  );
+  if (!out.contains('signingConfigs.getByName("release")')) {
+    stderr.writeln('WARNING: could not find the release signingConfig line; '
+        'release builds will use the default signing.');
+  }
+  return out;
 }

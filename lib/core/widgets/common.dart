@@ -157,10 +157,18 @@ class Panel extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: padding ?? const EdgeInsets.all(AppSizes.gutter),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppSizes.radius),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0F0F172A),
+            blurRadius: 12,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: child,
     );

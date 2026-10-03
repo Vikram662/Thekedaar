@@ -21,6 +21,8 @@ android/.gradle/
 android/key.properties
 *.jks
 *.keystore
+*.p12
+*.pem
 
 # OS
 .DS_Store

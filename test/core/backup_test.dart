@@ -115,6 +115,17 @@ void main() {
       );
     });
 
+    test('photo blobs round trip and detect tampering (I-M10)', () async {
+      final photo = List<int>.generate(3000, (i) => (i * 7) % 256);
+      final enc = await encryptBlob(photo, keys.masterKey);
+      expect(await decryptBlob(enc, keys.masterKey), photo);
+      final tampered = Uint8List.fromList(enc)..[20] ^= 1;
+      await expectLater(
+        decryptBlob(tampered, keys.masterKey),
+        throwsA(isA<BackupFormatException>()),
+      );
+    });
+
     test('other files are rejected', () {
       expect(
         () => readBackupHeader(Uint8List.fromList(List.filled(40, 1))),

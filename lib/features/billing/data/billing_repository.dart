@@ -167,6 +167,7 @@ class DocumentDraft {
     this.id,
     required this.kind,
     required this.clientId,
+    this.jobId,
     required this.date,
     this.dueDate,
     required this.lines,
@@ -181,6 +182,7 @@ class DocumentDraft {
   final String? id;
   final DocumentKind kind;
   final String clientId;
+  final String? jobId;
   final DateTime date;
   final DateTime? dueDate;
   final List<DraftLine> lines;
@@ -427,6 +429,7 @@ class BillingRepository {
               kind: draft.kind,
               number: await _nextNumber(draft.kind, draft.date),
               clientId: draft.clientId,
+              jobId: Value(draft.jobId),
               status: DocumentStatus.draft,
               date: isoDate(draft.date),
               dueDate: Value(draft.dueDate == null ? null : isoDate(draft.dueDate!)),
@@ -452,6 +455,7 @@ class BillingRepository {
         await (_db.update(_db.documents)..where((d) => d.id.equals(id))).write(
           DocumentsCompanion(
             clientId: Value(draft.clientId),
+            jobId: Value(draft.jobId),
             date: Value(isoDate(draft.date)),
             dueDate:
                 Value(draft.dueDate == null ? null : isoDate(draft.dueDate!)),
@@ -542,6 +546,7 @@ class BillingRepository {
     return saveDocument(DocumentDraft(
       kind: DocumentKind.invoice,
       clientId: q.clientId,
+      jobId: q.jobId,
       date: DateTime.now(),
       lines: [for (final l in detail.lines) l.toDraft()],
       discountPercentBp: q.discountPercentBp,

@@ -49,14 +49,60 @@ ThemeData buildLightTheme() {
     borderRadius: BorderRadius.circular(AppSizes.radius),
   );
 
+  // Modern light look: soft grey page, white cards and tiles, light app bar.
+  const page = Color(0xFFF1F5F9);
+  final soft = RoundedRectangleBorder(borderRadius: BorderRadius.circular(16));
+
   return ThemeData(
     useMaterial3: true,
     colorScheme: scheme,
-    scaffoldBackgroundColor: AppColors.surface2,
+    scaffoldBackgroundColor: page,
     appBarTheme: const AppBarTheme(
-      backgroundColor: AppColors.slate900,
-      foregroundColor: Colors.white,
+      backgroundColor: page,
+      foregroundColor: AppColors.slate900,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      scrolledUnderElevation: 1,
       centerTitle: false,
+      titleTextStyle: TextStyle(
+        color: AppColors.slate900,
+        fontSize: 21,
+        fontWeight: FontWeight.w800,
+      ),
+    ),
+    // Lists sit on the grey page as white rows.
+    listTileTheme: ListTileThemeData(
+      tileColor: AppColors.surface,
+      iconColor: AppColors.slate600,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+      shape: const RoundedRectangleBorder(),
+      selectedTileColor: AppColors.amber100,
+    ),
+    dividerTheme: const DividerThemeData(color: AppColors.border, space: 1),
+    chipTheme: ChipThemeData(
+      backgroundColor: AppColors.surface,
+      selectedColor: AppColors.amber100,
+      side: const BorderSide(color: AppColors.border),
+      shape: soft,
+      labelStyle: const TextStyle(
+        color: AppColors.slate900,
+        fontWeight: FontWeight.w600,
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+    ),
+    segmentedButtonTheme: SegmentedButtonThemeData(
+      style: SegmentedButton.styleFrom(
+        backgroundColor: AppColors.surface,
+        selectedBackgroundColor: AppColors.amber500,
+        selectedForegroundColor: AppColors.slate900,
+        foregroundColor: AppColors.slate900,
+        side: const BorderSide(color: AppColors.border),
+      ),
+    ),
+    drawerTheme: const DrawerThemeData(backgroundColor: AppColors.surface),
+    bottomSheetTheme: const BottomSheetThemeData(
+      backgroundColor: AppColors.surface,
+      showDragHandle: true,
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
@@ -77,16 +123,32 @@ ThemeData buildLightTheme() {
       backgroundColor: AppColors.amber500,
       foregroundColor: AppColors.slate900,
     ),
+    // Borderless filled fields; a coloured outline only while typing.
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: AppColors.surface,
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppSizes.radius),
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: AppColors.border),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: AppColors.border),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: AppColors.blue700, width: 2),
       ),
     ),
-    navigationBarTheme: const NavigationBarThemeData(
+    navigationBarTheme: NavigationBarThemeData(
       backgroundColor: AppColors.surface,
       indicatorColor: AppColors.amber100,
+      height: 68,
+      labelTextStyle: WidgetStateProperty.all(
+        const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+      ),
     ),
   );
 }

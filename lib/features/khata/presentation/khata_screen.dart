@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/app_drawer.dart';
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/db/enums.dart';
@@ -12,29 +13,56 @@ import '../data/khata_repository.dart';
 import 'khata_widgets.dart';
 
 /// Khata tab (PRD E1): balances per worker, and recent entries.
-class KhataScreen extends ConsumerWidget {
-  const KhataScreen({super.key});
+class KhataScreen extends StatefulWidget {
+  const KhataScreen({super.key, this.tab});
+
+  /// Sub-tab requested by the drawer (0 balances, 1 entries).
+  final int? tab;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Khata'),
-          bottom: const TabBar(
-            labelColor: Colors.white,
-            unselectedLabelColor: Color(0xFFCBD5E1),
-            indicatorColor: AppColors.amber500,
-            tabs: [Tab(text: 'Balances'), Tab(text: 'Entries')],
-          ),
+  State<KhataScreen> createState() => _KhataScreenState();
+}
+
+class _KhataScreenState extends State<KhataScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabs = TabController(
+    length: 2,
+    vsync: this,
+    initialIndex: (widget.tab ?? 0).clamp(0, 1),
+  );
+
+  @override
+  void didUpdateWidget(KhataScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final tab = widget.tab;
+    if (tab != null && tab != oldWidget.tab) _tabs.animateTo(tab.clamp(0, 1));
+  }
+
+  @override
+  void dispose() {
+    _tabs.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      drawer: const AppDrawer(),
+      appBar: AppBar(
+        title: const Text('Khata'),
+        bottom: TabBar(
+          controller: _tabs,
+          tabs: const [Tab(text: 'Balances'), Tab(text: 'Entries')],
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () => context.push(Routes.ledgerEntry()),
-          icon: const Icon(Icons.add),
-          label: const Text('Advance'),
-        ),
-        body: const TabBarView(children: [_BalancesTab(), _EntriesTab()]),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => context.push(Routes.ledgerEntry()),
+        icon: const Icon(Icons.add),
+        label: const Text('Advance'),
+      ),
+      body: TabBarView(
+        controller: _tabs,
+        children: const [_BalancesTab(), _EntriesTab()],
       ),
     );
   }

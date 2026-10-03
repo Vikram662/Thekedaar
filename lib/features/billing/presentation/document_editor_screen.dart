@@ -13,6 +13,7 @@ import '../../../core/utils/qty.dart';
 import '../../../core/widgets/common.dart';
 import '../../../core/widgets/pickers.dart';
 import '../data/billing_repository.dart';
+import '../../jobs/presentation/job_picker.dart';
 import '../domain/document_totals.dart';
 import 'billing_widgets.dart';
 import 'line_editor_screen.dart';
@@ -24,11 +25,13 @@ class DocumentEditorScreen extends ConsumerStatefulWidget {
     required this.kind,
     this.documentId,
     this.clientId,
+    this.jobId,
   });
 
   final DocumentKind kind;
   final String? documentId;
   final String? clientId;
+  final String? jobId;
 
   @override
   ConsumerState<DocumentEditorScreen> createState() =>
@@ -38,6 +41,7 @@ class DocumentEditorScreen extends ConsumerStatefulWidget {
 class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
   late DocumentKind _kind = widget.kind;
   late String? _clientId = widget.clientId;
+  late String? _jobId = widget.jobId;
   DateTime _date = dateOnly(DateTime.now());
   DateTime? _dueDate;
   final List<DraftLine> _lines = [];
@@ -76,6 +80,7 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
         _kind = d.kind;
         _number = d.number;
         _clientId = d.clientId;
+        _jobId = d.jobId;
         _date = parseIsoDate(d.date);
         _dueDate = d.dueDate == null ? null : parseIsoDate(d.dueDate!);
         _lines.addAll(detail.lines.map((l) => l.toDraft()));
@@ -97,6 +102,7 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
       id: widget.documentId,
       kind: _kind,
       clientId: _clientId ?? '',
+      jobId: _jobId,
       date: _date,
       dueDate: _dueDate,
       lines: List.of(_lines),
@@ -198,8 +204,19 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
         children: [
           ClientPickerField(
             clientId: _clientId,
-            onChanged: (id) => setState(() => _clientId = id),
+            onChanged: (id) => setState(() {
+              if (id != _clientId) _jobId = null;
+              _clientId = id;
+            }),
           ),
+          if (_clientId != null) ...[
+            const SizedBox(height: 12),
+            JobPickerField(
+              clientId: _clientId,
+              jobId: _jobId,
+              onChanged: (id) => setState(() => _jobId = id),
+            ),
+          ],
           const SizedBox(height: 12),
           Row(
             children: [

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/app_drawer.dart';
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/db/enums.dart';
@@ -16,7 +17,10 @@ import 'billing_widgets.dart';
 
 /// Billing tab (PRD E1): Invoices | Quotations | Clients | Payments.
 class BillingScreen extends ConsumerStatefulWidget {
-  const BillingScreen({super.key});
+  const BillingScreen({super.key, this.tab});
+
+  /// Sub-tab requested by the drawer (0 bills … 3 payments).
+  final int? tab;
 
   @override
   ConsumerState<BillingScreen> createState() => _BillingScreenState();
@@ -24,8 +28,18 @@ class BillingScreen extends ConsumerStatefulWidget {
 
 class _BillingScreenState extends ConsumerState<BillingScreen>
     with SingleTickerProviderStateMixin {
-  late final TabController _tabs = TabController(length: 4, vsync: this)
-    ..addListener(() => setState(() {}));
+  late final TabController _tabs = TabController(
+    length: 4,
+    vsync: this,
+    initialIndex: (widget.tab ?? 0).clamp(0, 3),
+  )..addListener(() => setState(() {}));
+
+  @override
+  void didUpdateWidget(BillingScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final tab = widget.tab;
+    if (tab != null && tab != oldWidget.tab) _tabs.animateTo(tab.clamp(0, 3));
+  }
 
   @override
   void dispose() {
@@ -60,15 +74,13 @@ class _BillingScreenState extends ConsumerState<BillingScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const AppDrawer(),
       appBar: AppBar(
         title: const Text('Billing'),
         bottom: TabBar(
           controller: _tabs,
           isScrollable: true,
           tabAlignment: TabAlignment.start,
-          labelColor: Colors.white,
-          unselectedLabelColor: const Color(0xFFCBD5E1),
-          indicatorColor: AppColors.amber500,
           tabs: const [
             Tab(text: 'Bills'),
             Tab(text: 'Quotations'),

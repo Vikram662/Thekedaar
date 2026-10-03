@@ -14,6 +14,7 @@ import '../settings/settings_providers.dart';
 import 'backup_engine.dart';
 import 'backup_scheduler.dart';
 import 'google_drive_auth.dart';
+import 'restore_service.dart';
 
 final googleDriveAuthProvider = Provider((ref) => GoogleDriveAuth());
 final backupSchedulerProvider = Provider((ref) => BackupScheduler());
@@ -176,6 +177,17 @@ class BackupCoordinator with WidgetsBindingObserver {
 
   Future<void> _onAppOpened() async {
     if (!await _engine.isSetUp()) return;
+    if (await _meta.getBool(MetaKeys.photosRestorePending)) {
+      try {
+        await RestoreService(
+          auth: _ref.read(googleDriveAuthProvider),
+          secureStore: _ref.read(secureStoreProvider),
+        ).restorePhotos();
+        await _meta.remove(MetaKeys.photosRestorePending);
+      } catch (_) {
+        // Retried the next time the app opens.
+      }
+    }
     final settings = await _ref.read(appSettingsProvider.future);
     try {
       await _ref

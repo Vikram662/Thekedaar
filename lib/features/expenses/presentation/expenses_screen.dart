@@ -6,6 +6,7 @@ import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/utils/dates.dart';
 import '../../../core/utils/money.dart';
+import '../../../core/utils/photos.dart';
 import '../../../core/widgets/common.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/pickers.dart';
@@ -127,10 +128,20 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                         children: [
                           for (final item in list)
                             ListTile(
+                              leading: item.expense.photoPath == null
+                                  ? null
+                                  : InkWell(
+                                      onTap: () => showPhoto(
+                                          context, item.expense.photoPath!),
+                                      child: PhotoThumb(
+                                          name: item.expense.photoPath!,
+                                          size: 44),
+                                    ),
                               title: Text(item.categoryName),
                               subtitle: Text([
                                 dayFormat.format(parseIsoDate(item.expense.date)),
                                 paymentModeLabel(item.expense.mode),
+                                if (item.jobTitle != null) item.jobTitle!,
                                 if (item.expense.remarks != null &&
                                     item.expense.remarks!.isNotEmpty)
                                   item.expense.remarks!,

@@ -42,6 +42,7 @@ class DriveStore {
 
   static const rootFolderName = 'Thekedaar Backups';
   static const dbFolderName = 'db';
+  static const filesFolderName = 'files';
   static const deviceFileName = 'device.json';
   static const keysFileName = 'keys.json';
   static const _folderMime = 'application/vnd.google-apps.folder';

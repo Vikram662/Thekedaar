@@ -12,6 +12,7 @@ import '../db/enums.dart';
 import '../db/meta_store.dart';
 import '../security/secure_store.dart';
 import '../utils/ids.dart';
+import '../utils/photo_store.dart';
 import 'backup_format.dart';
 import 'drive_store.dart';
 import 'google_drive_auth.dart';
@@ -178,6 +179,11 @@ class BackupEngine {
       }
 
       await _applyRetention(store, dbFolderId);
+      try {
+        await _uploadPhotos(store, rootId);
+      } catch (_) {
+        // Photos are incremental: anything missed goes up on the next run.
+      }
       return await _finish(logId, const BackupResult(BackupOutcome.success));
     } on SocketException catch (e) {
       return await _finish(
@@ -344,6 +350,31 @@ class BackupEngine {
         await store.ensureFolder(DriveStore.dbFolderName, parentId: rootId);
     await meta.set(MetaKeys.driveDbFolderId, id);
     return id;
+  }
+
+  /// PRD I-M10: each photo is encrypted and uploaded once, by name.
+  Future<void> _uploadPhotos(DriveStore store, String rootId) async {
+    final names = await listPhotoNames();
+    if (names.isEmpty) return;
+    var folderId = await meta.get(MetaKeys.driveFilesFolderId);
+    if (folderId == null) {
+      folderId =
+          await store.ensureFolder(DriveStore.filesFolderName, parentId: rootId);
+      await meta.set(MetaKeys.driveFilesFolderId, folderId);
+    }
+    final remote = {for (final f in await store.listFiles(folderId)) f.name};
+    final masterKey = await _masterKey();
+    for (final name in names) {
+      final remoteName = '$name.enc';
+      if (remote.contains(remoteName)) continue;
+      final bytes = await (await photoFile(name)).readAsBytes();
+      final encrypted = await encryptBlob(bytes, masterKey);
+      await _withRetry(() => store.upload(
+            folderId: folderId!,
+            name: remoteName,
+            bytes: encrypted,
+          ));
+    }
   }
 
   Future<void> _ensureKeysUploaded(DriveStore store, String rootId) async {

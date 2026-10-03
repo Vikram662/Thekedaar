@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-/// Bottom tabs from PRD E1: Dashboard, Billing, Khata, Workers.
+/// Bottom tabs: Home, Attendance, Billing, Khata, Workers. The order must
+/// match the branches in router.dart.
 class HomeShell extends StatelessWidget {
   const HomeShell({super.key, required this.navigationShell});
 
@@ -22,6 +23,11 @@ class HomeShell extends StatelessWidget {
             icon: Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home),
             label: 'Home',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.fact_check_outlined),
+            selectedIcon: Icon(Icons.fact_check),
+            label: 'Attendance',
           ),
           NavigationDestination(
             icon: Icon(Icons.receipt_long_outlined),

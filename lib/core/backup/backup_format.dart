@@ -176,6 +176,28 @@ Future<Uint8List> decodeBackup(Uint8List file, List<int> masterKey) async {
   return dbBytes;
 }
 
+/// Encrypts one photo for Drive (`files/<name>.enc`, PRD D2). Photos are
+/// already JPEG-compressed, so no gzip.
+Future<Uint8List> encryptBlob(List<int> bytes, List<int> masterKey) async {
+  final box = await _aes.encrypt(bytes, secretKey: SecretKey(masterKey));
+  return Uint8List.fromList(box.concatenation());
+}
+
+Future<Uint8List> decryptBlob(List<int> encrypted, List<int> masterKey) async {
+  final box = SecretBox.fromConcatenation(
+    encrypted,
+    nonceLength: _aes.nonceLength,
+    macLength: _aes.macAlgorithm.macLength,
+  );
+  try {
+    return Uint8List.fromList(
+      await _aes.decrypt(box, secretKey: SecretKey(masterKey)),
+    );
+  } on SecretBoxAuthenticationError {
+    throw const BackupFormatException('Photo backup is damaged');
+  }
+}
+
 /// `PRAGMA user_version` straight from the SQLite file header (offset 60).
 int sqliteUserVersion(List<int> dbBytes) {
   if (dbBytes.length < 64) return 0;

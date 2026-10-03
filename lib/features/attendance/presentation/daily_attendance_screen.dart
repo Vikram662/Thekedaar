@@ -14,18 +14,28 @@ import 'attendance_widgets.dart';
 
 /// PRD AT-01 / AT-02: one list, P / ½ / A per worker, OT stepper,
 /// "Mark all present" and "Copy yesterday".
-class DailyAttendanceScreen extends ConsumerStatefulWidget {
-  const DailyAttendanceScreen({super.key, this.initialDate});
+/// Body only; shown inside the Attendance tab (attendance_screen.dart).
+class DailyAttendanceView extends ConsumerStatefulWidget {
+  const DailyAttendanceView({super.key, this.initialDate});
 
   final DateTime? initialDate;
 
   @override
-  ConsumerState<DailyAttendanceScreen> createState() =>
-      _DailyAttendanceScreenState();
+  ConsumerState<DailyAttendanceView> createState() =>
+      _DailyAttendanceViewState();
 }
 
-class _DailyAttendanceScreenState extends ConsumerState<DailyAttendanceScreen> {
+class _DailyAttendanceViewState extends ConsumerState<DailyAttendanceView> {
   late DateTime _date = dateOnly(widget.initialDate ?? DateTime.now());
+
+  @override
+  void didUpdateWidget(DailyAttendanceView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final date = widget.initialDate;
+    if (date != null && date != oldWidget.initialDate) {
+      setState(() => _date = dateOnly(date));
+    }
+  }
 
   bool get _isToday => _date == dateOnly(DateTime.now());
 
@@ -66,9 +76,7 @@ class _DailyAttendanceScreenState extends ConsumerState<DailyAttendanceScreen> {
     final settings = ref.watch(appSettingsProvider).valueOrNull;
     final isWeeklyOff = settings?.weeklyOffDay == _date.weekday;
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Attendance')),
-      body: Column(
+    return Column(
         children: [
           Material(
             color: AppColors.surface,
@@ -169,7 +177,6 @@ class _DailyAttendanceScreenState extends ConsumerState<DailyAttendanceScreen> {
             ),
           ),
         ],
-      ),
     );
   }
 }

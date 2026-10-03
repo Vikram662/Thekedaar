@@ -16,6 +16,12 @@ Is computer par Flutter install nahi hai. Code GitHub par cloud mein check aur b
    - debug APK build
 3. Run khatam hone par **Artifacts → thekedaar-debug-apk** download karein, zip kholein aur `app-debug.apk` phone par install karein.
 
+## Poora process (yahan se shuru karein)
+
+**[docs/PROCESS.md](docs/PROCESS.md)**: roz ka build, APK download, signing key, GitHub secrets, Google Drive setup, Play Store, aur checklist.
+
+Release / signing ki technical details: [docs/RELEASE.md](docs/RELEASE.md).
+
 ## Google Drive backup chalu karna (PRD D-7)
 
 Backup ke liye Google Cloud mein ek baar setup chahiye:

@@ -5,6 +5,7 @@ import '../../../core/db/audit.dart';
 import '../../../core/db/database.dart';
 import '../../../core/db/enums.dart';
 import '../../../core/db/providers.dart';
+import '../../../core/db/watch.dart';
 import '../../../core/utils/dates.dart';
 import '../../../core/utils/ids.dart';
 
@@ -27,6 +28,41 @@ final workerMonthAttendanceProvider =
       .watch(attendanceRepositoryProvider)
       .watchMonth(key.workerId, DateTime(key.year, key.month)),
 );
+
+/// Key: (year, month).
+final monthRegisterProvider =
+    StreamProvider.family<MonthRegister, ({int year, int month})>(
+  (ref, m) => ref
+      .watch(attendanceRepositoryProvider)
+      .watchMonthRegister(DateTime(m.year, m.month)),
+);
+
+/// All workers × all days of a month (attendance register, PRD AT-04).
+class MonthRegister {
+  const MonthRegister({
+    required this.month,
+    required this.workers,
+    required this.marks,
+  });
+
+  final DateTime month;
+  final List<Worker> workers;
+
+  /// workerId → day of month → status.
+  final Map<String, Map<int, AttendanceStatus>> marks;
+
+  int get days => daysInMonth(month);
+
+  int count(String workerId, AttendanceStatus status) =>
+      (marks[workerId] ?? const {}).values.where((s) => s == status).length;
+
+  /// Present + ½ half + paid leave (weekly off depends on the wage type,
+  /// so it is not added here).
+  double paidDays(String workerId) =>
+      count(workerId, AttendanceStatus.present) +
+      count(workerId, AttendanceStatus.half) / 2 +
+      count(workerId, AttendanceStatus.leavePaid);
+}
 
 class AttendanceRow {
   const AttendanceRow({
@@ -76,6 +112,33 @@ class AttendanceRepository {
       ..where((a) =>
           a.workerId.equals(workerId) & a.date.isBetweenValues(from, to));
     return query.watch().map((rows) => {for (final a in rows) a.date: a});
+  }
+
+  /// Workers who were active or have marks in [month], with every mark.
+  Stream<MonthRegister> watchMonthRegister(DateTime month) {
+    final from = isoDate(DateTime(month.year, month.month));
+    final to = isoDate(DateTime(month.year, month.month + 1, 0));
+    return watchComputed(_db, [_db.workers, _db.attendances], () async {
+      final rows = await (_db.select(_db.attendances)
+            ..where((a) => a.date.isBetweenValues(from, to)))
+          .get();
+      final marks = <String, Map<int, AttendanceStatus>>{};
+      for (final a in rows) {
+        (marks[a.workerId] ??= {})[parseIsoDate(a.date).day] = a.status;
+      }
+      final workers = await (_db.select(_db.workers)
+            ..where((w) => w.joinDate.isSmallerOrEqualValue(to))
+            ..orderBy([(w) => OrderingTerm.asc(w.name)]))
+          .get();
+      return MonthRegister(
+        month: DateTime(month.year, month.month),
+        workers: [
+          for (final w in workers)
+            if (w.isActive || marks.containsKey(w.id)) w,
+        ],
+        marks: marks,
+      );
+    });
   }
 
   /// Workers marked present or half today (PRD DB-03 today strip).

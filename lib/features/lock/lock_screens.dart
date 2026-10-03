@@ -13,6 +13,12 @@ import 'pin_pad.dart';
 
 /// Shown over the whole app while locked or before a PIN exists. Lives in
 /// `MaterialApp.builder`, above the router.
+///
+/// The app ([child], the router's Navigator) is never removed from the tree:
+/// it stays mounted under the lock layer, hidden with [Offstage]. Swapping
+/// it out and back caused `'_dependents.isEmpty': is not true` assertions
+/// (the router's GlobalKey'd Navigator was unmounted mid-transition), and
+/// keeping it also returns the user to the same screen after unlocking.
 class LockGate extends ConsumerWidget {
   const LockGate({super.key, required this.child});
 
@@ -21,25 +27,49 @@ class LockGate extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(businessProfileProvider);
-    const splash = Scaffold(body: Center(child: CircularProgressIndicator()));
-    if (profile.isLoading && !profile.hasValue) return splash;
-    // No business yet → onboarding is showing; nothing to protect.
-    if (profile.valueOrNull == null) return child;
-
     final lock = ref.watch(appLockProvider);
-    return switch (lock.status) {
-      LockStatus.unlocked => child,
-      LockStatus.checking => splash,
-      LockStatus.needsSetup => _OwnNavigator(
-          key: const ValueKey('pin-setup'),
-          child: const PinSetupScreen(),
+
+    final Widget? overlay;
+    if (profile.isLoading && !profile.hasValue) {
+      overlay = const _Splash();
+    } else if (profile.valueOrNull == null) {
+      // No business yet → onboarding is showing; nothing to protect.
+      overlay = null;
+    } else {
+      overlay = switch (lock.status) {
+        LockStatus.unlocked => null,
+        LockStatus.checking => const _Splash(),
+        LockStatus.needsSetup => const _OwnNavigator(
+            key: ValueKey('pin-setup'),
+            child: PinSetupScreen(),
+          ),
+        LockStatus.locked => const _OwnNavigator(
+            key: ValueKey('locked'),
+            child: LockScreen(),
+          ),
+      };
+    }
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // Always first and always present, so its element is never moved.
+        Offstage(
+          offstage: overlay != null,
+          child: TickerMode(enabled: overlay == null, child: child),
         ),
-      LockStatus.locked => _OwnNavigator(
-          key: const ValueKey('locked'),
-          child: const LockScreen(),
-        ),
-    };
+        if (overlay != null) overlay,
+      ],
+    );
   }
+}
+
+class _Splash extends StatelessWidget {
+  const _Splash();
+
+  @override
+  Widget build(BuildContext context) =>
+      const Scaffold(body: Center(child: CircularProgressIndicator()));
 }
 
 /// The gate sits above the app's router, so lock screens get their own

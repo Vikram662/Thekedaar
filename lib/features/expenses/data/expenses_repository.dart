@@ -7,6 +7,7 @@ import '../../../core/db/enums.dart';
 import '../../../core/db/providers.dart';
 import '../../../core/utils/dates.dart';
 import '../../../core/utils/ids.dart';
+import '../../../core/utils/photo_store.dart';
 
 final expensesRepositoryProvider = Provider<ExpensesRepository>(
   (ref) => ExpensesRepository(ref.watch(databaseProvider)),
@@ -41,10 +42,17 @@ final supplierEntriesProvider =
 );
 
 class ExpenseItem {
-  const ExpenseItem({required this.expense, required this.categoryName});
+  const ExpenseItem({
+    required this.expense,
+    required this.categoryName,
+    this.jobTitle,
+  });
 
   final Expense expense;
   final String categoryName;
+
+  /// Job / site this expense belongs to, if any.
+  final String? jobTitle;
 }
 
 class SupplierBalance {
@@ -114,6 +122,8 @@ class ExpensesRepository {
     required PaymentMode mode,
     required DateTime date,
     String? remarks,
+    String? jobId,
+    String? photoName,
   }) async {
     if (amountPaise <= 0) throw ArgumentError('Amount must be more than 0');
     final id = newId();
@@ -124,6 +134,8 @@ class ExpensesRepository {
           mode: mode,
           date: isoDate(date),
           remarks: Value(remarks),
+          jobId: Value(jobId),
+          photoPath: Value(photoName),
         ));
     await writeAudit(_db,
         entity: 'expense', entityId: id, action: AuditAction.create);
@@ -141,6 +153,7 @@ class ExpensesRepository {
           entityId: id,
           action: AuditAction.delete,
           before: before.toJson());
+      await deletePhoto(before.photoPath);
     });
   }
 
@@ -150,6 +163,7 @@ class ExpensesRepository {
     final query = _db.select(_db.expenses).join([
       innerJoin(_db.expenseCategories,
           _db.expenseCategories.id.equalsExp(_db.expenses.categoryId)),
+      leftOuterJoin(_db.jobs, _db.jobs.id.equalsExp(_db.expenses.jobId)),
     ])
       ..where(_db.expenses.date.isBetweenValues(from, to))
       ..orderBy([
@@ -161,6 +175,7 @@ class ExpensesRepository {
             ExpenseItem(
               expense: row.readTable(_db.expenses),
               categoryName: row.readTable(_db.expenseCategories).name,
+              jobTitle: row.readTableOrNull(_db.jobs)?.title,
             ),
         ]);
   }

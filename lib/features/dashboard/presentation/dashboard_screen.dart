@@ -1,127 +1,374 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
+import '../../../app/app_drawer.dart';
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/backup/backup_providers.dart';
 import '../../../core/db/database.dart';
 import '../../../core/db/enums.dart';
 import '../../../core/db/providers.dart';
+import '../../../core/utils/money.dart';
 import '../../../core/widgets/common.dart';
 import '../../attendance/data/attendance_repository.dart';
 import '../../reports/presentation/dues_screen.dart';
+import '../../workers/data/workers_repository.dart';
 
 final _presentTodayProvider = StreamProvider<List<Worker>>(
   (ref) =>
       ref.watch(attendanceRepositoryProvider).watchPresentOn(DateTime.now()),
 );
 
-/// PRD E2 / DB-01..DB-03.
+/// PRD E2 / DB-01..DB-03: greeting with Lena / Dena, quick actions,
+/// today's attendance.
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final profile = ref.watch(businessProfileProvider).valueOrNull;
     final backup = ref.watch(backupStateProvider).valueOrNull;
-    final present = ref.watch(_presentTodayProvider).valueOrNull ?? const [];
 
     return Scaffold(
+      // All sections are in the side menu (☰); bottom tabs keep the main 5.
+      drawer: const AppDrawer(),
       appBar: AppBar(
-        title: Text(profile?.name ?? 'Thekedaar'),
+        title: const Text('Home'),
         actions: [
           if (backup != null) _BackupDot(state: backup),
-          PopupMenuButton<String>(
-            onSelected: (route) => context.push(route),
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: Routes.attendance(),
-                child: const ListTile(
-                  leading: Icon(Icons.fact_check),
-                  title: Text('Attendance'),
+          const SizedBox(width: 4),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
+        children: [
+          if (backup != null) _BackupBanner(state: backup),
+          const _HeroCard(),
+          const SizedBox(height: 20),
+          const _QuickActions(),
+          const SizedBox(height: 20),
+          const _TodayCard(),
+        ],
+      ),
+    );
+  }
+}
+
+/// Greeting + business name + Lena / Dena totals on a dark gradient card.
+class _HeroCard extends ConsumerWidget {
+  const _HeroCard();
+
+  static String _greeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profile = ref.watch(businessProfileProvider).valueOrNull;
+    final report = ref.watch(duesReportProvider).valueOrNull;
+    final overdue = report?.overdueTotal ?? 0;
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.slate900, Color(0xFF1E3A5F)],
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x330F172A),
+            blurRadius: 16,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${_greeting()} 👋',
+            style: const TextStyle(color: Color(0xFFCBD5E1), fontSize: 14),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            profile?.name ?? 'Thekedaar',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          Text(
+            DateFormat('EEEE, d MMMM').format(DateTime.now()),
+            style: const TextStyle(color: Color(0xFFCBD5E1), fontSize: 13),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _HeroStat(
+                  label: 'Lena (to receive)',
+                  value: report == null ? '…' : formatPaise(report.lenaTotal),
+                  icon: Icons.south_west,
+                  accent: AppColors.amber500,
+                  note: overdue > 0 ? 'Overdue ${formatPaise(overdue)}' : null,
+                  onTap: () => context.push(Routes.dues(0)),
                 ),
               ),
-              const PopupMenuItem(
-                value: Routes.expenses,
-                child: ListTile(
-                  leading: Icon(Icons.receipt),
-                  title: Text('Expenses'),
-                ),
-              ),
-              const PopupMenuItem(
-                value: Routes.suppliers,
-                child: ListTile(
-                  leading: Icon(Icons.store),
-                  title: Text('Suppliers'),
-                ),
-              ),
-              PopupMenuItem(
-                value: Routes.dues(),
-                child: const ListTile(
-                  leading: Icon(Icons.account_balance),
-                  title: Text('Lena / Dena report'),
-                ),
-              ),
-              const PopupMenuItem(
-                value: Routes.settings,
-                child: ListTile(
-                  leading: Icon(Icons.settings),
-                  title: Text('Settings'),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _HeroStat(
+                  label: 'Dena (to pay)',
+                  value: report == null ? '…' : formatPaise(report.denaTotal),
+                  icon: Icons.north_east,
+                  accent: const Color(0xFF34D399),
+                  onTap: () => context.push(Routes.dues(1)),
                 ),
               ),
             ],
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(AppSizes.gutter),
-        children: [
-          if (backup != null) _BackupBanner(state: backup),
-          const DuesSummaryCard(),
-          const SectionTitle('Quick actions'),
-          Row(
+    );
+  }
+}
+
+class _HeroStat extends StatelessWidget {
+  const _HeroStat({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.accent,
+    required this.onTap,
+    this.note,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color accent;
+  final VoidCallback onTap;
+  final String? note;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: const Color(0x1AFFFFFF),
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: _QuickAction(
-                  icon: Icons.receipt_long,
-                  label: '+ New Bill',
-                  onTap: () =>
-                      context.push(Routes.newDocument(DocumentKind.invoice)),
+              Row(
+                children: [
+                  Icon(icon, size: 16, color: accent),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          color: Color(0xFFCBD5E1), fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  value,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
-              const SizedBox(width: AppSizes.gap),
-              Expanded(
-                child: _QuickAction(
-                  icon: Icons.payments,
-                  label: '+ Advance',
-                  onTap: () => context.push(
-                      Routes.ledgerEntry(type: LedgerType.advance)),
-                ),
+              Text(
+                note ?? ' ',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: Color(0xFFFCA5A5), fontSize: 11),
               ),
-              const SizedBox(width: AppSizes.gap),
-              Expanded(
-                child: _QuickAction(
-                  icon: Icons.fact_check,
-                  label: "Today's Attendance",
-                  onTap: () => context.push(Routes.attendance()),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Four big round shortcuts, each with its own colour.
+class _QuickActions extends StatelessWidget {
+  const _QuickActions();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _QuickAction(
+          icon: Icons.receipt_long,
+          label: 'New Bill',
+          tint: const Color(0xFFDBEAFE),
+          iconColor: AppColors.blue700,
+          onTap: () => context.push(Routes.newDocument(DocumentKind.invoice)),
+        ),
+        _QuickAction(
+          icon: Icons.payments,
+          label: 'Advance',
+          tint: AppColors.amber100,
+          iconColor: AppColors.warningText,
+          onTap: () =>
+              context.push(Routes.ledgerEntry(type: LedgerType.advance)),
+        ),
+        _QuickAction(
+          icon: Icons.fact_check,
+          label: 'Attendance',
+          tint: const Color(0xFFD1FAE5),
+          iconColor: AppColors.successText,
+          onTap: () => context.go(Routes.attendance()),
+        ),
+        _QuickAction(
+          icon: Icons.receipt,
+          label: 'Expense',
+          tint: const Color(0xFFFFE4E6),
+          iconColor: AppColors.dangerText,
+          onTap: () => context.push(Routes.addExpense),
+        ),
+      ],
+    );
+  }
+}
+
+class _QuickAction extends StatelessWidget {
+  const _QuickAction({
+    required this.icon,
+    required this.label,
+    required this.tint,
+    required this.iconColor,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color tint;
+  final Color iconColor;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Column(
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: tint,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Icon(icon, size: 28, color: iconColor),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
           ),
-          SectionTitle(
-            'Present today (${present.length})',
-            trailing: TextButton(
-              onPressed: () => context.push(Routes.attendance()),
-              child: const Text('Mark'),
-            ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Who is present today, out of all active workers (PRD DB-03).
+class _TodayCard extends ConsumerWidget {
+  const _TodayCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final present = ref.watch(_presentTodayProvider).valueOrNull ?? const [];
+    final total = ref.watch(activeWorkersProvider).valueOrNull?.length ?? 0;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Panel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Today', style: textTheme.titleMedium),
+                    Text(
+                      total == 0
+                          ? 'No workers added yet'
+                          : '${present.length} of $total workers present',
+                      style: const TextStyle(color: AppColors.slate600),
+                    ),
+                  ],
+                ),
+              ),
+              FilledButton.icon(
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(0, 44),
+                  textStyle: const TextStyle(
+                      fontSize: 15, fontWeight: FontWeight.w700),
+                ),
+                onPressed: () => context.go(
+                    total == 0 ? Routes.workers : Routes.attendance()),
+                icon: Icon(total == 0 ? Icons.person_add : Icons.edit_calendar),
+                label: Text(total == 0 ? 'Add' : 'Mark'),
+              ),
+            ],
           ),
-          if (present.isEmpty)
-            const Text('No one marked present yet today.',
-                style: TextStyle(color: AppColors.slate600))
-          else
+          if (total > 0) ...[
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: LinearProgressIndicator(
+                value: present.length / total,
+                minHeight: 8,
+                backgroundColor: AppColors.border,
+                color: AppColors.successFill,
+              ),
+            ),
+          ],
+          if (present.isNotEmpty) ...[
+            const SizedBox(height: 12),
             SizedBox(
-              height: 76,
+              height: 72,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: present.length,
@@ -129,6 +376,7 @@ class DashboardScreen extends ConsumerWidget {
                 itemBuilder: (context, i) {
                   final w = present[i];
                   return InkWell(
+                    borderRadius: BorderRadius.circular(12),
                     onTap: () => context.push(Routes.worker(w.id)),
                     child: SizedBox(
                       width: 56,
@@ -158,7 +406,7 @@ class DashboardScreen extends ConsumerWidget {
                 },
               ),
             ),
-          const SizedBox(height: 32),
+          ],
         ],
       ),
     );
@@ -185,7 +433,7 @@ class _BackupDot extends StatelessWidget {
       icon: Stack(
         alignment: Alignment.bottomRight,
         children: [
-          const Icon(Icons.cloud),
+          const Icon(Icons.cloud_outlined),
           Container(
             width: 10,
             height: 10,
@@ -210,7 +458,8 @@ class _BackupBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String? message = switch (state.health) {
-      BackupHealth.notSetUp => 'Backup not set up. Your data is only on this phone.',
+      BackupHealth.notSetUp =>
+        'Backup not set up. Your data is only on this phone.',
       BackupHealth.failed => state.blocked
           ? 'Backup stopped: this data was restored on another phone.'
           : 'No backup in the last 24 hours. ${state.lastError ?? ''}',
@@ -221,14 +470,16 @@ class _BackupBanner extends StatelessWidget {
     };
     if (message == null) return const SizedBox.shrink();
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppSizes.gutter),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Material(
         color: AppColors.dangerSurface,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radius),
-          side: const BorderSide(color: AppColors.dangerFill),
+          borderRadius: BorderRadius.circular(14),
+          side: const BorderSide(color: Color(0xFFFECDD3)),
         ),
+        clipBehavior: Clip.antiAlias,
         child: ListTile(
+          tileColor: Colors.transparent,
           leading: const Icon(Icons.cloud_off, color: AppColors.dangerText),
           title: Text(
             message,
@@ -239,54 +490,6 @@ class _BackupBanner extends StatelessWidget {
           ),
           trailing: const Icon(Icons.chevron_right),
           onTap: () => context.push(Routes.backup),
-        ),
-      ),
-    );
-  }
-}
-
-class _QuickAction extends StatelessWidget {
-  const _QuickAction({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.amber500,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSizes.radius),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppSizes.radius),
-        onTap: onTap,
-        child: SizedBox(
-          height: 96,
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, size: 30, color: AppColors.slate900),
-                const SizedBox(height: 6),
-                Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  style: const TextStyle(
-                    color: AppColors.slate900,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
         ),
       ),
     );
