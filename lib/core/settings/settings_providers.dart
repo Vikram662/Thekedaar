@@ -44,6 +44,13 @@ class SettingsRepository {
             updatedAt: Value(DateTime.now().millisecondsSinceEpoch),
           ));
 
+  /// [name] is a file in the photos folder, or null to remove the logo.
+  Future<void> saveLogo(String? name) =>
+      _db.update(_db.businessProfiles).write(BusinessProfilesCompanion(
+            logoPath: Value(name),
+            updatedAt: Value(DateTime.now().millisecondsSinceEpoch),
+          ));
+
   Future<void> saveTrades(String encodedTrades) =>
       _db.update(_db.businessProfiles).write(BusinessProfilesCompanion(
             trades: Value(encodedTrades),

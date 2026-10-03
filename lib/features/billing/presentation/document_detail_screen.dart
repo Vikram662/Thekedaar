@@ -9,6 +9,7 @@ import '../../../core/db/providers.dart';
 import '../../../core/pdf/pdf_common.dart';
 import '../../../core/utils/dates.dart';
 import '../../../core/utils/money.dart';
+import '../../../core/utils/photos.dart';
 import '../../../core/utils/qty.dart';
 import '../../../core/widgets/common.dart';
 import '../../lock/app_lock_controller.dart';
@@ -78,11 +79,12 @@ class DocumentDetailScreen extends ConsumerWidget {
       return Scaffold(
         appBar: AppBar(),
         body: async.isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? const ListSkeleton()
             : const NotFoundBody(),
       );
     }
     final doc = detail.document;
+    final profile = ref.watch(businessProfileProvider).valueOrNull;
     final isInvoice = doc.kind == DocumentKind.invoice;
     final cancelled = doc.status == DocumentStatus.cancelled;
     final payments = isInvoice
@@ -117,6 +119,31 @@ class DocumentDetailScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(AppSizes.gutter),
         children: [
+          if (profile != null) ...[
+            Row(
+              children: [
+                if (profile.logoPath != null) ...[
+                  PhotoThumb(
+                    key: ValueKey(profile.logoPath),
+                    name: profile.logoPath!,
+                    size: 40,
+                    fit: BoxFit.contain,
+                  ),
+                  const SizedBox(width: 10),
+                ],
+                Expanded(
+                  child: Text(
+                    profile.name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.slate600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+          ],
           Row(
             children: [
               documentStatusChip(doc.status, doc.kind),

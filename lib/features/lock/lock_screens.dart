@@ -8,6 +8,7 @@ import '../../core/backup/google_drive_auth.dart';
 import '../../core/db/meta_store.dart';
 import '../../core/db/providers.dart';
 import '../../core/security/pin.dart';
+import '../../core/widgets/shimmer.dart';
 import 'app_lock_controller.dart';
 import 'pin_pad.dart';
 
@@ -68,8 +69,7 @@ class _Splash extends StatelessWidget {
   const _Splash();
 
   @override
-  Widget build(BuildContext context) =>
-      const Scaffold(body: Center(child: CircularProgressIndicator()));
+  Widget build(BuildContext context) => const BrandSplash();
 }
 
 /// The gate sits above the app's router, so lock screens get their own

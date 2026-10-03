@@ -8,8 +8,15 @@ import '../../../core/pdf/pdf_common.dart';
 import 'dues_report.dart';
 
 /// Lena / Dena report as a PDF to keep or share.
-Future<Uint8List> buildDuesPdf(DuesReport report, BusinessProfile profile) {
-  final pdf = pw.Document(title: 'Lena Dena report');
+Future<Uint8List> buildDuesPdf(
+  DuesReport report,
+  BusinessProfile profile,
+) async {
+  final logo = await pdfLogo(profile);
+  final pdf = pw.Document(
+    title: 'Lena Dena report',
+    theme: await pdfTheme(),
+  );
   final date = DateFormat('d MMM yyyy, h:mm a').format(DateTime.now());
 
   pw.Widget table(String title, List<DueItem> items, int total,
@@ -63,7 +70,7 @@ Future<Uint8List> buildDuesPdf(DuesReport report, BusinessProfile profile) {
       pageFormat: pdfPageFormat,
       margin: const pw.EdgeInsets.all(32),
       build: (context) => [
-        pdfBusinessHeader(profile, label: 'LENA / DENA'),
+        pdfBusinessHeader(profile, label: 'LENA / DENA', logo: logo),
         pw.SizedBox(height: 8),
         pw.Text('As on $date', style: pdfSmall),
         pw.SizedBox(height: 16),

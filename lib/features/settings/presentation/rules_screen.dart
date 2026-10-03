@@ -24,7 +24,7 @@ class RulesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(appSettingsProvider).valueOrNull;
     if (settings == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const SkeletonPage();
     }
     Future<void> save(AppSettings s) =>
         ref.read(settingsRepositoryProvider).saveSettings(s);

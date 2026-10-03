@@ -7,6 +7,7 @@ import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/db/enums.dart';
 import '../../../core/utils/money.dart';
+import '../../../core/widgets/common.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../workers/data/workers_repository.dart';
 import '../data/khata_repository.dart';
@@ -145,7 +146,7 @@ class _EntriesTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final entries = ref.watch(recentLedgerProvider);
     return entries.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const ListSkeleton(),
       error: (e, _) => Center(child: Text('$e')),
       data: (list) => list.isEmpty
           ? EmptyState(

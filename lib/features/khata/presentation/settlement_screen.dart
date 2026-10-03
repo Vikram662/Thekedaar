@@ -168,7 +168,7 @@ class _SettlementScreenState extends ConsumerState<SettlementScreen> {
     return Scaffold(
       appBar: AppBar(title: Text('Settle ${worker?.worker.name ?? ''}')),
       body: summary == null
-          ? const Center(child: CircularProgressIndicator())
+          ? const ListSkeleton()
           : ListView(
               padding: const EdgeInsets.all(AppSizes.gutter),
               children: [

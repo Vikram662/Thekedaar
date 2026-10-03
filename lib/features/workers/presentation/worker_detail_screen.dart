@@ -72,7 +72,7 @@ class WorkerDetailScreen extends ConsumerWidget {
       return Scaffold(
         appBar: AppBar(),
         body: itemAsync.isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? const ListSkeleton()
             : const NotFoundBody(),
       );
     }

@@ -36,6 +36,10 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
   bool _useRecoveryKey = false;
   bool _busy = false;
   String? _status;
+
+  /// 0.0 – 1.0 while restoring, null for steps without a known size.
+  double? _progress;
+  String? _progressDetail;
   String? _error;
 
   RestoreService get _service => RestoreService(
@@ -77,6 +81,8 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
         setState(() {
           _busy = false;
           _status = null;
+          _progress = null;
+          _progressDetail = null;
         });
       }
     }
@@ -143,12 +149,21 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
     await _run('Restoring…', () async {
       final service = _service;
       final fromDrive = _chosenDrive != null;
-      setState(() => _status = 'Downloading…');
+      _step('Downloading backup', 0.02);
       final bytes = fromDrive
-          ? await service.downloadBackup(_chosenDrive!.id)
+          ? await service.downloadBackup(
+              _chosenDrive!.id,
+              onProgress: (got, total) => _step(
+                'Downloading backup',
+                total == null || total == 0 ? null : 0.6 * got / total,
+                total == null
+                    ? null
+                    : '${_mb(got)} MB of ${_mb(total)} MB',
+              ),
+            )
           : _fileBytes!;
       final keyring = fromDrive ? await service.driveKeyring() : null;
-      setState(() => _status = 'Unlocking…');
+      _step('Unlocking with your key', 0.65);
       final prepared = await service.prepare(
         bytes,
         password: _useRecoveryKey ? null : secret,
@@ -157,16 +172,23 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
       );
       if (hasData) {
         // PRD D6: PRE_RESTORE backup so the restore can be undone.
-        setState(() => _status = 'Backing up current data…');
+        _step('Backing up current data', 0.7);
+        final engine = ref.read(backupEngineProvider);
+        // The backup's own % fills the 70–90% part of the restore bar.
+        engine.onProgress = (p) => _step(
+              'Backing up current data',
+              0.7 + 0.2 * p.fraction,
+              p.detail == null ? p.step : '${p.step} · ${p.detail}',
+            );
         try {
-          await ref
-              .read(backupEngineProvider)
-              .run(BackupTrigger.preRestore, force: true);
+          await engine.run(BackupTrigger.preRestore, force: true);
         } catch (_) {
           // A local `.pre_restore` copy is kept regardless.
+        } finally {
+          engine.onProgress = null;
         }
       }
-      setState(() => _status = 'Replacing data…');
+      _step('Replacing data', 0.92);
       final email = _driveEmail;
       await ref.read(databaseReplacerProvider)(
         (path) => service.writeDatabase(prepared, path),
@@ -175,6 +197,17 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
       // The app restarts on the restored data; this screen is gone now.
     });
   }
+
+  void _step(String status, double? progress, [String? detail]) {
+    if (!mounted) return;
+    setState(() {
+      _status = status;
+      _progress = progress;
+      _progressDetail = detail;
+    });
+  }
+
+  static String _mb(int bytes) => (bytes / (1024 * 1024)).toStringAsFixed(1);
 
   @override
   Widget build(BuildContext context) {
@@ -251,15 +284,12 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
             if (_status != null)
               Padding(
                 padding: const EdgeInsets.only(top: 16),
-                child: Row(
-                  children: [
-                    const SizedBox.square(
-                      dimension: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(_status!),
-                  ],
+                child: Panel(
+                  child: PercentProgress(
+                    value: _progress,
+                    label: _status!,
+                    detail: _progressDetail,
+                  ),
                 ),
               ),
             if (_error != null)

@@ -113,7 +113,7 @@ class _DocumentsTab extends ConsumerWidget {
     final docs = ref.watch(documentsProvider(kind));
     final isInvoice = kind == DocumentKind.invoice;
     return docs.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const ListSkeleton(),
       error: (e, _) => Center(child: Text('$e')),
       data: (list) => list.isEmpty
           ? EmptyState(
@@ -142,7 +142,7 @@ class _ClientsTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final clients = ref.watch(clientsProvider);
     return clients.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const ListSkeleton(),
       error: (e, _) => Center(child: Text('$e')),
       data: (list) => list.isEmpty
           ? EmptyState(
@@ -202,7 +202,7 @@ class _PaymentsTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final payments = ref.watch(paymentsProvider(null));
     return payments.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const ListSkeleton(),
       error: (e, _) => Center(child: Text('$e')),
       data: (list) => list.isEmpty
           ? const EmptyState(

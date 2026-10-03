@@ -9,6 +9,8 @@ import '../db/database.dart';
 import '../db/enums.dart';
 import '../db/meta_store.dart';
 import '../db/providers.dart';
+import '../notify/notifications.dart';
+import '../notify/reminders.dart';
 import '../security/secure_store.dart';
 import '../settings/settings_providers.dart';
 import 'backup_engine.dart';
@@ -39,6 +41,7 @@ class BackupState {
     required this.dirtySince,
     required this.lastError,
     required this.blocked,
+    this.clockSkew,
   });
 
   final bool configured;
@@ -48,6 +51,9 @@ class BackupState {
   final DateTime? dirtySince;
   final String? lastError;
   final bool blocked;
+
+  /// PRD I-M12: Drive time minus phone time, when over 10 minutes.
+  final Duration? clockSkew;
 
   BackupHealth get health {
     if (!configured) return BackupHealth.notSetUp;
@@ -83,6 +89,9 @@ final backupStateProvider = StreamProvider<BackupState>((ref) {
       dirtySince: time(MetaKeys.dirtySince),
       lastError: m[MetaKeys.lastBackupError],
       blocked: m.boolValue(MetaKeys.backupBlocked),
+      clockSkew: m.intValue(MetaKeys.clockSkewSeconds) == null
+          ? null
+          : Duration(seconds: m.intValue(MetaKeys.clockSkewSeconds)!),
     );
   });
 });
@@ -96,6 +105,9 @@ final backupHistoryProvider = StreamProvider<List<BackupLog>>((ref) {
 });
 
 final backupRunningProvider = StateProvider<bool>((ref) => false);
+
+/// Step and % of the backup running in the app (null when idle).
+final backupProgressProvider = StateProvider<BackupProgress?>((ref) => null);
 
 /// Starts the foreground side of auto backup for the life of the app scope.
 final backupCoordinatorProvider = Provider<BackupCoordinator>((ref) {
@@ -140,6 +152,27 @@ class BackupCoordinator with WidgetsBindingObserver {
       }
     });
     unawaited(_onAppOpened());
+    unawaited(_startReminders());
+  }
+
+  /// PRD DB-07: hourly background reminder job, plus one check right now.
+  /// Notification permission is asked once, after onboarding.
+  Future<void> _startReminders() async {
+    try {
+      if (await _db.select(_db.businessProfiles).getSingleOrNull() == null) {
+        return;
+      }
+      if (!await _meta.getBool(MetaKeys.notificationsAsked)) {
+        await _meta.setBool(MetaKeys.notificationsAsked, true);
+        await AppNotifications.instance.requestPermission();
+      }
+      await _ref.read(backupSchedulerProvider).scheduleReminders();
+    } catch (_) {
+      // WorkManager unavailable (tests); the in-app check below still runs.
+    }
+    try {
+      await ReminderService(_db).run();
+    } catch (_) {}
   }
 
   Future<void> _onDataChanged() async {
@@ -218,8 +251,11 @@ class BackupCoordinator with WidgetsBindingObserver {
       return const BackupResult(BackupOutcome.skipped, 'Already running');
     }
     running.state = true;
+    final progress = _ref.read(backupProgressProvider.notifier);
+    final engine = _engine;
+    engine.onProgress = (p) => progress.state = p;
     try {
-      final result = await _engine.run(
+      final result = await engine.run(
         trigger,
         force: trigger == BackupTrigger.manual,
       );
@@ -228,6 +264,8 @@ class BackupCoordinator with WidgetsBindingObserver {
       }
       return result;
     } finally {
+      engine.onProgress = null;
+      progress.state = null;
       running.state = false;
     }
   }

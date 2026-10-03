@@ -4,7 +4,10 @@
 //   dart run tool/patch_android.dart
 //
 // - MainActivity extends FlutterFragmentActivity (local_auth)
-// - permissions: INTERNET (Drive in release), ACCESS_NETWORK_STATE, USE_BIOMETRIC
+// - permissions: INTERNET (Drive in release), ACCESS_NETWORK_STATE,
+//   USE_BIOMETRIC, POST_NOTIFICATIONS (reminders on Android 13+)
+// - <queries> for upi:// so UPI apps can be opened (Android 11+)
+// - core library desugaring (flutter_local_notifications)
 // - AppCompat launch theme + dependency (local_auth on Android 8 and below)
 // - minSdk 24 (local_auth 3.x)
 // - release signing from android/key.properties (see docs/RELEASE.md)
@@ -43,22 +46,40 @@ void _patchManifest() {
     'android.permission.INTERNET',
     'android.permission.ACCESS_NETWORK_STATE',
     'android.permission.USE_BIOMETRIC',
+    'android.permission.POST_NOTIFICATIONS',
   ];
-  final missing = permissions.where((p) => !text.contains('"$p"')).toList();
-  if (missing.isEmpty) return;
-  final lines =
-      missing.map((p) => '    <uses-permission android:name="$p"/>').join('\n');
-  final manifestTag = RegExp(r'<manifest[^>]*>').firstMatch(text)!;
-  file.writeAsStringSync(
-    '${text.substring(0, manifestTag.end)}\n$lines'
-    '${text.substring(manifestTag.end)}',
-  );
+  var out = text;
+  final missing = permissions.where((p) => !out.contains('"$p"')).toList();
+  if (missing.isNotEmpty) {
+    final lines = missing
+        .map((p) => '    <uses-permission android:name="$p"/>')
+        .join('\n');
+    final manifestTag = RegExp(r'<manifest[^>]*>').firstMatch(out)!;
+    out = '${out.substring(0, manifestTag.end)}\n$lines'
+        '${out.substring(manifestTag.end)}';
+  }
+  if (!out.contains('android:scheme="upi"')) {
+    const upiIntent = '''
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="upi"/>
+        </intent>''';
+    out = out.contains('<queries>')
+        ? out.replaceFirst('<queries>', '<queries>\n$upiIntent')
+        : out.replaceFirst(
+            '</manifest>',
+            '    <queries>\n$upiIntent\n    </queries>\n</manifest>',
+          );
+  }
+  if (out != text) file.writeAsStringSync(out);
 }
 
 void _patchStyles() {
   for (final path in [
     'android/app/src/main/res/values/styles.xml',
     'android/app/src/main/res/values-night/styles.xml',
+    'android/app/src/main/res/values-v31/styles.xml',
+    'android/app/src/main/res/values-night-v31/styles.xml',
   ]) {
     final file = File(path);
     if (!file.existsSync()) continue;
@@ -77,9 +98,20 @@ void _patchGradle() {
   if (kts.existsSync()) {
     var text = kts.readAsStringSync();
     text = text.replaceAll('minSdk = flutter.minSdkVersion', 'minSdk = 24');
+    if (!text.contains('isCoreLibraryDesugaringEnabled')) {
+      text = text.replaceFirst(
+        'compileOptions {',
+        'compileOptions {\n        isCoreLibraryDesugaringEnabled = true',
+      );
+      if (!text.contains('isCoreLibraryDesugaringEnabled')) {
+        stderr.writeln('WARNING: compileOptions not found; '
+            'core library desugaring is not enabled.');
+      }
+    }
     if (!text.contains('androidx.appcompat:appcompat')) {
       text += '\ndependencies {\n'
           '    implementation("androidx.appcompat:appcompat:1.7.0")\n'
+          '    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")\n'
           '}\n';
     }
     kts.writeAsStringSync(_addReleaseSigning(text));

@@ -9,6 +9,7 @@ import '../../../core/db/enums.dart';
 import '../../../core/db/providers.dart';
 import '../../../core/pdf/pdf_common.dart';
 import '../../../core/utils/money.dart';
+import '../../../core/utils/upi.dart';
 import '../../../core/widgets/common.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../billing/data/billing_repository.dart';
@@ -100,7 +101,7 @@ class DuesScreen extends ConsumerWidget {
           ),
         ),
         body: report.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const ListSkeleton(),
           error: (e, _) => Center(child: Text('$e')),
           data: (r) => TabBarView(
             children: [
@@ -130,11 +131,18 @@ class _DueList extends ConsumerWidget {
   Future<void> _remind(BuildContext context, WidgetRef ref, DueItem item) async {
     final profile = await ref.read(businessProfileProvider.future);
     final business = profile?.name ?? '';
-    final upi = profile?.upiId;
-    final text = 'Hello ${item.name}, payment of ${formatPaise(item.amountPaise)} '
-        'is pending with $business.'
-        '${upi == null || upi.isEmpty ? '' : ' UPI: $upi.'}'
-        ' Please pay at the earliest. Thank you.';
+    final upi = profile?.upiId?.trim();
+    var text = 'Hello ${item.name}, payment of ${formatPaise(item.amountPaise)} '
+        'is pending with $business. Please pay at the earliest. Thank you.';
+    if (upi != null && isValidUpiId(upi)) {
+      final link = upiPayUri(
+        upiId: upi,
+        payeeName: business,
+        amountPaise: item.amountPaise,
+        note: 'Payment to $business',
+      );
+      text += '\n\nUPI ID: $upi\nPay now: $link';
+    }
     final lock = ref.read(appLockProvider);
     lock.suspendRelock = true;
     try {

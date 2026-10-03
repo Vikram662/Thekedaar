@@ -56,7 +56,7 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
               label: const Text('Add Worker'),
             ),
       body: workers.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const ListSkeleton(),
         error: (error, _) => Center(child: Text('Could not load workers: $error')),
         data: (items) {
           if (items.isEmpty) {

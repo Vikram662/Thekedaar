@@ -94,7 +94,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
           ),
           Expanded(
             child: items.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const ListSkeleton(),
               error: (e, _) => Center(child: Text('$e')),
               data: (list) {
                 if (list.isEmpty) {

@@ -30,7 +30,7 @@ class SuppliersScreen extends ConsumerWidget {
         label: const Text('Supplier'),
       ),
       body: suppliers.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const ListSkeleton(),
         error: (e, _) => Center(child: Text('$e')),
         data: (list) {
           if (list.isEmpty) {
@@ -142,7 +142,7 @@ class _SupplierFormScreenState extends ConsumerState<SupplierFormScreen> {
     if (widget.supplierId != null && !_loaded) {
       final s = ref.watch(supplierProvider(widget.supplierId!)).valueOrNull;
       if (s == null) {
-        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        return const SkeletonPage();
       }
       _loaded = true;
       _name.text = s.supplier.name;
@@ -208,7 +208,7 @@ class SupplierDetailScreen extends ConsumerWidget {
       return Scaffold(
         appBar: AppBar(),
         body: async.isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? const ListSkeleton()
             : const NotFoundBody(),
       );
     }

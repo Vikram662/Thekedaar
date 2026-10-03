@@ -192,7 +192,7 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
     if (_loading) {
       return Scaffold(
         appBar: AppBar(title: Text(title)),
-        body: const Center(child: CircularProgressIndicator()),
+        body: const ListSkeleton(),
       );
     }
     final totals = _draft().totals;

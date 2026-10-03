@@ -120,6 +120,10 @@ class DriveStore {
         },
       );
 
+  /// Server time of the last finished [upload] (Drive's `modifiedTime`),
+  /// used to check the phone clock (PRD I-M12).
+  DateTime? lastServerTime;
+
   /// Creates a file, or replaces the content of [existingId].
   Future<String> upload({
     required String folderId,
@@ -127,27 +131,33 @@ class DriveStore {
     required List<int> bytes,
     Map<String, String>? appProperties,
     String? existingId,
+    void Function(int sent, int total)? onProgress,
   }) async {
-    final media = drive.Media(Stream.value(bytes), bytes.length);
+    final media = drive.Media(_chunked(bytes, onProgress), bytes.length);
     if (existingId != null) {
       final updated = await _api.files.update(
         drive.File()..appProperties = appProperties,
         existingId,
         uploadMedia: media,
-        $fields: 'id',
+        $fields: 'id,modifiedTime',
       );
+      lastServerTime = updated.modifiedTime;
       return updated.id!;
     }
     final meta = drive.File()
       ..name = name
       ..parents = [folderId]
       ..appProperties = appProperties;
-    final created =
-        await _api.files.create(meta, uploadMedia: media, $fields: 'id');
+    final created = await _api.files
+        .create(meta, uploadMedia: media, $fields: 'id,modifiedTime');
+    lastServerTime = created.modifiedTime;
     return created.id!;
   }
 
-  Future<Uint8List> download(String fileId) async {
+  Future<Uint8List> download(
+    String fileId, {
+    void Function(int received, int? total)? onProgress,
+  }) async {
     final media = await _api.files.get(
       fileId,
       downloadOptions: drive.DownloadOptions.fullMedia,
@@ -155,6 +165,7 @@ class DriveStore {
     final builder = BytesBuilder(copy: false);
     await for (final chunk in media.stream) {
       builder.add(chunk);
+      onProgress?.call(builder.length, media.length);
     }
     return builder.takeBytes();
   }
@@ -190,5 +201,19 @@ class DriveStore {
       limitBytes: int.tryParse(quota.limit ?? ''),
       usageBytes: int.tryParse(quota.usage ?? '') ?? 0,
     );
+  }
+}
+
+/// Feeds the upload in 64 KB pieces and reports each piece as the HTTP
+/// client takes it, which tracks the bytes sent closely enough for a %.
+Stream<List<int>> _chunked(
+  List<int> bytes,
+  void Function(int sent, int total)? onProgress,
+) async* {
+  const size = 64 * 1024;
+  for (var start = 0; start < bytes.length; start += size) {
+    final end = start + size < bytes.length ? start + size : bytes.length;
+    yield bytes.sublist(start, end);
+    onProgress?.call(end, bytes.length);
   }
 }

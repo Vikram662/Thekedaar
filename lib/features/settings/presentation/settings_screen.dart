@@ -44,6 +44,8 @@ class SettingsScreen extends ConsumerWidget {
             Routes.backup,
           ),
           tile(Icons.lock, 'App lock', 'PIN and fingerprint', Routes.appLock),
+          tile(Icons.notifications, 'Reminders',
+              'Backup, overdue bills, month end', Routes.reminders),
           const Divider(),
           const ListTile(
             leading: Icon(Icons.info_outline),

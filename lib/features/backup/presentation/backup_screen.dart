@@ -54,7 +54,7 @@ class BackupScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Backup & restore')),
       body: state == null
-          ? const Center(child: CircularProgressIndicator())
+          ? const ListSkeleton()
           : !AppConfig.driveConfigured
               ? const _NotAvailable()
               : state.configured
@@ -330,6 +330,17 @@ class _BackupSetupFlowState extends ConsumerState<_BackupSetupFlow> {
             ),
           ),
           const SizedBox(height: 16),
+          if (_busy && ref.watch(backupProgressProvider) != null) ...[
+            Builder(builder: (context) {
+              final p = ref.watch(backupProgressProvider)!;
+              return PercentProgress(
+                value: p.fraction,
+                label: p.step,
+                detail: p.detail,
+              );
+            }),
+            const SizedBox(height: 12),
+          ],
           FilledButton(
             onPressed: _busy ? null : _finish,
             child: _busy
@@ -484,7 +495,7 @@ class _BackupDashboard extends ConsumerWidget {
     await MetaStore(ref.read(databaseProvider))
         .setBool(MetaKeys.backupConfigured, false);
     try {
-      await ref.read(backupSchedulerProvider).cancelAll();
+      await ref.read(backupSchedulerProvider).cancelBackups();
       await ref.read(googleDriveAuthProvider).disconnect();
     } catch (_) {}
   }
@@ -492,6 +503,7 @@ class _BackupDashboard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final running = ref.watch(backupRunningProvider);
+    final progress = ref.watch(backupProgressProvider);
     final history = ref.watch(backupHistoryProvider).valueOrNull ?? const [];
     final settings = ref.watch(appSettingsProvider).valueOrNull;
     final quota = ref.watch(_driveQuotaProvider).valueOrNull;
@@ -565,6 +577,16 @@ class _BackupDashboard extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 12),
+        if (running && progress != null) ...[
+          Panel(
+            child: PercentProgress(
+              value: progress.fraction,
+              label: progress.step,
+              detail: progress.detail,
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
         FilledButton.icon(
           onPressed: running ? null : () => _backupNow(context, ref),
           icon: running

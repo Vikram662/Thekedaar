@@ -26,7 +26,7 @@ class ClientDetailScreen extends ConsumerWidget {
       return Scaffold(
         appBar: AppBar(),
         body: async.isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? const ListSkeleton()
             : const NotFoundBody(),
       );
     }

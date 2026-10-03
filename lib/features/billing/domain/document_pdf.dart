@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:intl/intl.dart';
+import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import '../../../core/db/database.dart';
@@ -10,6 +11,7 @@ import '../../../core/utils/dates.dart';
 import '../../../core/utils/money.dart';
 import '../../../core/utils/phone.dart';
 import '../../../core/utils/qty.dart';
+import '../../../core/utils/upi.dart';
 import '../data/billing_repository.dart';
 
 final _pdfDate = DateFormat('d MMM yyyy');
@@ -22,8 +24,15 @@ Future<Uint8List> buildDocumentPdf(
   final doc = detail.document;
   final isInvoice = doc.kind == DocumentKind.invoice;
   final label = isInvoice ? 'BILL (NON-TAX)' : 'ESTIMATE / QUOTATION';
+  final rawUpi = profile.upiId?.trim();
+  final upiId = rawUpi != null && isValidUpiId(rawUpi) ? rawUpi : null;
 
-  final pdf = pw.Document(title: doc.number, author: profile.name);
+  final logo = await pdfLogo(profile);
+  final pdf = pw.Document(
+    title: doc.number,
+    author: profile.name,
+    theme: await pdfTheme(),
+  );
   pdf.addPage(
     pw.MultiPage(
       pageFormat: pdfPageFormat,
@@ -39,7 +48,7 @@ Future<Uint8List> buildDocumentPdf(
         ],
       ),
       build: (context) => [
-        pdfBusinessHeader(profile, label: label),
+        pdfBusinessHeader(profile, label: label, logo: logo),
         pw.SizedBox(height: 16),
         pw.Row(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -110,9 +119,15 @@ Future<Uint8List> buildDocumentPdf(
           pdfTotalRow('Received', pdfMoney(detail.paidPaise)),
           pdfTotalRow('Balance due', pdfMoney(detail.balancePaise), bold: true),
         ],
-        if (profile.upiId != null && profile.upiId!.isNotEmpty) ...[
+        if (upiId != null) ...[
           pw.SizedBox(height: 12),
-          pw.Text('Pay by UPI: ${profile.upiId}'),
+          _upiBlock(
+            upiId: upiId,
+            payee: profile.name,
+            // Bills: QR carries the amount still due (PRD BL-11).
+            amountPaise: isInvoice ? detail.balancePaise : null,
+            note: doc.number,
+          ),
         ],
         if (doc.notes != null && doc.notes!.isNotEmpty) ...[
           pw.SizedBox(height: 16),
@@ -134,6 +149,48 @@ Future<Uint8List> buildDocumentPdf(
     ),
   );
   return pdf.save();
+}
+
+/// UPI QR + id. Scanning it in any UPI app fills payee, amount and bill no.
+pw.Widget _upiBlock({
+  required String upiId,
+  required String payee,
+  required int? amountPaise,
+  required String note,
+}) {
+  final hasAmount = amountPaise != null && amountPaise > 0;
+  return pw.Container(
+    padding: const pw.EdgeInsets.all(8),
+    decoration: pw.BoxDecoration(
+      border: pw.Border.all(width: 0.5, color: PdfColors.grey600),
+    ),
+    child: pw.Row(
+      mainAxisSize: pw.MainAxisSize.min,
+      children: [
+        pw.BarcodeWidget(
+          barcode: pw.Barcode.qrCode(),
+          data: upiPayUri(
+            upiId: upiId,
+            payeeName: payee,
+            amountPaise: hasAmount ? amountPaise : null,
+            note: note,
+          ),
+          width: 84,
+          height: 84,
+        ),
+        pw.SizedBox(width: 12),
+        pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text('Scan to pay with any UPI app', style: pdfBold),
+            pw.SizedBox(height: 4),
+            pw.Text('UPI ID: $upiId'),
+            if (hasAmount) pw.Text('Amount: ${pdfMoney(amountPaise)}'),
+          ],
+        ),
+      ],
+    ),
+  );
 }
 
 pw.TableRow _lineRow(int index, LineWithUnit row) {

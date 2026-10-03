@@ -20,7 +20,11 @@ Future<Uint8List> buildPayslipPdf({
   final to = _pdfDate.format(parseIsoDate(settlement.periodTo));
   final net = settlement.paidPaise + settlement.carryForwardPaise;
 
-  final pdf = pw.Document(title: 'Pay slip ${worker.name}');
+  final logo = await pdfLogo(profile);
+  final pdf = pw.Document(
+    title: 'Pay slip ${worker.name}',
+    theme: await pdfTheme(),
+  );
   pdf.addPage(
     pw.Page(
       pageFormat: pdfPageFormat,
@@ -28,7 +32,7 @@ Future<Uint8List> buildPayslipPdf({
       build: (context) => pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          pdfBusinessHeader(profile, label: 'PAY SLIP'),
+          pdfBusinessHeader(profile, label: 'PAY SLIP', logo: logo),
           pw.SizedBox(height: 20),
           pw.Text(worker.name, style: pdfBold),
           if (roleName != null) pw.Text(roleName),

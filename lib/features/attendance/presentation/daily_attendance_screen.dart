@@ -152,7 +152,7 @@ class _DailyAttendanceViewState extends ConsumerState<DailyAttendanceView> {
           ),
           Expanded(
             child: rows.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const ListSkeleton(),
               error: (e, _) => Center(child: Text('$e')),
               data: (list) {
                 if (list.isEmpty) {

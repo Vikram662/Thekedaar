@@ -9,6 +9,7 @@ import '../../../core/settings/settings_providers.dart';
 import '../../../core/utils/dates.dart';
 import '../../../core/utils/money.dart';
 import '../../../core/utils/phone.dart';
+import '../../../core/utils/upi.dart';
 import '../../../core/widgets/common.dart';
 import '../../../core/widgets/pickers.dart';
 import '../data/workers_repository.dart';
@@ -143,7 +144,7 @@ class _WorkerFormScreenState extends ConsumerState<WorkerFormScreen> {
     if (_isEdit) {
       final item = ref.watch(workerProvider(widget.workerId!)).valueOrNull;
       if (item == null) {
-        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        return const SkeletonPage();
       }
       _fillFrom(item);
     }
@@ -184,6 +185,10 @@ class _WorkerFormScreenState extends ConsumerState<WorkerFormScreen> {
                 labelText: 'UPI ID (optional)',
                 hintText: 'name@bank',
               ),
+              validator: (v) =>
+                  (v == null || v.trim().isEmpty || isValidUpiId(v))
+                      ? null
+                      : 'Enter a UPI ID like name@okaxis',
             ),
             SectionTitle(
               'Role',

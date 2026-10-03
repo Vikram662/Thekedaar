@@ -10,10 +10,12 @@ import '../config.dart';
 import '../db/database.dart';
 import '../db/enums.dart';
 import '../db/meta_store.dart';
+import '../notify/reminders.dart';
 import '../security/secure_store.dart';
 import '../utils/ids.dart';
 import '../utils/photo_store.dart';
 import 'backup_format.dart';
+import 'clock_check.dart';
 import 'drive_store.dart';
 import 'google_drive_auth.dart';
 import 'keyring.dart';
@@ -48,6 +50,17 @@ class BackupResult {
       outcome == BackupOutcome.failed;
 }
 
+/// What a running backup is doing, for the progress bar.
+class BackupProgress {
+  const BackupProgress(this.step, this.fraction, [this.detail]);
+
+  final String step;
+
+  /// 0.0 – 1.0 for the whole backup.
+  final double fraction;
+  final String? detail;
+}
+
 /// A local encrypted snapshot (`.tkbak`) in app storage.
 class LocalSnapshot {
   const LocalSnapshot({
@@ -76,6 +89,12 @@ class BackupEngine {
   final MetaStore meta;
   final SecureStore secure;
   final GoogleDriveAuth auth;
+
+  /// Set by the app to show a progress bar; null in the background job.
+  void Function(BackupProgress progress)? onProgress;
+
+  void _report(String step, double fraction, [String? detail]) =>
+      onProgress?.call(BackupProgress(step, fraction.clamp(0.0, 1.0), detail));
 
   static const _localSnapshotsToKeep = 3;
   static const _lockDuration = Duration(minutes: 10);
@@ -108,6 +127,7 @@ class BackupEngine {
 
     http.Client? client;
     try {
+      _report('Connecting to Google Drive', 0.02);
       client = await auth.client();
       if (client == null) {
         return await _finish(
@@ -137,8 +157,16 @@ class BackupEngine {
         );
       }
 
+      _report('Preparing your data', 0.08);
       final snapshot = await _latestOrNewSnapshot(trigger);
+      final totalBytes = snapshot.bytes.length;
+      _report('Uploading backup', 0.12, _sizeText(0, totalBytes));
       final fileId = await _withRetry(() => store.upload(
+            onProgress: (sent, total) => _report(
+              'Uploading backup',
+              0.12 + 0.68 * sent / total,
+              _sizeText(sent, total),
+            ),
             folderId: dbFolderId,
             name: snapshotName(snapshot.manifest),
             bytes: snapshot.bytes,
@@ -149,6 +177,9 @@ class BackupEngine {
                 e.key: '${e.value}',
             },
           ));
+
+      final serverNow = await _checkClock(store.lastServerTime);
+      _report('Saving backup details', 0.84);
 
       await _ensureKeysUploaded(store, rootId);
       await store.writeJson(rootId, DriveStore.deviceFileName, {
@@ -178,12 +209,14 @@ class BackupEngine {
         await meta.setInt(MetaKeys.pendingChanges, 0);
       }
 
-      await _applyRetention(store, dbFolderId);
+      _report('Removing old backups', 0.88);
+      await _applyRetention(store, dbFolderId, serverNow);
       try {
         await _uploadPhotos(store, rootId);
       } catch (_) {
         // Photos are incremental: anything missed goes up on the next run.
       }
+      _report('Backup complete', 1);
       return await _finish(logId, const BackupResult(BackupOutcome.success));
     } on SocketException catch (e) {
       return await _finish(
@@ -364,9 +397,16 @@ class BackupEngine {
     }
     final remote = {for (final f in await store.listFiles(folderId)) f.name};
     final masterKey = await _masterKey();
-    for (final name in names) {
+    final missing =
+        names.where((n) => !remote.contains('$n.enc')).toList();
+    for (var i = 0; i < missing.length; i++) {
+      final name = missing[i];
       final remoteName = '$name.enc';
-      if (remote.contains(remoteName)) continue;
+      _report(
+        'Uploading photos',
+        0.9 + 0.1 * i / missing.length,
+        '${i + 1} of ${missing.length}',
+      );
       final bytes = await (await photoFile(name)).readAsBytes();
       final encrypted = await encryptBlob(bytes, masterKey);
       await _withRetry(() => store.upload(
@@ -389,7 +429,26 @@ class BackupEngine {
     await meta.set(MetaKeys.keyringUploaded, keyring);
   }
 
-  Future<void> _applyRetention(DriveStore store, String dbFolderId) async {
+  /// PRD I-M12: compares the phone clock with Drive's time of the upload
+  /// that just finished. Returns "now" by Drive's clock, so retention keeps
+  /// the right files even when the phone date is wrong.
+  Future<DateTime> _checkClock(DateTime? serverTime) async {
+    final phoneNow = DateTime.now();
+    if (serverTime == null) return phoneNow;
+    final skew = significantClockSkew(server: serverTime, phone: phoneNow);
+    if (skew == null) {
+      await meta.remove(MetaKeys.clockSkewSeconds);
+      return phoneNow;
+    }
+    await meta.setInt(MetaKeys.clockSkewSeconds, skew.inSeconds);
+    return serverTime.toLocal();
+  }
+
+  Future<void> _applyRetention(
+    DriveStore store,
+    String dbFolderId,
+    DateTime now,
+  ) async {
     try {
       final files = await store.listFiles(dbFolderId);
       final toDelete = backupsToDelete(
@@ -397,7 +456,7 @@ class BackupEngine {
           for (final f in files)
             RemoteBackup(id: f.id, createdAt: f.createdTime),
         ],
-        DateTime.now(),
+        now,
       );
       for (final id in toDelete) {
         await store.delete(id);
@@ -445,8 +504,29 @@ class BackupEngine {
     if (status == BackupStatus.failed) {
       await meta.set(MetaKeys.lastBackupError, result.message ?? 'Failed');
     }
+    try {
+      await ReminderService(db).onBackupFinished(
+        failed: switch (result.outcome) {
+          BackupOutcome.success => false,
+          BackupOutcome.skipped ||
+          BackupOutcome.notSetUp ||
+          BackupOutcome.waitingForInternet =>
+            null,
+          _ => true,
+        },
+        error: result.message,
+      );
+    } catch (_) {
+      // A notification problem must not change the backup result.
+    }
     return result;
   }
+}
+
+/// "1.2 MB of 3.4 MB".
+String _sizeText(int sent, int total) {
+  String mb(int b) => (b / (1024 * 1024)).toStringAsFixed(1);
+  return '${mb(sent)} MB of ${mb(total)} MB';
 }
 
 /// Master key is kept in secure storage as comma separated bytes.

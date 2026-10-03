@@ -25,6 +25,18 @@ abstract final class MetaKeys {
 
   /// Set after a restore: photos still need to come down from Drive.
   static const photosRestorePending = 'photos_restore_pending';
+
+  /// PRD I-M12: Drive time minus phone time, in seconds, when the gap is
+  /// over 10 minutes. Removed once the clock is right again.
+  static const clockSkewSeconds = 'clock_skew_seconds';
+
+  // Reminders (PRD DB-07)
+  static const consecutiveBackupFailures = 'backup_consecutive_failures';
+  static const notificationsAsked = 'notifications_asked';
+
+  /// `reminder_sent_<kind>` → 'yyyy-MM-dd' of the last notification of that
+  /// kind, so each reminder shows at most once a day.
+  static String reminderSent(String kind) => 'reminder_sent_$kind';
 }
 
 /// Small typed wrapper over the `app_meta` key/value table.

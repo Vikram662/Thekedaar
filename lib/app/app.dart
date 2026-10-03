@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/backup/backup_providers.dart';
+import '../core/db/providers.dart';
+import '../core/notify/notifications.dart';
 import '../features/lock/lock_screens.dart';
 import 'router.dart';
 import 'theme.dart';
@@ -30,10 +32,47 @@ class _ThekedaarAppState extends ConsumerState<ThekedaarApp> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(backupCoordinatorProvider).start();
     });
+    final notifications = AppNotifications.instance;
+    notifications.tapped.addListener(_onNotificationTapped);
+    notifications.initForApp().then((_) => _openTappedNotification());
+  }
+
+  /// Opens the screen a notification is about. Behind the lock screen the
+  /// page is already open when the user unlocks.
+  void _onNotificationTapped() => _openTappedNotification();
+
+  Future<void> _openTappedNotification() async {
+    final kind = AppNotifications.instance.tapped.value;
+    if (kind == null || !mounted) return;
+    // On a cold start the profile may still be loading; before onboarding
+    // there is nothing to open.
+    final profile = await ref.read(businessProfileProvider.future);
+    if (profile == null || !mounted) return;
+    if (AppNotifications.instance.tapped.value != kind) return;
+    AppNotifications.instance.tapped.value = null;
+    final route = switch (kind) {
+      NotificationKind.backupFailed ||
+      NotificationKind.backupPending ||
+      NotificationKind.clockWrong ||
+      NotificationKind.backupProgress =>
+        Routes.backup,
+      NotificationKind.overdueBills => Routes.dues(),
+      NotificationKind.monthEnd => Routes.khataTab(0),
+      NotificationKind.holiday => Routes.attendanceMonth,
+    };
+    // Tabs (khata, attendance) are switched with go; others open on top.
+    if (route.startsWith('/khata') || route.startsWith('/attendance')) {
+      _router.go(route);
+    } else {
+      _router.go(Routes.dashboard);
+      _router.push(route);
+    }
   }
 
   @override
   void dispose() {
+    AppNotifications.instance.tapped
+        .removeListener(_onNotificationTapped);
     _router.dispose();
     super.dispose();
   }

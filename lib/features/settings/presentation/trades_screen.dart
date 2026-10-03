@@ -43,7 +43,7 @@ class _TradesScreenState extends ConsumerState<TradesScreen> {
   Widget build(BuildContext context) {
     final profile = ref.watch(businessProfileProvider).valueOrNull;
     if (profile == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const SkeletonPage();
     }
     final selected = _selected ??= Trade.decode(profile.trades);
 

@@ -56,6 +56,13 @@ jobs:
 
       - run: flutter pub get
 
+      - name: App icon and splash screen
+        run: |
+          dart run flutter_launcher_icons
+          dart run flutter_native_splash:create
+          # the splash tool rewrites styles; re-apply the AppCompat themes
+          dart run tool/patch_android.dart
+
       - name: Generate code (drift)
         run: bash tool/ci_annotate.sh "Codegen" "error|Error|SEVERE" dart run build_runner build --delete-conflicting-outputs
 

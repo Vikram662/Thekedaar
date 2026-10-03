@@ -121,8 +121,11 @@ class RestoreService {
     return json == null ? null : Keyring.fromJson(json);
   }
 
-  Future<Uint8List> downloadBackup(String fileId) async =>
-      (await _store()).download(fileId);
+  Future<Uint8List> downloadBackup(
+    String fileId, {
+    void Function(int received, int? total)? onProgress,
+  }) async =>
+      (await _store()).download(fileId, onProgress: onProgress);
 
   /// Unlocks with the Backup Password or the Recovery Key, decrypts and
   /// verifies the checksum (PRD D6 steps 4–6). Throws [WrongSecretException],

@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import '../../app/theme.dart';
 import '../utils/money.dart';
 
+export 'shimmer.dart';
+
 final dayFormat = DateFormat('d MMM yyyy');
 final dayTimeFormat = DateFormat('d MMM, h:mm a');
 final monthFormat = DateFormat('MMMM yyyy');

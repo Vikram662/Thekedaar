@@ -46,7 +46,7 @@ class JobsScreen extends ConsumerWidget {
         label: const Text('New job'),
       ),
       body: jobs.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const ListSkeleton(),
         error: (e, _) => Center(child: Text('$e')),
         data: (list) => list.isEmpty
             ? EmptyState(
@@ -147,7 +147,7 @@ class _JobFormScreenState extends ConsumerState<JobFormScreen> {
     if (widget.jobId != null && !_loaded) {
       final detail = ref.watch(jobDetailProvider(widget.jobId!)).valueOrNull;
       if (detail == null) {
-        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        return const SkeletonPage();
       }
       _loaded = true;
       final job = detail.job;
@@ -235,7 +235,7 @@ class JobDetailScreen extends ConsumerWidget {
       return Scaffold(
         appBar: AppBar(),
         body: async.isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? const ListSkeleton()
             : const NotFoundBody(),
       );
     }

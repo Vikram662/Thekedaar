@@ -6,7 +6,10 @@ import '../../../app/theme.dart';
 import '../../../core/db/providers.dart';
 import '../../../core/settings/settings_providers.dart';
 import '../../../core/utils/phone.dart';
+import '../../../core/utils/photos.dart';
+import '../../../core/utils/upi.dart';
 import '../../../core/widgets/common.dart';
+import '../../lock/app_lock_controller.dart';
 
 /// Name, phone, address, UPI and number prefixes shown on PDFs (PRD BL-11).
 class BusinessProfileScreen extends ConsumerStatefulWidget {
@@ -54,11 +57,32 @@ class _BusinessProfileScreenState extends ConsumerState<BusinessProfileScreen> {
     context.pop();
   }
 
+  Future<void> _changeLogo(String? oldLogo) async {
+    // Choosing from the gallery leaves the app; don't lock it meanwhile.
+    final lock = ref.read(appLockProvider);
+    lock.suspendRelock = true;
+    final String? name;
+    try {
+      name = await pickLogo();
+    } finally {
+      lock.suspendRelock = false;
+    }
+    if (name == null) return;
+    await ref.read(settingsRepositoryProvider).saveLogo(name);
+    await deletePhoto(oldLogo);
+    if (mounted) showMessage(context, 'Logo saved');
+  }
+
+  Future<void> _removeLogo(String logo) async {
+    await ref.read(settingsRepositoryProvider).saveLogo(null);
+    await deletePhoto(logo);
+  }
+
   @override
   Widget build(BuildContext context) {
     final profile = ref.watch(businessProfileProvider).valueOrNull;
     if (profile == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const SkeletonPage();
     }
     if (!_loaded) {
       _loaded = true;
@@ -83,6 +107,67 @@ class _BusinessProfileScreenState extends ConsumerState<BusinessProfileScreen> {
         child: ListView(
           padding: const EdgeInsets.all(AppSizes.gutter),
           children: [
+            Panel(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  profile.logoPath == null
+                      ? Container(
+                          width: 72,
+                          height: 72,
+                          decoration: BoxDecoration(
+                            color: AppColors.surface2,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AppColors.border),
+                          ),
+                          child: const Icon(Icons.add_photo_alternate,
+                              color: AppColors.slate600),
+                        )
+                      : PhotoThumb(
+                          key: ValueKey(profile.logoPath),
+                          name: profile.logoPath!,
+                          size: 72,
+                          fit: BoxFit.contain,
+                        ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Logo',
+                            style: TextStyle(fontWeight: FontWeight.w700)),
+                        const Text(
+                          'Printed on bills, quotations and pay slips',
+                          style: TextStyle(
+                              color: AppColors.slate600, fontSize: 13),
+                        ),
+                        Wrap(
+                          spacing: 4,
+                          children: [
+                            TextButton(
+                              onPressed: () => _changeLogo(profile.logoPath),
+                              child: Text(profile.logoPath == null
+                                  ? 'Choose logo'
+                                  : 'Change'),
+                            ),
+                            if (profile.logoPath != null)
+                              TextButton(
+                                onPressed: () =>
+                                    _removeLogo(profile.logoPath!),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: AppColors.dangerText,
+                                ),
+                                child: const Text('Remove'),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
             TextFormField(
               controller: _name,
               decoration: const InputDecoration(labelText: 'Business name'),
@@ -114,6 +199,10 @@ class _BusinessProfileScreenState extends ConsumerState<BusinessProfileScreen> {
                 labelText: 'UPI ID (printed on bills)',
                 hintText: 'name@bank',
               ),
+              validator: (v) =>
+                  (v == null || v.trim().isEmpty || isValidUpiId(v))
+                      ? null
+                      : 'Enter a UPI ID like name@okaxis',
             ),
             const SectionTitle('Numbering'),
             Row(

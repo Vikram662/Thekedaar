@@ -25,6 +25,7 @@ import '../features/onboarding/presentation/onboarding_screen.dart';
 import '../features/reports/presentation/dues_screen.dart';
 import '../features/settings/presentation/app_lock_settings_screen.dart';
 import '../features/settings/presentation/business_profile_screen.dart';
+import '../features/settings/presentation/reminders_screen.dart';
 import '../features/settings/presentation/rules_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
 import '../features/settings/presentation/trades_screen.dart';
@@ -117,6 +118,7 @@ abstract final class Routes {
   static const trades = '/settings/trades';
   static const backup = '/settings/backup';
   static const appLock = '/settings/lock';
+  static const reminders = '/settings/reminders';
 }
 
 GoRouter buildRouter({required String initialLocation}) {
@@ -350,6 +352,10 @@ GoRouter buildRouter({required String initialLocation}) {
           GoRoute(
             path: 'lock',
             builder: (context, state) => const AppLockSettingsScreen(),
+          ),
+          GoRoute(
+            path: 'reminders',
+            builder: (context, state) => const RemindersScreen(),
           ),
         ],
       ),

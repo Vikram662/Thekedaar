@@ -143,7 +143,7 @@ class ExpensesRepository {
   }
 
   Future<void> deleteExpense(String id) async {
-    await _db.transaction(() async {
+    final photo = await _db.transaction(() async {
       final before = await (_db.select(_db.expenses)
             ..where((e) => e.id.equals(id)))
           .getSingle();
@@ -153,8 +153,10 @@ class ExpensesRepository {
           entityId: id,
           action: AuditAction.delete,
           before: before.toJson());
-      await deletePhoto(before.photoPath);
+      return before.photoPath;
     });
+    // Only after the row is gone for good.
+    await deletePhoto(photo);
   }
 
   Stream<List<ExpenseItem>> watchExpenses(DateTime month) {

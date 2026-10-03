@@ -6,11 +6,14 @@ import 'package:workmanager/workmanager.dart';
 import '../db/database.dart';
 import '../db/enums.dart';
 import '../db/meta_store.dart';
+import '../notify/notifications.dart';
+import '../notify/reminders.dart';
 import '../settings/app_settings.dart';
 import 'backup_engine.dart';
 
 const pendingBackupTask = 'backup-pending';
 const scheduledBackupTask = 'backup-scheduled';
+const reminderTask = 'reminders';
 
 /// WorkManager entry point, runs in a background isolate even when the app
 /// is closed (PRD D3, D3.1 layer 1).
@@ -20,8 +23,26 @@ void backupCallbackDispatcher() {
     WidgetsFlutterBinding.ensureInitialized();
     DartPluginRegistrant.ensureInitialized();
     final db = AppDatabase();
+    // Notification updates are chained so the last one finishes before the
+    // progress notification is removed.
+    var notifying = Future<void>.value();
     try {
+      if (task == reminderTask) {
+        await ReminderService(db).run();
+        return true;
+      }
       final engine = BackupEngine(db: db);
+      // App closed: show the % in a notification, updated every 5%.
+      var lastShown = -5;
+      engine.onProgress = (p) {
+        final percent = (p.fraction * 100).round();
+        if (percent - lastShown < 5 && percent < 100) return;
+        lastShown = percent;
+        final text = p.detail == null ? p.step : '${p.step} · ${p.detail}';
+        notifying = notifying.then(
+          (_) => AppNotifications.instance.showBackupProgress(percent, text),
+        );
+      };
       if (task == scheduledBackupTask) {
         final settings = await _settings(db);
         final meta = MetaStore(db);
@@ -37,6 +58,8 @@ void backupCallbackDispatcher() {
     } catch (_) {
       return false;
     } finally {
+      await notifying;
+      await AppNotifications.instance.cancel(NotificationKind.backupProgress);
       await db.close();
     }
   });
@@ -102,8 +125,22 @@ class BackupScheduler {
     );
   }
 
-  Future<void> cancelAll() async {
+  /// PRD DB-07: hourly reminder check, no network needed. Each reminder
+  /// still shows at most once a day, between 9 am and 9 pm.
+  Future<void> scheduleReminders() async {
     await initialize();
-    await Workmanager().cancelAll();
+    await Workmanager().registerPeriodicTask(
+      reminderTask,
+      reminderTask,
+      frequency: const Duration(hours: 1),
+      existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
+    );
+  }
+
+  /// Stops backup jobs only; reminders keep running.
+  Future<void> cancelBackups() async {
+    await initialize();
+    await Workmanager().cancelByUniqueName(pendingBackupTask);
+    await Workmanager().cancelByUniqueName(scheduledBackupTask);
   }
 }

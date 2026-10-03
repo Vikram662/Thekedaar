@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../core/backup/backup_providers.dart';
 import '../core/db/providers.dart';
 import '../core/utils/phone.dart';
+import '../core/utils/photos.dart';
 import '../core/widgets/common.dart';
 import 'router.dart';
 import 'theme.dart';
@@ -84,16 +85,31 @@ class AppDrawer extends ConsumerWidget {
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
                 child: Row(
                   children: [
-                    CircleAvatar(
-                      radius: 26,
-                      backgroundColor: AppColors.amber500,
-                      foregroundColor: AppColors.slate900,
-                      child: Text(
-                        initials(profile?.name ?? 'T'),
-                        style: const TextStyle(
-                            fontSize: 22, fontWeight: FontWeight.w700),
+                    if (profile?.logoPath != null)
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.all(3),
+                        child: PhotoThumb(
+                          key: ValueKey(profile!.logoPath),
+                          name: profile!.logoPath!,
+                          size: 46,
+                          fit: BoxFit.contain,
+                        ),
+                      )
+                    else
+                      CircleAvatar(
+                        radius: 26,
+                        backgroundColor: AppColors.amber500,
+                        foregroundColor: AppColors.slate900,
+                        child: Text(
+                          initials(profile?.name ?? 'T'),
+                          style: const TextStyle(
+                              fontSize: 22, fontWeight: FontWeight.w700),
+                        ),
                       ),
-                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -168,6 +184,7 @@ class AppDrawer extends ConsumerWidget {
               Routes.backup,
               trailing: Icon(Icons.circle, size: 12, color: backupDot),
             ),
+            item(Icons.notifications_outlined, 'Reminders', Routes.reminders),
             item(Icons.settings_outlined, 'All settings', Routes.settings,
                 subtitle: 'Trades, work rules, app lock'),
             const SizedBox(height: 16),

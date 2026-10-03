@@ -2,14 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../app/theme.dart';
 import '../../../core/db/audit.dart';
 import '../../../core/db/enums.dart';
 import '../../../core/utils/money.dart';
+import '../../../core/utils/upi.dart';
 import '../../../core/widgets/amount_pad.dart';
 import '../../../core/widgets/common.dart';
 import '../../../core/widgets/pickers.dart';
+import '../../lock/app_lock_controller.dart';
+import '../../workers/data/workers_repository.dart';
 import '../../workers/presentation/worker_picker.dart';
 import '../data/khata_repository.dart';
 import 'khata_widgets.dart';
@@ -102,8 +106,54 @@ class _LedgerEntryScreenState extends ConsumerState<LedgerEntryScreen> {
     }
   }
 
+  /// PRD KH-08: open the worker's UPI in any UPI app with the amount filled
+  /// in, then ask whether the money went before saving the entry.
+  Future<void> _payWithUpi(String upiId, String workerName) async {
+    final paise = parseRupeesToPaise(_amount);
+    if (paise == null || paise <= 0) {
+      showMessage(context, 'Enter the amount');
+      return;
+    }
+    final uri = Uri.parse(upiPayUri(
+      upiId: upiId,
+      payeeName: workerName,
+      amountPaise: paise,
+      note: '${ledgerTypeLabel(_type)} $workerName',
+    ));
+    // Paying in the UPI app can take a while; don't lock the app meanwhile.
+    final lock = ref.read(appLockProvider);
+    lock.suspendRelock = true;
+    try {
+      final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!mounted) return;
+      if (!opened) {
+        showMessage(context, 'No UPI app found on this phone');
+        return;
+      }
+      final paid = await confirmDialog(
+        context,
+        title: 'Payment done?',
+        message: 'Did ${formatPaise(paise)} reach $workerName in the UPI app? '
+            'Tap Yes only after the app shows success.',
+        confirmLabel: 'Yes, paid',
+      );
+      if (paid && mounted) await _save();
+    } finally {
+      lock.suspendRelock = false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final worker = _workerId == null
+        ? null
+        : ref.watch(workerProvider(_workerId!)).valueOrNull?.worker;
+    final workerUpi = worker?.upiId?.trim();
+    final canPayUpi = _type == LedgerType.advance &&
+        _mode != PaymentMode.cash &&
+        _mode != PaymentMode.bank &&
+        workerUpi != null &&
+        isValidUpiId(workerUpi);
     final isToday = DateUtils.isSameDay(_at, DateTime.now());
     return Scaffold(
       appBar: AppBar(title: Text('New ${ledgerTypeLabel(_type).toLowerCase()}')),
@@ -134,6 +184,16 @@ class _LedgerEntryScreenState extends ConsumerState<LedgerEntryScreen> {
               value: _mode,
               onChanged: (m) => setState(() => _mode = m),
             ),
+            if (canPayUpi) ...[
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                onPressed: _saving
+                    ? null
+                    : () => _payWithUpi(workerUpi!, worker!.name),
+                icon: const Icon(Icons.qr_code_2),
+                label: Text('Pay with UPI app ($workerUpi)'),
+              ),
+            ],
           ],
           const SizedBox(height: 12),
           TextField(

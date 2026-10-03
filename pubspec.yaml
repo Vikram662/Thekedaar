@@ -30,6 +30,8 @@ dependencies:
   file_picker: ^10.3.0
   pdf: ^3.11.0
   image_picker: ^1.1.2
+  url_launcher: ^6.3.1
+  flutter_local_notifications: ^19.4.0
 
 dev_dependencies:
   flutter_test:
@@ -37,8 +39,34 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   drift_dev: ^2.22.0
   build_runner: ^2.4.13
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.6
 
 flutter:
   uses-material-design: true
   assets:
     - assets/seed/
+    - assets/fonts/
+    - assets/icon/app_icon.png
+
+# App icon from assets/icon/app_icon.svg (PNGs rendered from it).
+# CI runs: dart run flutter_launcher_icons
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: assets/icon/app_icon.png
+  adaptive_icon_background: "#0F172A"
+  adaptive_icon_foreground: assets/icon/app_icon_foreground.png
+  min_sdk_android: 24
+
+# Native launch screen shown while Flutter starts.
+# CI runs: dart run flutter_native_splash:create
+flutter_native_splash:
+  color: "#0F172A"
+  image: assets/icon/splash_logo.png
+  android_12:
+    color: "#0F172A"
+    image: assets/icon/splash_android12.png
+    icon_background_color: "#0F172A"
+  ios: false
+  web: false

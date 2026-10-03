@@ -53,7 +53,7 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
     if (widget.clientId != null && !_loaded) {
       final client = ref.watch(clientProvider(widget.clientId!)).valueOrNull;
       if (client == null) {
-        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        return const SkeletonPage();
       }
       _loaded = true;
       _name.text = client.client.name;

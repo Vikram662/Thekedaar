@@ -7,6 +7,7 @@ import '../../../app/app_drawer.dart';
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/backup/backup_providers.dart';
+import '../../../core/backup/clock_check.dart';
 import '../../../core/db/database.dart';
 import '../../../core/db/enums.dart';
 import '../../../core/db/providers.dart';
@@ -43,6 +44,7 @@ class DashboardScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
         children: [
+          const _BackupProgressCard(),
           if (backup != null) _BackupBanner(state: backup),
           const _HeroCard(),
           const SizedBox(height: 20),
@@ -449,6 +451,36 @@ class _BackupDot extends StatelessWidget {
   }
 }
 
+/// Live % while a backup runs in the app.
+class _BackupProgressCard extends ConsumerWidget {
+  const _BackupProgressCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final progress = ref.watch(backupProgressProvider);
+    if (progress == null) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Panel(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            const Icon(Icons.cloud_upload, color: AppColors.blue700),
+            const SizedBox(width: 12),
+            Expanded(
+              child: PercentProgress(
+                value: progress.fraction,
+                label: progress.step,
+                detail: progress.detail,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// Red banner when backup is missing, failing or stuck (PRD D1, I-M2, D3.1).
 class _BackupBanner extends StatelessWidget {
   const _BackupBanner({required this.state});
@@ -468,7 +500,20 @@ class _BackupBanner extends StatelessWidget {
           : null,
       BackupHealth.synced => null,
     };
+    final skew = state.clockSkew;
+    if (message == null && skew != null) {
+      return _banner(
+        context,
+        Icons.schedule,
+        'Phone time is ${describeClockSkew(skew)} compared to Google. '
+        'Turn on automatic date & time in phone settings.',
+      );
+    }
     if (message == null) return const SizedBox.shrink();
+    return _banner(context, Icons.cloud_off, message);
+  }
+
+  Widget _banner(BuildContext context, IconData icon, String message) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Material(
@@ -480,7 +525,7 @@ class _BackupBanner extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: ListTile(
           tileColor: Colors.transparent,
-          leading: const Icon(Icons.cloud_off, color: AppColors.dangerText),
+          leading: Icon(icon, color: AppColors.dangerText),
           title: Text(
             message,
             style: const TextStyle(

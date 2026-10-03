@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
@@ -10,10 +11,33 @@ import 'package:share_plus/share_plus.dart';
 import '../db/database.dart';
 import '../utils/money.dart';
 import '../utils/phone.dart';
+import '../utils/photo_store.dart';
 
-// The built-in PDF font (Helvetica) has no ₹ glyph, so PDFs print "Rs.".
-// Bundle a Unicode TTF later to show ₹ and Hindi names.
-String pdfMoney(int paise) => formatPaise(paise).replaceAll('₹', 'Rs. ');
+pw.ThemeData? _pdfTheme;
+var _hasRupeeGlyph = false;
+
+/// Noto Sans (bundled in assets/fonts) so PDFs can print ₹. Pass it to every
+/// `pw.Document(theme: ...)`. If the fonts cannot be loaded, PDFs fall back
+/// to the built-in Helvetica, which has no ₹, and [pdfMoney] prints "Rs.".
+Future<pw.ThemeData?> pdfTheme() async {
+  if (_pdfTheme != null) return _pdfTheme;
+  try {
+    final regular = await rootBundle.load('assets/fonts/NotoSans-Regular.ttf');
+    final bold = await rootBundle.load('assets/fonts/NotoSans-Bold.ttf');
+    _pdfTheme = pw.ThemeData.withFont(
+      base: pw.Font.ttf(regular),
+      bold: pw.Font.ttf(bold),
+    );
+    _hasRupeeGlyph = true;
+  } catch (_) {
+    _hasRupeeGlyph = false;
+  }
+  return _pdfTheme;
+}
+
+String pdfMoney(int paise) => _hasRupeeGlyph
+    ? formatPaise(paise)
+    : formatPaise(paise).replaceAll('₹', 'Rs. ');
 
 final pdfBorder = pw.TableBorder.all(width: 0.5, color: PdfColors.grey600);
 
@@ -21,11 +45,37 @@ const pdfSmall = pw.TextStyle(fontSize: 9, color: PdfColors.grey800);
 final pdfBold = pw.TextStyle(fontWeight: pw.FontWeight.bold);
 final pdfTitle = pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold);
 
-/// Business name, phone and address block for the top of every PDF.
-pw.Widget pdfBusinessHeader(BusinessProfile profile, {required String label}) {
+/// The business logo for PDFs, or null if none is set or it can't be read.
+Future<pw.ImageProvider?> pdfLogo(BusinessProfile profile) async {
+  final name = profile.logoPath;
+  if (name == null) return null;
+  try {
+    final file = await photoFile(name);
+    if (!file.existsSync()) return null;
+    return pw.MemoryImage(await file.readAsBytes());
+  } catch (_) {
+    return null;
+  }
+}
+
+/// Logo, business name, phone and address block for the top of every PDF.
+pw.Widget pdfBusinessHeader(
+  BusinessProfile profile, {
+  required String label,
+  pw.ImageProvider? logo,
+}) {
   return pw.Row(
     crossAxisAlignment: pw.CrossAxisAlignment.start,
     children: [
+      if (logo != null) ...[
+        pw.Container(
+          width: 64,
+          height: 64,
+          alignment: pw.Alignment.center,
+          child: pw.Image(logo, fit: pw.BoxFit.contain),
+        ),
+        pw.SizedBox(width: 12),
+      ],
       pw.Expanded(
         child: pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,

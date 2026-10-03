@@ -24,3 +24,9 @@ Future<List<String>> listPhotoNames() async {
       if (f.path.endsWith('.jpg')) p.basename(f.path),
   ];
 }
+
+Future<void> deletePhoto(String? name) async {
+  if (name == null) return;
+  final file = await photoFile(name);
+  if (file.existsSync()) await file.delete();
+}
