@@ -36,7 +36,7 @@ class DriveQuota {
 /// Drive folder layout (PRD D2):
 ///   Thekedaar Backups/
 ///     device.json, keys.json
-///     db/<yyyy-MM-dd_HHmm>_v<schema>.tkbak
+///     db/`yyyy-MM-dd_HHmmss_vN`.tkbak
 class DriveStore {
   DriveStore(http.Client client) : _api = drive.DriveApi(client);
 
@@ -88,13 +88,7 @@ class DriveStore {
         $fields: _fields,
       );
       for (final file in result.files ?? const <drive.File>[]) {
-        files.add(RemoteFile(
-          id: file.id!,
-          name: file.name ?? '',
-          size: int.tryParse(file.size ?? '') ?? 0,
-          createdTime: file.createdTime ?? DateTime.fromMillisecondsSinceEpoch(0),
-          appProperties: file.appProperties ?? const {},
-        ));
+        files.add(_toRemote(file));
       }
       pageToken = result.nextPageToken;
     } while (pageToken != null);
@@ -108,16 +102,22 @@ class DriveStore {
       $fields: _fields,
     );
     final files = result.files ?? const [];
-    if (files.isEmpty) return null;
-    final file = files.first;
-    return RemoteFile(
-      id: file.id!,
-      name: file.name ?? name,
-      size: int.tryParse(file.size ?? '') ?? 0,
-      createdTime: file.createdTime ?? DateTime.fromMillisecondsSinceEpoch(0),
-      appProperties: file.appProperties ?? const {},
-    );
+    return files.isEmpty ? null : _toRemote(files.first, fallbackName: name);
   }
+
+  RemoteFile _toRemote(drive.File file, {String fallbackName = ''}) =>
+      RemoteFile(
+        id: file.id!,
+        name: file.name ?? fallbackName,
+        size: int.tryParse(file.size ?? '') ?? 0,
+        createdTime:
+            file.createdTime ?? DateTime.fromMillisecondsSinceEpoch(0),
+        // Drive types the values as nullable; keep only real ones.
+        appProperties: {
+          for (final e in (file.appProperties ?? const {}).entries)
+            if (e.value != null) e.key: e.value!,
+        },
+      );
 
   /// Creates a file, or replaces the content of [existingId].
   Future<String> upload({

@@ -83,7 +83,7 @@ class WorkersRepository {
 
   final AppDatabase _db;
 
-  JoinedSelectStatement<$WorkersTable, Worker> _workerQuery() =>
+  JoinedSelectStatement<HasResultSet, dynamic> _workerQuery() =>
       _db.select(_db.workers).join([
         leftOuterJoin(_db.roles, _db.roles.id.equalsExp(_db.workers.roleId)),
       ]);

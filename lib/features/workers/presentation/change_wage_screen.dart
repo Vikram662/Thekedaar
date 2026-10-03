@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/theme.dart';
+import '../../../core/db/database.dart';
 import '../../../core/db/enums.dart';
 import '../../../core/utils/dates.dart';
 import '../../../core/utils/money.dart';
