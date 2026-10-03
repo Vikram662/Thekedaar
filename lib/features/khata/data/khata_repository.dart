@@ -21,6 +21,11 @@ final workerSummaryProvider = StreamProvider.family<WorkerSummary, String>(
       ref.watch(khataRepositoryProvider).watchSummary(workerId),
 );
 
+/// Every worker's open balance, for the Lena / Dena report.
+final allWorkerBalancesProvider = StreamProvider<List<WorkerBalance>>(
+  (ref) => ref.watch(khataRepositoryProvider).watchAllBalances(),
+);
+
 final workerLedgerProvider = StreamProvider.family<List<LedgerItem>, String>(
   (ref, workerId) => ref.watch(khataRepositoryProvider).watchLedger(workerId),
 );
@@ -96,6 +101,16 @@ class WorkerSummary {
   final Settlement? lastSettlement;
 
   int get balancePaise => result.netPayablePaise;
+}
+
+class WorkerBalance {
+  const WorkerBalance({required this.worker, required this.summary});
+
+  final Worker worker;
+  final WorkerSummary summary;
+
+  /// Positive: admin has to pay (dena). Negative: worker owes (lena).
+  int get balancePaise => summary.balancePaise;
 }
 
 class KhataRepository {
@@ -310,6 +325,27 @@ class KhataRepository {
           _db.wageHistories,
         ],
         () => computeSummary(workerId),
+      );
+
+  Stream<List<WorkerBalance>> watchAllBalances() => watchComputed(
+        _db,
+        [
+          _db.workers,
+          _db.attendances,
+          _db.ledgerEntries,
+          _db.pieceWorks,
+          _db.settlements,
+          _db.wageHistories,
+        ],
+        () async {
+          final workers = await (_db.select(_db.workers)
+                ..orderBy([(w) => OrderingTerm.asc(w.name)]))
+              .get();
+          return [
+            for (final w in workers)
+              WorkerBalance(worker: w, summary: await computeSummary(w.id)),
+          ];
+        },
       );
 
   Future<WorkerSummary> computeSummary(

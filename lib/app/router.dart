@@ -18,6 +18,7 @@ import '../features/khata/presentation/ledger_entry_screen.dart';
 import '../features/khata/presentation/piece_work_screen.dart';
 import '../features/khata/presentation/settlement_screen.dart';
 import '../features/onboarding/presentation/onboarding_screen.dart';
+import '../features/reports/presentation/dues_screen.dart';
 import '../features/settings/presentation/app_lock_settings_screen.dart';
 import '../features/settings/presentation/business_profile_screen.dart';
 import '../features/settings/presentation/rules_screen.dart';
@@ -75,6 +76,9 @@ abstract final class Routes {
     ].join('&');
     return query.isEmpty ? '/payment/new' : '/payment/new?$query';
   }
+
+  /// Lena / Dena report; tab 0 = to receive, 1 = to pay.
+  static String dues([int tab = 0]) => '/dues?tab=$tab';
 
   static const settings = '/settings';
   static const businessProfile = '/settings/business';
@@ -217,6 +221,12 @@ GoRouter buildRouter({required String initialLocation}) {
         builder: (context, state) => PaymentScreen(
           clientId: q(state, 'clientId'),
           documentId: q(state, 'documentId'),
+        ),
+      ),
+      GoRoute(
+        path: '/dues',
+        builder: (context, state) => DuesScreen(
+          initialTab: int.tryParse(q(state, 'tab') ?? '') == 1 ? 1 : 0,
         ),
       ),
       GoRoute(

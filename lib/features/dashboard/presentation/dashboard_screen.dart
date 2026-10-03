@@ -8,10 +8,9 @@ import '../../../core/backup/backup_providers.dart';
 import '../../../core/db/database.dart';
 import '../../../core/db/enums.dart';
 import '../../../core/db/providers.dart';
-import '../../../core/utils/money.dart';
 import '../../../core/widgets/common.dart';
 import '../../attendance/data/attendance_repository.dart';
-import '../../billing/data/billing_repository.dart';
+import '../../reports/presentation/dues_screen.dart';
 
 final _presentTodayProvider = StreamProvider<List<Worker>>(
   (ref) =>
@@ -25,7 +24,6 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(businessProfileProvider).valueOrNull;
-    final outstanding = ref.watch(outstandingProvider).valueOrNull ?? 0;
     final backup = ref.watch(backupStateProvider).valueOrNull;
     final present = ref.watch(_presentTodayProvider).valueOrNull ?? const [];
 
@@ -44,6 +42,13 @@ class DashboardScreen extends ConsumerWidget {
                   title: Text('Attendance'),
                 ),
               ),
+              PopupMenuItem(
+                value: Routes.dues(),
+                child: const ListTile(
+                  leading: Icon(Icons.account_balance),
+                  title: Text('Lena / Dena report'),
+                ),
+              ),
               const PopupMenuItem(
                 value: Routes.settings,
                 child: ListTile(
@@ -59,27 +64,7 @@ class DashboardScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(AppSizes.gutter),
         children: [
           if (backup != null) _BackupBanner(state: backup),
-          InkWell(
-            borderRadius: BorderRadius.circular(AppSizes.radius),
-            onTap: () => context.go(Routes.billing),
-            child: Panel(
-              child: Row(
-                children: [
-                  const Icon(Icons.pending_actions, color: AppColors.warningText),
-                  const SizedBox(width: 12),
-                  const Expanded(child: Text('Pending from clients')),
-                  Text(
-                    formatPaise(outstanding),
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.warningText,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          const DuesSummaryCard(),
           const SectionTitle('Quick actions'),
           Row(
             children: [
