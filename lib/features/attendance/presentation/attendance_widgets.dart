@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/db/audit.dart';
 import '../../../core/db/database.dart';
@@ -111,16 +113,22 @@ Future<void> showStatusSheet(
 
 /// Month grid for one worker (PRD AT-04). Tap a day to change it.
 class AttendanceCalendar extends ConsumerStatefulWidget {
-  const AttendanceCalendar({super.key, required this.worker});
+  const AttendanceCalendar({super.key, required this.worker, this.initialMonth});
 
   final Worker worker;
+
+  /// Month shown first; defaults to the current month.
+  final DateTime? initialMonth;
 
   @override
   ConsumerState<AttendanceCalendar> createState() => _AttendanceCalendarState();
 }
 
 class _AttendanceCalendarState extends ConsumerState<AttendanceCalendar> {
-  late DateTime _month = DateTime(DateTime.now().year, DateTime.now().month);
+  late DateTime _month = DateTime(
+    (widget.initialMonth ?? DateTime.now()).year,
+    (widget.initialMonth ?? DateTime.now()).month,
+  );
 
   void _shift(int months) => setState(
         () => _month = DateTime(_month.year, _month.month + months),
@@ -203,11 +211,100 @@ class _AttendanceCalendarState extends ConsumerState<AttendanceCalendar> {
                 ),
             ],
           ),
+          const SizedBox(height: 10),
+          _MonthTotals(marks: marks.values),
         ],
       ),
     );
   }
 }
+
+/// "P 22 · ½ 2 · A 1 …" for one worker's month.
+class _MonthTotals extends StatelessWidget {
+  const _MonthTotals({required this.marks});
+
+  final Iterable<Attendance> marks;
+
+  @override
+  Widget build(BuildContext context) {
+    final counts = <AttendanceStatus, int>{};
+    for (final m in marks) {
+      counts.update(m.status, (v) => v + 1, ifAbsent: () => 1);
+    }
+    if (counts.isEmpty) {
+      return const Text('Nothing marked this month',
+          style: TextStyle(color: AppColors.slate600));
+    }
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      alignment: WrapAlignment.center,
+      children: [
+        for (final status in AttendanceStatus.values)
+          if (counts[status] != null)
+            StatusChip(
+              label: '${statusStyle(status).short} ${counts[status]}',
+              color: statusStyle(status).color,
+              icon: statusStyle(status).icon,
+            ),
+      ],
+    );
+  }
+}
+
+/// One worker's month calendar in a bottom sheet (from the register).
+Future<void> showWorkerAttendanceSheet(
+  BuildContext context,
+  Worker worker,
+  DateTime month,
+) =>
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (context) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.85,
+        maxChildSize: 0.95,
+        builder: (context, controller) => ListView(
+          controller: controller,
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: AppColors.amber100,
+                  foregroundColor: AppColors.slate900,
+                  child: Text(initials(worker.name)),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    worker.name,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    final router = GoRouter.of(context);
+                    Navigator.of(context).pop();
+                    router.push(Routes.worker(worker.id));
+                  },
+                  child: const Text('Open worker'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Tap a day to change it.',
+              style: TextStyle(color: AppColors.slate600),
+            ),
+            const SizedBox(height: 12),
+            AttendanceCalendar(worker: worker, initialMonth: month),
+          ],
+        ),
+      ),
+    );
 
 class _DayCell extends StatelessWidget {
   const _DayCell({

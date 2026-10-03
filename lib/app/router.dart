@@ -12,6 +12,7 @@ import '../features/billing/presentation/client_form_screen.dart';
 import '../features/billing/presentation/document_detail_screen.dart';
 import '../features/billing/presentation/document_editor_screen.dart';
 import '../features/billing/presentation/payment_screen.dart';
+import '../features/calendar/presentation/calendar_screen.dart';
 import '../features/dashboard/presentation/dashboard_screen.dart';
 import '../features/expenses/presentation/expense_entry_screen.dart';
 import '../features/expenses/presentation/expenses_screen.dart';
@@ -111,6 +112,7 @@ abstract final class Routes {
 
   /// Lena / Dena report; tab 0 = to receive, 1 = to pay.
   static String dues([int tab = 0]) => '/dues?tab=$tab';
+  static const calendar = '/calendar';
 
   static const settings = '/settings';
   static const businessProfile = '/settings/business';
@@ -328,6 +330,10 @@ GoRouter buildRouter({required String initialLocation}) {
         builder: (context, state) => DuesScreen(
           initialTab: int.tryParse(q(state, 'tab') ?? '') == 1 ? 1 : 0,
         ),
+      ),
+      GoRoute(
+        path: Routes.calendar,
+        builder: (context, state) => const CalendarScreen(),
       ),
       GoRoute(
         path: Routes.settings,

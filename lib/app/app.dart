@@ -84,7 +84,17 @@ class _ThekedaarAppState extends ConsumerState<ThekedaarApp> {
       debugShowCheckedModeBanner: false,
       theme: buildLightTheme(),
       routerConfig: _router,
-      builder: (context, child) => LockGate(child: child ?? const SizedBox()),
+      builder: (context, child) => LockGate(
+        // Pull down on any screen's list to refresh it (all screens re-read
+        // the database). Only vertical scrolling triggers it.
+        child: RefreshIndicator(
+          color: AppColors.blue700,
+          edgeOffset: MediaQuery.paddingOf(context).top + kToolbarHeight,
+          notificationPredicate: (n) => n.metrics.axis == Axis.vertical,
+          onRefresh: () => ref.read(backupCoordinatorProvider).refreshAll(),
+          child: child ?? const SizedBox(),
+        ),
+      ),
     );
   }
 }

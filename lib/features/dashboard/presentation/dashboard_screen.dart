@@ -14,6 +14,7 @@ import '../../../core/db/providers.dart';
 import '../../../core/utils/money.dart';
 import '../../../core/widgets/common.dart';
 import '../../attendance/data/attendance_repository.dart';
+import '../../backup/presentation/backup_screen.dart';
 import '../../reports/presentation/dues_screen.dart';
 import '../../workers/data/workers_repository.dart';
 
@@ -416,13 +417,13 @@ class _TodayCard extends ConsumerWidget {
 }
 
 /// Backup dot in the header (PRD DB-01, D3.1): green / amber / red.
-class _BackupDot extends StatelessWidget {
+class _BackupDot extends ConsumerWidget {
   const _BackupDot({required this.state});
 
   final BackupState state;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final (color, label) = switch (state.health) {
       BackupHealth.synced => (AppColors.successFill, 'Backed up'),
       BackupHealth.pending => (AppColors.amber500, 'Backup pending'),
@@ -431,7 +432,7 @@ class _BackupDot extends StatelessWidget {
     };
     return IconButton(
       tooltip: label,
-      onPressed: () => context.push(Routes.backup),
+      onPressed: () => _showBackupSheet(context, ref, label, color),
       icon: Stack(
         alignment: Alignment.bottomRight,
         children: [
@@ -449,6 +450,72 @@ class _BackupDot extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Cloud button: status, Backup now and backup settings.
+void _showBackupSheet(
+  BuildContext context,
+  WidgetRef ref,
+  String label,
+  Color color,
+) {
+  // Actions use the Home screen's context and ref, which outlive the sheet.
+  showModalBottomSheet<void>(
+    context: context,
+    builder: (_) => Consumer(
+      builder: (sheetContext, sheetRef, _) {
+        final state = sheetRef.watch(backupStateProvider).valueOrNull;
+        final running = sheetRef.watch(backupRunningProvider);
+        final last = state?.lastBackupAt;
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.circle, size: 12, color: color),
+                    const SizedBox(width: 8),
+                    Text(label,
+                        style: Theme.of(sheetContext).textTheme.titleMedium),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  last == null
+                      ? 'No backup yet'
+                      : 'Last backup: ${dayTimeFormat.format(last)}',
+                  style: const TextStyle(color: AppColors.slate600),
+                ),
+                const SizedBox(height: 16),
+                FilledButton.icon(
+                  onPressed: running
+                      ? null
+                      : () {
+                          Navigator.of(sheetContext).pop();
+                          runManualBackup(context, ref);
+                        },
+                  icon: const Icon(Icons.backup),
+                  label: Text(running ? 'Backing up…' : 'Backup now'),
+                ),
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.of(sheetContext).pop();
+                    context.push(Routes.backup);
+                  },
+                  icon: const Icon(Icons.settings_backup_restore),
+                  label: const Text('Backup settings & restore'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    ),
+  );
 }
 
 /// Live % while a backup runs in the app.

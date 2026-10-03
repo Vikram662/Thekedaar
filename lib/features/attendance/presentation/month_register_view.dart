@@ -105,7 +105,7 @@ class _MonthRegisterViewState extends ConsumerState<MonthRegisterView> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _NameColumn(workers: r.workers),
+                        _NameColumn(workers: r.workers, month: r.month),
                         Expanded(
                           child: SingleChildScrollView(
                             controller: _horizontal,
@@ -156,9 +156,10 @@ class _Legend extends StatelessWidget {
 }
 
 class _NameColumn extends StatelessWidget {
-  const _NameColumn({required this.workers});
+  const _NameColumn({required this.workers, required this.month});
 
   final List<Worker> workers;
+  final DateTime month;
 
   @override
   Widget build(BuildContext context) {
@@ -179,20 +180,27 @@ class _NameColumn extends StatelessWidget {
             ),
           ),
           for (final w in workers)
-            Container(
-              height: _rowHeight,
-              padding: const EdgeInsets.only(left: 12, right: 4),
-              alignment: Alignment.centerLeft,
-              decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: AppColors.border)),
-              ),
-              child: Text(
-                w.name,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: w.isActive ? AppColors.slate900 : AppColors.slate600,
+            // Tap a name → that worker's month calendar.
+            InkWell(
+              onTap: () => showWorkerAttendanceSheet(context, w, month),
+              child: Container(
+                height: _rowHeight,
+                padding: const EdgeInsets.only(left: 12, right: 4),
+                alignment: Alignment.centerLeft,
+                decoration: const BoxDecoration(
+                  border: Border(top: BorderSide(color: AppColors.border)),
+                ),
+                child: Text(
+                  w.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.blue700,
+                    decoration: TextDecoration.underline,
+                    decorationColor:
+                        w.isActive ? AppColors.blue700 : AppColors.slate600,
+                  ),
                 ),
               ),
             ),

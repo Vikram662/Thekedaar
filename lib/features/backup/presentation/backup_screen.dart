@@ -30,6 +30,24 @@ String backupResultMessage(BackupResult result) => switch (result.outcome) {
       _ => result.message ?? 'Backup failed',
     };
 
+/// Manual backup from anywhere (home pull-down, menu, cloud button).
+/// The progress card on Home shows the %.
+Future<void> runManualBackup(BuildContext context, WidgetRef ref) async {
+  final state = ref.read(backupStateProvider).valueOrNull;
+  if (state == null || !state.configured) {
+    showMessage(context, 'Backup is not set up yet');
+    await context.push(Routes.backup);
+    return;
+  }
+  if (ref.read(backupRunningProvider)) {
+    showMessage(context, 'Backup is already running');
+    return;
+  }
+  final result =
+      await ref.read(backupCoordinatorProvider).runNow(BackupTrigger.manual);
+  if (context.mounted) showMessage(context, backupResultMessage(result));
+}
+
 String _size(int bytes) => bytes >= 1024 * 1024
     ? '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB'
     : '${(bytes / 1024).ceil()} KB';

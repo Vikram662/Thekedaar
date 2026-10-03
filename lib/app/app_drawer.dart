@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/backup/backup_providers.dart';
+import '../core/db/enums.dart';
 import '../core/db/providers.dart';
 import '../core/utils/phone.dart';
 import '../core/utils/photos.dart';
 import '../core/widgets/common.dart';
+import '../features/backup/presentation/backup_screen.dart';
 import 'router.dart';
 import 'theme.dart';
 
@@ -174,10 +176,40 @@ class AppDrawer extends ConsumerWidget {
             item(Icons.store_outlined, 'Suppliers', Routes.suppliers,
                 subtitle: 'Udhaar purchases & payments'),
             heading('Reports'),
+            item(Icons.calendar_month_outlined, 'Calendar', Routes.calendar,
+                subtitle: 'What happened on each day'),
             item(Icons.account_balance_outlined, 'Lena / Dena', Routes.dues()),
             heading('Settings'),
             item(Icons.store_mall_directory_outlined, 'Business profile',
                 Routes.businessProfile),
+            ListTile(
+              leading: const Icon(Icons.backup_outlined),
+              title: const Text('Backup now'),
+              subtitle: const Text('Upload to Google Drive'),
+              onTap: () {
+                // The drawer closes; keep what we need from its context.
+                final messenger = ScaffoldMessenger.of(context);
+                final router = GoRouter.of(context);
+                final coordinator = ref.read(backupCoordinatorProvider);
+                final running = ref.read(backupRunningProvider);
+                Navigator.of(context).pop();
+                if (backup == null || !backup.configured) {
+                  router.push(Routes.backup);
+                  return;
+                }
+                void say(String text) => messenger
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(SnackBar(content: Text(text)));
+                if (running) {
+                  say('Backup is already running');
+                  return;
+                }
+                say('Backup started…');
+                coordinator
+                    .runNow(BackupTrigger.manual)
+                    .then((r) => say(backupResultMessage(r)));
+              },
+            ),
             item(
               Icons.cloud_upload_outlined,
               'Backup & restore',

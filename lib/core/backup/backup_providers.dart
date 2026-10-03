@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:drift/drift.dart' show OrderingTerm;
+import 'package:drift/drift.dart' show OrderingTerm, TableUpdate;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -137,12 +137,30 @@ class BackupCoordinator with WidgetsBindingObserver {
   BackupEngine get _engine => _ref.read(backupEngineProvider);
   MetaStore get _meta => MetaStore(_db);
 
+  bool _refreshing = false;
+
+  /// Pull-to-refresh: makes every open screen re-read its data from the
+  /// database. Not a data change, so it does not queue a backup.
+  Future<void> refreshAll() async {
+    _refreshing = true;
+    try {
+      _db.notifyUpdates({
+        for (final table in _db.allTables) TableUpdate.onTable(table),
+      });
+      // Table update events are delivered asynchronously.
+      await Future<void>.delayed(const Duration(milliseconds: 400));
+    } finally {
+      _refreshing = false;
+    }
+  }
+
   void start() {
     if (_started) return;
     _started = true;
     WidgetsBinding.instance.addObserver(this);
     _tableSub = _db.tableUpdates().listen((updates) {
       if (updates.every((u) => _ignoredTables.contains(u.table))) return;
+      if (_refreshing) return; // pull-to-refresh re-reads, nothing changed
       _markDirtyTimer?.cancel();
       _markDirtyTimer = Timer(const Duration(seconds: 3), _onDataChanged);
     });
