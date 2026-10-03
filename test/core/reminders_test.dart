@@ -8,6 +8,7 @@ import 'package:thekedaar/core/notify/reminders.dart';
 import 'package:thekedaar/core/settings/app_settings.dart';
 import 'package:thekedaar/core/utils/upi.dart';
 import 'package:thekedaar/features/billing/data/billing_repository.dart';
+import 'package:thekedaar/features/billing/domain/document_totals.dart';
 import 'package:thekedaar/features/workers/data/workers_repository.dart';
 
 void main() {
