@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>Thekedaar - Construction & Site Management App</title>
+  <meta name="description" content="Thekedaar - Bharat ke contractors aur builders ke liye daily attendance, kharcha, bills aur private Google Drive backup ka premium app.">
+  <meta name="keywords" content="thekedaar app, construction site khata, civil thekedaar, contractor app, hajri register, site expense app">
+
+  <!-- Google Fonts: Oswald (Headings like xLander) + Open Sans (Body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,400&family=Oswald:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* =======================================================
+       xLander THEME ENGINE STYLING
+       Clean, Bold, High-Contrast Corporate Landing Page
+    ======================================================= */
+    :root {
+      --theme-color: #E65100;         /* xLander Vibrant Construction Orange */
+      --theme-hover: #BF360C;
+      --theme-light: #FFF3E0;
+      --dark-bg: #1B2129;             /* xLander Classic Dark Intro Background */
+      --dark-secondary: #14181F;
+      --light-bg: #F7F9FB;
+      --border-color: #E2E8F0;
+      --text-dark: #2B313B;
+      --text-gray: #6C7A89;
+      --text-light: #ECEFF1;
+      --white: #FFFFFF;
+      --accent-green: #2ECC71;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Open Sans', 'Noto Sans Devanagari', sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text-gray);
+      background-color: var(--white);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Oswald', sans-serif;
+      text-transform: uppercase;
+      color: var(--text-dark);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    a {
+      text-decoration: none;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1170px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* BUTTONS (xLander Style) */
+    .btn {
+      display: inline-block;
+      font-family: 'Oswald', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 12px 32px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .btn-theme {
+      background-color: var(--theme-color);
+      color: var(--white) !important;
+      border-color: var(--theme-color);
+    }
+
+    .btn-theme:hover {
+      background-color: var(--theme-hover);
+      border-color: var(--theme-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(230, 81, 0, 0.35);
+    }
+
+    .btn-outline-white {
+      background-color: transparent;
+      color: var(--white) !important;
+      border-color: rgba(255, 255, 255, 0.7);
+    }
+
+    .btn-outline-white:hover {
+      background-color: var(--white);
+      color: var(--dark-bg) !important;
+      border-color: var(--white);
+    }
+
+    /* ================= HEADER / NAVBAR ================= */
+    #header {
+      background-color: rgba(255, 255, 255, 0.98);
+      border-bottom: 1px solid #ECEFF1;
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .navbar-wrap {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 80px;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo img {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      object-fit: cover;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .logo-text {
+      font-family: 'Oswald', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-dark);
+      letter-spacing: 1px;
+    }
+
+    .logo-text span {
+      color: var(--theme-color);
+    }
+
+    .main-nav {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+      list-style: none;
+    }
+
+    .main-nav a {
+      font-family: 'Oswald', sans-serif;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #546E7A;
+      font-weight: 500;
+    }
+
+    .main-nav a:hover, .main-nav a.active {
+      color: var(--theme-color);
+    }
+
+    /* ================= INTRO / HERO SECTION (xLander Style) ================= */
+    #intro {
+      background: linear-gradient(135deg, rgba(20, 24, 31, 0.92) 0%, rgba(27, 33, 41, 0.95) 100%),
+                  radial-gradient(circle at 80% 20%, rgba(230, 81, 0, 0.18) 0%, transparent 60%);
+      color: var(--white);
+      padding: 100px 0 110px;
+      position: relative;
+      text-align: center;
+      border-bottom: 4px solid var(--theme-color);
+    }
+
+    .intro-tagline {
+      font-family: 'Oswald', sans-serif;
+      font-size: 16px;
+      color: var(--theme-color);
+      letter-spacing: 3px;
+      margin-bottom: 15px;
+      display: inline-block;
+      border-bottom: 1px solid rgba(230, 81, 0, 0.4);
+      padding-bottom: 4px;
+    }
+
+    .intro-title {
+      font-size: 52px;
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.15;
+      margin-bottom: 25px;
+      letter-spacing: 1.5px;
+    }
+
+    .intro-title span {
+      color: var(--theme-color);
+    }
+
+    .intro-desc {
+      font-size: 18px;
+      color: #B0BEC5;
+      max-width: 780px;
+      margin: 0 auto 35px;
+      font-weight: 300;
+      line-height: 1.8;
+    }
+
+    .intro-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    /* ================= STATS BAR ================= */
+    .counters-bar {
+      background-color: var(--white);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+      border-radius: 8px;
+      margin-top: -45px;
+      position: relative;
+      z-index: 10;
+      padding: 30px 20px;
+      border: 1px solid #ECEFF1;
+    }
+
+    .counters-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      text-align: center;
+    }
+
+    .counter-item {
+      border-right: 1px solid #ECEFF1;
+      padding: 0 15px;
+    }
+
+    .counter-item:last-child {
+      border-right: none;
+    }
+
+    .counter-num {
+      font-family: 'Oswald', sans-serif;
+      font-size: 38px;
+      font-weight: 700;
+      color: var(--text-dark);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .counter-num span {
+      color: var(--theme-color);
+    }
+
+    .counter-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 1px;
+      color: #90A4AE;
+    }
+
+    /* ================= SECTION TITLEBAR (Signature xLander) ================= */
+    .section-wrap {
+      padding: 95px 0;
+    }
+
+    .titlebar {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .titlebar h3 {
+      font-size: 14px;
+      color: var(--theme-color);
+      letter-spacing: 2px;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .titlebar h2 {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--text-dark);
+      letter-spacing: 1px;
+      position: relative;
+      padding-bottom: 18px;
+    }
+
+    .titlebar h2::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50px;
+      height: 3px;
+      background-color: var(--theme-color);
+    }
+
+    .titlebar p {
+      max-width: 650px;
+      margin: 15px auto 0;
+      font-size: 15px;
+    }
+
+    /* ================= FEATURES GRID ================= */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 35px;
+    }
+
+    .feature-item {
+      background: var(--white);
+      border: 1px solid #ECEFF1;
+      border-radius: 6px;
+      padding: 35px 25px;
+      text-align: center;
+      transition: all 0.35s ease;
+    }
+
+    .feature-item:hover {
+      border-color: var(--theme-color);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+      transform: translateY(-4px);
+    }
+
+    .feature-icon-circle {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background-color: var(--theme-light);
+      color: var(--theme-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      margin: 0 auto 22px;
+      border: 2px solid #FFE0B2;
+      transition: all 0.3s ease;
+    }
+
+    .feature-item:hover .feature-icon-circle {
+      background-color: var(--theme-color);
+      color: var(--white);
+      border-color: var(--theme-color);
+    }
+
+    .feature-item h4 {
+      font-size: 18px;
+      margin-bottom: 12px;
+      letter-spacing: 0.5px;
+    }
+
+    .feature-item p {
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    /* ================= PRICING SECTION (xLander Style) ================= */
+    .bg-light {
+      background-color: var(--light-bg);
+      border-top: 1px solid #ECEFF1;
+      border-bottom: 1px solid #ECEFF1;
+    }
+
+    .pricing-table-wrap {
+      display: flex;
+      justify-content: center;
+    }
+
+    .pricing-table {
+      background: var(--white);
+      border: 2px solid var(--theme-color);
+      border-radius: 8px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+      overflow: hidden;
+      text-align: center;
+      position: relative;
+    }
+
+    .pricing-top {
+      background-color: var(--dark-bg);
+      color: var(--white);
+      padding: 30px 20px 25px;
+    }
+
+    .pricing-top h4 {
+      color: var(--white);
+      font-size: 22px;
+      letter-spacing: 1.5px;
+      margin-bottom: 5px;
+    }
+
+    .pricing-top .plan-subtitle {
+      color: #90A4AE;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .price-amount {
+      padding: 25px 20px;
+      background-color: var(--theme-light);
+      border-bottom: 1px solid #FFE0B2;
+    }
+
+    .price-amount .currency {
+      font-family: 'Oswald', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--theme-color);
+      vertical-align: top;
+      position: relative;
+      top: 6px;
+    }
+
+    .price-amount .num {
+      font-family: 'Oswald', sans-serif;
+      font-size: 56px;
+      font-weight: 700;
+      color: var(--theme-color);
+      line-height: 1;
+    }
+
+    .price-amount .cycle {
+      font-size: 14px;
+      color: #78909C;
+      font-weight: 600;
+      text-transform: uppercase;
+      display: block;
+      margin-top: 4px;
+    }
+
+    .pricing-features {
+      list-style: none;
+      padding: 25px 35px;
+      text-align: left;
+    }
+
+    .pricing-features li {
+      padding: 11px 0;
+      border-bottom: 1px solid #ECEFF1;
+      font-size: 14px;
+      color: #455A64;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .pricing-features li span.icon-check {
+      color: var(--accent-green);
+      font-weight: 800;
+      font-size: 16px;
+    }
+
+    .pricing-bottom {
+      padding: 0 35px 35px;
+    }
+
+    /* ================= FAQ SECTION ================= */
+    .faq-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    .faq-card {
+      background: var(--white);
+      border: 1px solid #ECEFF1;
+      border-radius: 6px;
+      padding: 25px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+
+    .faq-card h4 {
+      font-size: 17px;
+      margin-bottom: 10px;
+      color: var(--text-dark);
+    }
+
+    .faq-card p {
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* ================= FOOTER (xLander Classic Dark) ================= */
+    footer {
+      background-color: var(--dark-bg);
+      color: #90A4AE;
+      padding: 65px 0 25px;
+      border-top: 4px solid var(--theme-color);
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr 1fr;
+      gap: 35px;
+      padding-bottom: 45px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .footer-col h4 {
+      color: var(--white);
+      font-size: 16px;
+      letter-spacing: 1px;
+      margin-bottom: 18px;
+    }
+
+    .footer-col p {
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    .footer-nav {
+      list-style: none;
+    }
+
+    .footer-nav li {
+      margin-bottom: 10px;
+    }
+
+    .footer-nav a {
+      color: #90A4AE;
+      font-size: 13px;
+    }
+
+    .footer-nav a:hover {
+      color: var(--theme-color);
+    }
+
+    .footer-bottom {
+      padding-top: 25px;
+      text-align: center;
+      font-size: 12px;
+      color: #607D8B;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* ================= RESPONSIVE ================= */
+    @media (max-width: 991px) {
+      .features-grid { grid-template-columns: 1fr 1fr; }
+      .counters-grid { grid-template-columns: 1fr 1fr; gap: 30px; }
+      .counter-item { border-right: none; }
+      .faq-container { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 767px) {
+      .main-nav { display: none; }
+      .intro-title { font-size: 34px; }
+      .features-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= HEADER ================= -->
+  <header id="header">
+    <div class="container">
+      <div class="navbar-wrap">
+        <a href="index.html" class="brand-logo">
+          <img src="img/logo.jpg" alt="Thekedaar App Logo">
+          <span class="logo-text">THEKE<span>DAAR</span></span>
+        </a>
+
+        <ul class="main-nav">
+          <li><a href="#intro" class="active">HOME</a></li>
+          <li><a href="#about">ABOUT</a></li>
+          <li><a href="#features">FEATURES</a></li>
+          <li><a href="#pricing">PRICING</a></li>
+          <li><a href="#faq">FAQ</a></li>
+          <li><a href="privacy.html">PRIVACY</a></li>
+          <li><a href="terms.html">TERMS</a></li>
+          <li><a href="refund.html">REFUND</a></li>
+          <li><a href="contact.html">CONTACTS</a></li>
+        </ul>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= INTRO / HERO SECTION ================= -->
+  <section id="intro">
+    <div class="container">
+      <div style="margin-bottom: 25px;">
+        <img src="img/logo.jpg" alt="Thekedaar App Icon" style="width: 110px; height: 110px; border-radius: 22px; box-shadow: 0 12px 30px rgba(0,0,0,0.45); border: 3px solid rgba(255,255,255,0.2);">
+      </div>
+      <span class="intro-tagline">SMART SITE ACCOUNTING SOFTWARE</span>
+      <h1 class="intro-title">CONSTRUCTION MANAGEMENT<br><span>MADE ULTRA SIMPLE</span></h1>
+      <p class="intro-desc">
+        Dairy aur register ka jhanjhat khatam. Multiple construction sites ka kharcha, mistri-majdoor ki haziri, vouchers ki photo aur client ka lena-dena ek hi jagah. 100% offline aur personal Google Drive backup ke sath.
+      </p>
+
+      <div class="intro-buttons">
+        <a href="#pricing" class="btn btn-theme">GET PRO ACCESS (₹299/MO)</a>
+        <a href="#features" class="btn btn-outline-white">DISCOVER FEATURES</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= STATS COUNTERS ================= -->
+  <div class="container">
+    <div class="counters-bar">
+      <div class="counters-grid">
+        <div class="counter-item">
+          <div class="counter-num">100<span>%</span></div>
+          <div class="counter-label">OFFLINE WORKING</div>
+        </div>
+        <div class="counter-item">
+          <div class="counter-num">0<span>₹</span></div>
+          <div class="counter-label">HIDDEN SETUP CHARGES</div>
+        </div>
+        <div class="counter-item">
+          <div class="counter-num">AES<span>256</span></div>
+          <div class="counter-label">DRIVE ENCRYPTED BACKUP</div>
+        </div>
+        <div class="counter-item">
+          <div class="counter-num">24<span>x7</span></div>
+          <div class="counter-label">DATA PRIVACY & SAFETY</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= ABOUT SECTION ================= -->
+  <section class="section-wrap" id="about">
+    <div class="container">
+      <div class="titlebar">
+        <h3>WHO WE ARE</h3>
+        <h2>BUILT FOR CIVIL CONTRACTORS</h2>
+        <p>Thekedaar app ko construction line ke real field challenges ko dekh kar design kiya gaya hai.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-item">
+          <div class="feature-icon-circle">🏗️</div>
+          <h4>MULTI-SITE TRACKING</h4>
+          <p>Har project ka alag budget, total material expense, aur customer payment record bina kisi confusion ke maintain karein.</p>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon-circle">👷</div>
+          <h4>LABOR HAZIRI REGISTER</h4>
+          <p>Mistri aur majdoor ki daily attendance, overtime, advance payments aur weekly settlement ek click me banayein.</p>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon-circle">🧾</div>
+          <h4>BILL & CHALLAN PHOTOS</h4>
+          <p>Cement, saria, ret aur gitti ke kachhe bills ki photo kheench kar site par attach karein. Bill kabhi kho nahi sakta.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FEATURES SECTION ================= -->
+  <section class="section-wrap bg-light" id="features">
+    <div class="container">
+      <div class="titlebar">
+        <h3>WHAT WE OFFER</h3>
+        <h2>POWERFUL MOBILE UTILITIES</h2>
+        <p>Bina kisi computer ya accounting software seekhe apne mobile se site control karein.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-item">
+          <div class="feature-icon-circle">💰</div>
+          <h4>PARTY & SUPPLIER LENA-DENA</h4>
+          <p>Kis client se kitne paise lene hain aur kis dukaandar ko kitna dena hai, transparent digital khata statement banayein.</p>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon-circle">⏰</div>
+          <h4>SITE VISITS & TASK ALERTS</h4>
+          <p>Kal kis site par meeting hai, kis client se milna hai, app scheduled notifications bhej kar timely yaad dilata hai.</p>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon-circle">☁️</div>
+          <h4>PRIVATE GOOGLE DRIVE SYNC</h4>
+          <p>Data hamare server par nahi, balki aapke personal Google account mein encrypted backup hota hai. 100% private & safe.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PRICING SECTION ================= -->
+  <section class="section-wrap" id="pricing">
+    <div class="container">
+      <div class="titlebar">
+        <h3>SIMPLE PRICING</h3>
+        <h2>THEKEDAAR PRO PLAN</h2>
+        <p>Sabhi contractors ke liye ek transparent, affordable monthly subscription.</p>
+      </div>
+
+      <div class="pricing-table-wrap">
+        <div class="pricing-table">
+          <div class="pricing-top">
+            <h4>PRO CONTRACTOR ACCESS</h4>
+            <div class="plan-subtitle">MONTHLY RENEWABLE SUBSCRIPTION</div>
+          </div>
+
+          <div class="price-amount">
+            <span class="currency">₹</span>
+            <span class="num">299</span>
+            <span class="cycle">PER MONTH • CANCEL ANYTIME</span>
+          </div>
+
+          <ul class="pricing-features">
+            <li><span class="icon-check">✓</span> Unlimited Construction Sites</li>
+            <li><span class="icon-check">✓</span> Unlimited Labor & Attendance Management</li>
+            <li><span class="icon-check">✓</span> Daily Bill & Voucher Photo Attachments</li>
+            <li><span class="icon-check">✓</span> Automated Encrypted Google Drive Sync</li>
+            <li><span class="icon-check">✓</span> PDF Reports & WhatsApp Sharing</li>
+            <li><span class="icon-check">✓</span> Site Visit & Task Reminder Alerts</li>
+            <li><span class="icon-check">✓</span> Dedicated WhatsApp Helpline Support</li>
+          </ul>
+
+          <div class="pricing-bottom">
+            <a href="contact.html" class="btn btn-theme" style="width: 100%;">
+              SUBSCRIBE VIA UPI / CARD (₹299)
+            </a>
+            <p style="font-size: 12px; color: #78909C; margin-top: 12px;">
+              Powered by Razorpay Verified Gateway. 7-Day Money Back Guarantee.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FAQ SECTION ================= -->
+  <section class="section-wrap bg-light" id="faq">
+    <div class="container">
+      <div class="titlebar">
+        <h3>FREQUENTLY ASKED</h3>
+        <h2>COMMON QUESTIONS</h2>
+      </div>
+
+      <div class="faq-container">
+        <div class="faq-card">
+          <h4>Agar site par internet connection na ho?</h4>
+          <p>Thekedaar app 100% offline chalta hai. Site par bina net ke hajri aur bills darj karein. Jab bhi internet aayega, data apne aap sync ho jayega.</p>
+        </div>
+
+        <div class="faq-card">
+          <h4>Agar phone badal jaye ya kho jaye?</h4>
+          <p>Aapka saara hisab aapki personal Google Drive par safe hota hai. Naye phone me app install karke Google Drive se ek click me poora data wapas aa jata hai.</p>
+        </div>
+
+        <div class="faq-card">
+          <h4>Subscription cancel kaise hogi?</h4>
+          <p>Aap kabhi bhi apne Google Pay, PhonePe ya Paytm app ke mandate section se ya app settings se subscription band kar sakte hain.</p>
+        </div>
+
+        <div class="faq-card">
+          <h4>Refund policy kya hai?</h4>
+          <p>Agar pehle 7 dino ke andar aapko service sahi na lage, to hume email/WhatsApp karein, aapka pura ₹299 refund ho jayega.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div class="brand-logo" style="margin-bottom: 15px;">
+            <img src="img/logo.jpg" alt="Thekedaar App Logo" style="width: 40px; height: 40px; border-radius: 8px;">
+            <span class="logo-text" style="color: #FFF;">THEKE<span style="color: var(--theme-color);">DAAR</span></span>
+          </div>
+          <p>India's leading mobile application for civil contractors, builders, and construction project supervisors.</p>
+        </div>
+
+        <div class="footer-col">
+          <h4>NAVIGATION</h4>
+          <ul class="footer-nav">
+            <li><a href="#intro">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#pricing">Pricing</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>LEGAL POLICIES</h4>
+          <ul class="footer-nav">
+            <li><a href="privacy.html">Privacy Policy</a></li>
+            <li><a href="terms.html">Terms & Conditions</a></li>
+            <li><a href="refund.html">Refund & Cancellation</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>CONTACT SUPPORT</h4>
+          <p><strong>Email:</strong> support@thekedaar.app</p>
+          <p style="margin-top: 5px;"><strong>Helpline:</strong> +91 98765 43210</p>
+          <p style="margin-top: 5px;">Mon - Sat (9:00 AM - 7:00 PM IST)</p>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        © 2026 THEKEDAAR APP. ALL RIGHTS RESERVED. SECURED BY RAZORPAY.
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>Contact Us - Thekedaar App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --theme: #E65100;
+      --dark: #1B2129;
+      --text: #455A64;
+      --heading: #263238;
+      --border: #ECEFF1;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Open Sans', sans-serif; color: var(--text); line-height: 1.8; background: #FFF; font-size: 15px; }
+    h1, h2, h3, h4 { font-family: 'Oswald', sans-serif; text-transform: uppercase; color: var(--heading); }
+    a { color: var(--theme); text-decoration: none; }
+    header { background: #FFF; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+    .nav-wrap { display: flex; justify-content: space-between; align-items: center; height: 75px; }
+    .brand-logo { display: flex; align-items: center; gap: 10px; font-family: 'Oswald', sans-serif; font-size: 24px; font-weight: 700; color: #1B2129; }
+    .brand-logo img { width: 38px; height: 38px; border-radius: 6px; }
+    .nav-links a { margin-left: 20px; font-family: 'Oswald', sans-serif; text-transform: uppercase; font-size: 14px; color: #546E7A; }
+    .nav-links a:hover { color: var(--theme); }
+    .page-header { background: var(--dark); color: #FFF; padding: 60px 0; text-align: center; border-bottom: 4px solid var(--theme); }
+    .page-header h1 { font-size: 38px; color: #FFF; letter-spacing: 1px; }
+    .contact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 25px; margin: 50px auto 40px; }
+    .contact-card { background: #FFF; border: 1px solid var(--border); border-radius: 6px; padding: 30px 22px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.04); transition: transform 0.25s ease; }
+    .contact-card:hover { transform: translateY(-4px); border-color: var(--theme); }
+    .icon { font-size: 36px; margin-bottom: 15px; }
+    .contact-card h4 { font-size: 18px; margin-bottom: 8px; color: #1B2129; }
+    .contact-card p { font-size: 14px; margin-bottom: 0; color: #607D8B; }
+    footer { background: var(--dark); color: #90A4AE; padding: 35px 0; text-align: center; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; border-top: 4px solid var(--theme); margin-top: 60px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav-wrap">
+      <a href="index.html" class="brand-logo"><img src="img/logo.jpg" alt="Thekedaar Logo"> THEKEDAAR</a>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="refund.html">Refund</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-header">
+    <div class="container">
+      <h1>CONTACT US</h1>
+      <p style="color: #B0BEC5; margin-top: 5px;">WE ARE HERE TO SUPPORT OUR CONTRACTOR COMMUNITY</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="contact-grid">
+      <div class="contact-card">
+        <div class="icon">📧</div>
+        <h4>EMAIL SUPPORT</h4>
+        <p><strong>support@thekedaar.app</strong></p>
+        <p style="margin-top: 6px; font-size: 12px;">Average response time: 24 hrs</p>
+      </div>
+
+      <div class="contact-card">
+        <div class="icon">💬</div>
+        <h4>WHATSAPP HELPLINE</h4>
+        <p><strong>+91 98765 43210</strong></p>
+        <p style="margin-top: 6px; font-size: 12px;">Mon - Sat (9:00 AM - 7:00 PM IST)</p>
+      </div>
+
+      <div class="contact-card">
+        <div class="icon">📍</div>
+        <h4>REGISTERED OFFICE</h4>
+        <p><strong>Thekedaar App Operations</strong></p>
+        <p style="margin-top: 6px; font-size: 12px;">India</p>
+      </div>
+
+      <div class="contact-card">
+        <div class="icon">🛡️</div>
+        <h4>GRIEVANCE OFFICER</h4>
+        <p><strong>Vikram (Founder)</strong></p>
+        <p style="margin-top: 6px; font-size: 12px;">Email: support@thekedaar.app</p>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    © 2026 Thekedaar App. All rights reserved. Powered by Razorpay.
+  </footer>
+</body>
+</html>

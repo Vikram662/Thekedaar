@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>Privacy Policy - Thekedaar App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --theme: #E65100;
+      --dark: #1B2129;
+      --text: #455A64;
+      --heading: #263238;
+      --border: #ECEFF1;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Open Sans', sans-serif; color: var(--text); line-height: 1.8; background: #FFF; font-size: 15px; }
+    h1, h2, h3, h4 { font-family: 'Oswald', sans-serif; text-transform: uppercase; color: var(--heading); }
+    a { color: var(--theme); text-decoration: none; }
+    header { background: #FFF; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+    .nav-wrap { display: flex; justify-content: space-between; align-items: center; height: 75px; }
+    .brand-logo { display: flex; align-items: center; gap: 10px; font-family: 'Oswald', sans-serif; font-size: 24px; font-weight: 700; color: #1B2129; }
+    .brand-logo img { width: 38px; height: 38px; border-radius: 6px; }
+    .nav-links a { margin-left: 20px; font-family: 'Oswald', sans-serif; text-transform: uppercase; font-size: 14px; color: #546E7A; }
+    .nav-links a:hover { color: var(--theme); }
+    .page-header { background: var(--dark); color: #FFF; padding: 60px 0; text-align: center; border-bottom: 4px solid var(--theme); }
+    .page-header h1 { font-size: 38px; color: #FFF; letter-spacing: 1px; }
+    .content-box { max-width: 860px; margin: 50px auto; padding: 40px; background: #FFF; border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); }
+    .content-box h2 { font-size: 19px; margin: 28px 0 10px; color: #1B2129; border-bottom: 2px solid var(--border); padding-bottom: 6px; }
+    .content-box p, .content-box ul { margin-bottom: 15px; }
+    .content-box ul { padding-left: 20px; }
+    footer { background: var(--dark); color: #90A4AE; padding: 35px 0; text-align: center; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; border-top: 4px solid var(--theme); margin-top: 60px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav-wrap">
+      <a href="index.html" class="brand-logo"><img src="img/logo.jpg" alt="Thekedaar Logo"> THEKEDAAR</a>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="terms.html">Terms</a>
+        <a href="refund.html">Refund</a>
+        <a href="contact.html">Contact</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-header">
+    <div class="container">
+      <h1>PRIVACY POLICY</h1>
+      <p style="color: #B0BEC5; margin-top: 5px;">LAST UPDATED: OCTOBER 2026</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="content-box">
+      <p>Welcome to <strong>Thekedaar</strong>. We prioritize user data privacy. This policy describes how our application collects, uses, and protects your information.</p>
+
+      <h2>1. Local-First Offline Architecture</h2>
+      <p>All your day-to-day data (sites, daily attendance, material bills, vouchers, supplier ledgers) is stored locally on your device in an encrypted SQLite database. We do not store your accounts on a central public server.</p>
+
+      <h2>2. Google Drive Encrypted Sync</h2>
+      <p>When you enable Google Drive backup, the app connects directly to your own Google account using Google's secure <code>drive.file</code> scope. The backup files and pictures are encrypted with AES-256 before upload. We never see your Google password or Drive files outside the Thekedaar folder.</p>
+
+      <h2>3. Payment Processing via Razorpay</h2>
+      <p>For Thekedaar Pro subscriptions (₹299/month), payments are processed directly by <strong>Razorpay Software Private Limited</strong>. We do not collect or store credit/debit card numbers or UPI PINs. Razorpay is fully PCI-DSS certified and governed by RBI norms.</p>
+
+      <h2>4. Camera & Storage Permissions</h2>
+      <p>Permissions are strictly used to capture receipt photos, vouchers, and materials challans. We never access your personal photo albums without permission.</p>
+
+      <h2>5. No Third-Party Data Selling</h2>
+      <p>We do not sell, rent, or trade your construction site details or financial records with any third-party marketing companies.</p>
+
+      <h2>6. Contact for Privacy Matters</h2>
+      <p>For inquiries, please write to <strong>support@thekedaar.app</strong> or visit our <a href="contact.html">Contact Us</a> page.</p>
+    </div>
+  </div>
+
+  <footer>
+    © 2026 Thekedaar App. All rights reserved. Powered by Razorpay.
+  </footer>
+</body>
+</html>

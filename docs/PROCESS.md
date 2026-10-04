@@ -39,21 +39,23 @@ Release APK ek **upload key** se sign hoti hai. Har naya version **isi key** se 
 Key yahan hai (project ke **bahar**, GitHub par kabhi nahi jaati):
 
 ```
-C:\Users\Devlopment\Thekedaar-signing\
+C:\Users\admin\Thekedaar-signing\
   upload-keystore.p12   ← asli key (PKCS12 = JKS jaisi hi)
   keystore-base64.txt   ← key text mein (GitHub secret ke liye)
   signing-info.txt      ← alias, PASSWORD, SHA-1, SHA-256
   upload-cert.pem       ← public certificate (secret nahi)
+  upload-key.pem        ← private key
 ```
 
 - Key alias: `upload`
 - Valid: 30 saal
-- SHA-1: `06:62:AB:E7:84:1B:B8:13:A9:6E:1F:22:D5:4B:14:87:64:84:F4:F0`
-- Password sirf `signing-info.txt` mein hai.
+- SHA-1: `FB:57:BF:C1:40:E7:43:9E:AA:67:26:EE:5F:36:55:D6:0A:C9:EF:33`
+- SHA-256: `A7:FB:F5:EB:B4:2F:AE:4B:9B:55:B9:63:37:1C:6D:E5:EB:90:37:6C:B0:4F:E5:34:F3:AB:E0:C7:2E:59:CB:5D`
+- Password: Jo aapne generate karte waqt set kiya hai (use `signing-info.txt` mein likh kar rakh lein).
 
 ### ⚠️ Backup zaroori
 
-Is poore folder ki copy 2 jagah rakhein, jaise pen drive aur apne Google Drive ka **private** folder.
+Is poore folder (`C:\Users\admin\Thekedaar-signing\`) ki copy 2 jagah rakhein, jaise pen drive aur apne Google Drive ka **private** folder.
 - Key kho gayi: Play Store par update ke liye Google se key reset karwani padegi (kuch din lagte hain).
 - Password kisi ko na dein, WhatsApp par na bhejein, GitHub par na daalein.
 
@@ -67,8 +69,8 @@ Har secret ke liye: *Name* likhein, *Secret* mein value paste karein, **Add secr
 
 | Name | Value kahan se |
 |---|---|
-| `ANDROID_KEYSTORE_BASE64` | `keystore-base64.txt` kholein (Notepad) → Ctrl+A → Ctrl+C → paste |
-| `ANDROID_KEYSTORE_PASSWORD` | `signing-info.txt` mein "Store password" ke aage wala text |
+| `ANDROID_KEYSTORE_BASE64` | `C:\Users\admin\Thekedaar-signing\keystore-base64.txt` kholein (Notepad) → Ctrl+A → Ctrl+C → paste |
+| `ANDROID_KEYSTORE_PASSWORD` | Jo password aapne create karte waqt daala tha |
 | `ANDROID_KEY_ALIAS` | `upload` |
 | `GOOGLE_SERVER_CLIENT_ID` | Section 4 ke baad milega (Drive backup ke liye) |
 
@@ -91,7 +93,7 @@ Iske bina app chalta hai, bas Drive backup band rehta hai.
 4. **APIs & Services → Credentials → Create credentials → OAuth client ID** (2 baar):
    - **Android** type
      - Package name: `com.thekedaar.thekedaar`
-     - SHA-1: `06:62:AB:E7:84:1B:B8:13:A9:6E:1F:22:D5:4B:14:87:64:84:F4:F0`
+     - SHA-1: `FB:57:BF:C1:40:E7:43:9E:AA:67:26:EE:5F:36:55:D6:0A:C9:EF:33`
    - **Web application** type → naam kuch bhi → Create → jo **Client ID** mile (`xxxx.apps.googleusercontent.com`) use copy karein
 5. GitHub secret `GOOGLE_SERVER_CLIENT_ID` = wo Web Client ID (Section 3)
 6. Naya build → **release APK** install karein → Settings → Backup & restore → Connect Google Drive
