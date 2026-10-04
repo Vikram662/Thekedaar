@@ -7,7 +7,7 @@
     {
       "binding": "DB",
       "database_name": "thekedaar-subscriptions",
-      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+      "database_id": "107c043a-bed9-4b88-899a-2c1f9724b28f"
     }
   ],
   "vars": {
