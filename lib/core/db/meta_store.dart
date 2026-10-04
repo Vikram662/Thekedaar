@@ -56,11 +56,10 @@ class MetaStore {
 
   Future<bool> getBool(String key) async => (await get(key)) == 'true';
 
-  Future<void> set(String key, String value) => _db
-      .into(_db.appMeta)
-      .insertOnConflictUpdate(
-        AppMetaCompanion.insert(metaKey: key, metaValue: value),
-      );
+  Future<void> set(String key, String value) =>
+      _db.into(_db.appMeta).insertOnConflictUpdate(
+            AppMetaCompanion.insert(metaKey: key, metaValue: value),
+          );
 
   Future<void> setInt(String key, int value) => set(key, '$value');
 
@@ -70,20 +69,18 @@ class MetaStore {
       (_db.delete(_db.appMeta)..where((m) => m.metaKey.equals(key))).go();
 
   /// Emits the value of [key] whenever it changes.
-  Stream<String?> watch(String key) => (_db.select(_db.appMeta)
-        ..where((m) => m.metaKey.equals(key)))
-      .watchSingleOrNull()
-      .map((row) => row?.metaValue);
+  Stream<String?> watch(String key) =>
+      (_db.select(_db.appMeta)..where((m) => m.metaKey.equals(key)))
+          .watchSingleOrNull()
+          .map((row) => row?.metaValue);
 
   /// Emits the whole table as a map whenever any key changes.
-  Stream<Map<String, String>> watchAll() =>
-      _db.select(_db.appMeta).watch().map(
-            (rows) => {for (final row in rows) row.metaKey: row.metaValue},
-          );
+  Stream<Map<String, String>> watchAll() => _db.select(_db.appMeta).watch().map(
+        (rows) => {for (final row in rows) row.metaKey: row.metaValue},
+      );
 }
 
 extension MetaStoreValue on Map<String, String> {
   int? intValue(String key) => int.tryParse(this[key] ?? '');
   bool boolValue(String key) => this[key] == 'true';
 }
-

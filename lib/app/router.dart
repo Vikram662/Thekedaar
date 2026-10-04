@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/db/enums.dart';
@@ -34,6 +35,10 @@ import '../features/workers/presentation/change_wage_screen.dart';
 import '../features/workers/presentation/worker_detail_screen.dart';
 import '../features/workers/presentation/worker_form_screen.dart';
 import '../features/workers/presentation/workers_screen.dart';
+import '../features/tasks/presentation/tasks_screen.dart';
+import '../features/tasks/presentation/task_form_screen.dart';
+import '../features/subscription/presentation/subscription_screen.dart';
+import '../features/subscription/subscription_controller.dart';
 import 'home_shell.dart';
 
 abstract final class Routes {
@@ -76,7 +81,8 @@ abstract final class Routes {
       workerId == null ? '/khata/piece' : '/khata/piece?workerId=$workerId';
   static String settle(String workerId) => '/khata/settle/$workerId';
 
-  static String newDocument(DocumentKind kind, {String? clientId, String? jobId}) =>
+  static String newDocument(DocumentKind kind,
+          {String? clientId, String? jobId}) =>
       '/doc/new?kind=${kind.name}'
       '${clientId == null ? '' : '&clientId=$clientId'}'
       '${jobId == null ? '' : '&jobId=$jobId'}';
@@ -114,6 +120,11 @@ abstract final class Routes {
   static String dues([int tab = 0]) => '/dues?tab=$tab';
   static const calendar = '/calendar';
 
+  // Module C8: Tasks & Site Visits Reminders
+  static const tasks = '/tasks';
+  static const addTask = '/tasks/new';
+  static String editTask(String id) => '/tasks/$id/edit';
+
   static const settings = '/settings';
   static const businessProfile = '/settings/business';
   static const rules = '/settings/rules';
@@ -121,15 +132,22 @@ abstract final class Routes {
   static const backup = '/settings/backup';
   static const appLock = '/settings/lock';
   static const reminders = '/settings/reminders';
+  static const notificationSettings = '/settings/reminders';
+  static const subscription = '/settings/subscription';
 }
 
-GoRouter buildRouter({required String initialLocation}) {
-  String? q(GoRouterState state, String key) =>
-      state.uri.queryParameters[key];
+GoRouter buildRouter(
+    {required String initialLocation, required WidgetRef ref}) {
+  String? q(GoRouterState state, String key) => state.uri.queryParameters[key];
   String id(GoRouterState state) => state.pathParameters['id']!;
 
   return GoRouter(
     initialLocation: initialLocation,
+    redirect: (context, state) {
+      if (!_isDataEntryPath(state.uri.path)) return null;
+      final access = ref.read(subscriptionControllerProvider).valueOrNull;
+      return access?.canWrite == true ? null : Routes.subscription;
+    },
     routes: [
       GoRoute(
         path: Routes.onboarding,
@@ -195,13 +213,11 @@ GoRouter buildRouter({required String initialLocation}) {
         routes: [
           GoRoute(
             path: 'edit',
-            builder: (context, state) =>
-                WorkerFormScreen(workerId: id(state)),
+            builder: (context, state) => WorkerFormScreen(workerId: id(state)),
           ),
           GoRoute(
             path: 'wage',
-            builder: (context, state) =>
-                ChangeWageScreen(workerId: id(state)),
+            builder: (context, state) => ChangeWageScreen(workerId: id(state)),
           ),
         ],
       ),
@@ -211,7 +227,9 @@ GoRouter buildRouter({required String initialLocation}) {
           final type = q(state, 'type');
           return LedgerEntryScreen(
             workerId: q(state, 'workerId'),
-            type: type == null ? LedgerType.advance : LedgerType.values.byName(type),
+            type: type == null
+                ? LedgerType.advance
+                : LedgerType.values.byName(type),
           );
         },
       ),
@@ -234,7 +252,8 @@ GoRouter buildRouter({required String initialLocation}) {
       ),
       GoRoute(
         path: '/doc/:id',
-        builder: (context, state) => DocumentDetailScreen(documentId: id(state)),
+        builder: (context, state) =>
+            DocumentDetailScreen(documentId: id(state)),
         routes: [
           GoRoute(
             path: 'edit',
@@ -336,6 +355,18 @@ GoRouter buildRouter({required String initialLocation}) {
         builder: (context, state) => const CalendarScreen(),
       ),
       GoRoute(
+        path: Routes.tasks,
+        builder: (context, state) => const TasksScreen(),
+      ),
+      GoRoute(
+        path: Routes.addTask,
+        builder: (context, state) => const TaskFormScreen(),
+      ),
+      GoRoute(
+        path: '/tasks/:id/edit',
+        builder: (context, state) => TaskFormScreen(taskId: id(state)),
+      ),
+      GoRoute(
         path: Routes.settings,
         builder: (context, state) => const SettingsScreen(),
         routes: [
@@ -363,10 +394,34 @@ GoRouter buildRouter({required String initialLocation}) {
             path: 'reminders',
             builder: (context, state) => const RemindersScreen(),
           ),
+          GoRoute(
+            path: 'subscription',
+            builder: (context, state) => const SubscriptionScreen(),
+          ),
         ],
       ),
     ],
   );
+}
+
+bool _isDataEntryPath(String path) {
+  if (const {
+    '/worker/new',
+    '/khata/entry',
+    '/khata/piece',
+    '/doc/new',
+    '/client/new',
+    '/payment/new',
+    '/expenses/new',
+    '/job/new',
+    '/supplier/new',
+    '/tasks/new',
+  }.contains(path)) {
+    return true;
+  }
+  return RegExp(
+    r'^/(worker/[^/]+/(edit|wage)|khata/settle/[^/]+|doc/[^/]+/edit|client/[^/]+/edit|job/[^/]+/edit|supplier/[^/]+/(edit|entry)|tasks/[^/]+/edit)$',
+  ).hasMatch(path);
 }
 
 /// Shared "not found" body for detail pages whose record disappeared.

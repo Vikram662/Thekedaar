@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +8,7 @@ import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/db/enums.dart';
 import '../../../core/utils/phone.dart';
+import '../../subscription/subscription_controller.dart';
 import '../data/onboarding_repository.dart';
 import 'trade_icons.dart';
 
@@ -57,6 +60,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             phone: normalizeIndianPhone(_phone.text),
             trades: _trades,
           );
+      unawaited(ref.read(subscriptionControllerProvider.notifier).refresh());
       if (!mounted) return;
       context.go(Routes.dashboard);
     } catch (error) {
@@ -130,7 +134,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.restore),
               title: const Text('Already using Thekedaar?'),
-              subtitle: const Text('Restore your data from Google Drive or a backup file'),
+              subtitle: const Text(
+                  'Restore your data from Google Drive or a backup file'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => context.push(Routes.restore),
             ),

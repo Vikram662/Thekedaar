@@ -2,6 +2,8 @@ import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest.dart' as tz_data;
+import 'package:timezone/timezone.dart' as tz;
 
 /// Kinds of local notification (PRD DB-07, D3.1, D4). Each has a fixed id,
 /// so a newer one replaces the older one instead of piling up.
@@ -12,7 +14,8 @@ enum NotificationKind {
   overdueBills(4, 'payments', 'Payment reminders'),
   monthEnd(5, 'khata', 'Khata reminders'),
   holiday(6, 'khata', 'Khata reminders'),
-  backupProgress(7, 'backup_progress', 'Backup progress');
+  backupProgress(7, 'backup_progress', 'Backup progress'),
+  taskReminder(8, 'tasks', 'Tasks & Site Visits');
 
   const NotificationKind(this.id, this.channelId, this.channelName);
 
@@ -53,6 +56,8 @@ class AppNotifications {
     if (_ready) return true;
     if (!Platform.isAndroid) return false;
     try {
+      tz_data.initializeTimeZones();
+      tz.setLocalLocation(tz.getLocation('Asia/Kolkata'));
       _plugin ??= FlutterLocalNotificationsPlugin();
       await _p.initialize(
         const InitializationSettings(
@@ -159,6 +164,110 @@ class AppNotifications {
     if (!await _init()) return;
     try {
       await _p.cancel(kind.id);
+    } catch (_) {}
+  }
+
+  /// Schedules the one-hour warning, the event alarm, and optional same-day
+  /// repeats. A task owns a deterministic block of notification IDs so every
+  /// future alarm can be cancelled when it is edited, switched off or done.
+  Future<void> scheduleTaskNotifications({
+    required String taskId,
+    required String title,
+    required String body,
+    required DateTime scheduledAt,
+    int? intervalMinutes,
+  }) async {
+    if (!await _init()) return;
+    await cancelTaskNotifications(taskId);
+
+    final now = DateTime.now();
+    final times = <DateTime>[];
+    final lead = scheduledAt.subtract(const Duration(hours: 1));
+    if (lead.isAfter(now)) times.add(lead);
+    if (scheduledAt.isAfter(now)) times.add(scheduledAt);
+
+    final interval = intervalMinutes ?? 0;
+    if (interval > 0) {
+      final endOfDay = DateTime(
+        scheduledAt.year,
+        scheduledAt.month,
+        scheduledAt.day,
+        23,
+        59,
+        59,
+      );
+      var next = scheduledAt.add(Duration(minutes: interval));
+      while (next.isBefore(endOfDay) && times.length < _taskAlarmSlots) {
+        if (next.isAfter(now)) times.add(next);
+        next = next.add(Duration(minutes: interval));
+      }
+    }
+
+    final details = NotificationDetails(
+      android: AndroidNotificationDetails(
+        NotificationKind.taskReminder.channelId,
+        NotificationKind.taskReminder.channelName,
+        importance: Importance.max,
+        priority: Priority.high,
+        playSound: true,
+        enableVibration: true,
+        styleInformation: BigTextStyleInformation(body),
+      ),
+    );
+    for (var i = 0; i < times.length; i++) {
+      try {
+        await _p.zonedSchedule(
+          _taskNotificationId(taskId, i),
+          title,
+          body,
+          tz.TZDateTime.from(times[i], tz.local),
+          details,
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          payload: NotificationKind.taskReminder.name,
+        );
+      } catch (error) {
+        // Some phones deny exact-alarm access. Keep the reminder useful with
+        // an inexact offline alarm instead of silently losing it.
+        try {
+          await _p.zonedSchedule(
+            _taskNotificationId(taskId, i),
+            title,
+            body,
+            tz.TZDateTime.from(times[i], tz.local),
+            details,
+            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+            payload: NotificationKind.taskReminder.name,
+          );
+        } catch (fallbackError) {
+          debugPrint('Task alarm scheduling failed: $fallbackError');
+        }
+      }
+    }
+  }
+
+  Future<void> cancelTaskNotifications(String taskId) async {
+    if (!await _init()) return;
+    for (var i = 0; i < _taskAlarmSlots; i++) {
+      try {
+        await _p.cancel(_taskNotificationId(taskId, i));
+      } catch (_) {}
+    }
+  }
+
+  static const _taskAlarmSlots = 32;
+
+  static int _taskNotificationId(String value, int slot) {
+    var hash = 0x811c9dc5;
+    for (final unit in value.codeUnits) {
+      hash = ((hash ^ unit) * 0x01000193) & 0x7fffffff;
+    }
+    return 1000 + (hash % 50000) * _taskAlarmSlots + slot;
+  }
+
+  Future<void> cancelId(int id) async {
+    if (!await _init()) return;
+    try {
+      await _p.cancel(id);
     } catch (_) {}
   }
 }

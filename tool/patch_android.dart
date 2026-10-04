@@ -6,6 +6,7 @@
 // - MainActivity extends FlutterFragmentActivity (local_auth)
 // - permissions: INTERNET (Drive in release), ACCESS_NETWORK_STATE,
 //   USE_BIOMETRIC, POST_NOTIFICATIONS (reminders on Android 13+)
+//   SCHEDULE_EXACT_ALARM (offline task alarms)
 // - <queries> for upi:// so UPI apps can be opened (Android 11+)
 // - core library desugaring (flutter_local_notifications)
 // - AppCompat launch theme + dependency (local_auth on Android 8 and below)
@@ -18,6 +19,7 @@ void main() {
   _patchManifest();
   _patchStyles();
   _patchGradle();
+  _patchFirebaseGradle();
   stdout.writeln('Android project patched.');
 }
 
@@ -47,8 +49,11 @@ void _patchManifest() {
     'android.permission.ACCESS_NETWORK_STATE',
     'android.permission.USE_BIOMETRIC',
     'android.permission.POST_NOTIFICATIONS',
+    'android.permission.SCHEDULE_EXACT_ALARM',
   ];
   var out = text;
+  out =
+      out.replaceAll('android:label="thekedaar"', 'android:label="Thekedaar"');
   final missing = permissions.where((p) => !out.contains('"$p"')).toList();
   if (missing.isNotEmpty) {
     final lines = missing
@@ -58,6 +63,8 @@ void _patchManifest() {
     out = '${out.substring(0, manifestTag.end)}\n$lines'
         '${out.substring(manifestTag.end)}';
   }
+  out =
+      out.replaceAll('android:label="thekedaar"', 'android:label="Thekedaar"');
   if (!out.contains('android:scheme="upi"')) {
     const upiIntent = '''
         <intent>
@@ -72,6 +79,38 @@ void _patchManifest() {
           );
   }
   if (out != text) file.writeAsStringSync(out);
+}
+
+/// Enables Firebase only when google-services.json is available. This keeps
+/// builds without the optional GitHub Firebase secret working normally.
+void _patchFirebaseGradle() {
+  if (!File('android/app/google-services.json').existsSync()) return;
+
+  final settings = File('android/settings.gradle.kts');
+  if (settings.existsSync()) {
+    var text = settings.readAsStringSync();
+    if (!text.contains('com.google.gms.google-services')) {
+      text = text.replaceFirst(
+        'id("com.android.application")',
+        'id("com.google.gms.google-services") version "4.3.15" apply false\n'
+            '    id("com.android.application")',
+      );
+      settings.writeAsStringSync(text);
+    }
+  }
+
+  final app = File('android/app/build.gradle.kts');
+  if (app.existsSync()) {
+    var text = app.readAsStringSync();
+    if (!text.contains('id("com.google.gms.google-services")')) {
+      text = text.replaceFirst(
+        'id("com.android.application")',
+        'id("com.android.application")\n'
+            '    id("com.google.gms.google-services")',
+      );
+      app.writeAsStringSync(text);
+    }
+  }
 }
 
 void _patchStyles() {
@@ -119,7 +158,8 @@ void _patchGradle() {
     stderr.writeln('WARNING: Groovy build.gradle found; release signing '
         'is only patched for build.gradle.kts.');
     var text = groovy.readAsStringSync();
-    text = text.replaceAll('minSdkVersion flutter.minSdkVersion', 'minSdkVersion 24');
+    text = text.replaceAll(
+        'minSdkVersion flutter.minSdkVersion', 'minSdkVersion 24');
     text = text.replaceAll('minSdk = flutter.minSdkVersion', 'minSdk = 24');
     if (!text.contains('androidx.appcompat:appcompat')) {
       text += '\ndependencies {\n'

@@ -6,5 +6,9 @@ abstract final class AppConfig {
   static const googleServerClientId =
       String.fromEnvironment('GOOGLE_SERVER_CLIENT_ID');
 
+  static const subscriptionApiUrl =
+      String.fromEnvironment('SUBSCRIPTION_API_URL');
+
   static bool get driveConfigured => googleServerClientId.isNotEmpty;
+  static bool get subscriptionConfigured => subscriptionApiUrl.isNotEmpty;
 }

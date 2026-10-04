@@ -146,7 +146,8 @@ class _Legend extends StatelessWidget {
               children: [
                 _Mark(status: s, size: 22),
                 const SizedBox(width: 4),
-                Text(statusStyle(s).label, style: const TextStyle(fontSize: 12)),
+                Text(statusStyle(s).label,
+                    style: const TextStyle(fontSize: 12)),
               ],
             ),
         ],
@@ -354,7 +355,6 @@ class _Cell extends ConsumerWidget {
       ),
     );
   }
-
 }
 
 /// Coloured letter badge: P / ½ / A / Off / PL / UL.

@@ -415,3 +415,25 @@ class BackupLogs extends Table {
   @override
   Set<Column<Object>> get primaryKey => {id};
 }
+
+// ─── Site Tasks & Visits Reminders (PRD C8) ──────────────────────────────────
+
+@DataClassName('TaskReminder')
+class TaskReminders extends Table {
+  TextColumn get id => text()();
+  TextColumn get title => text()();
+  TextColumn get taskType => textEnum<TaskType>()();
+  TextColumn get jobId => text().nullable().references(Jobs, #id)();
+  TextColumn get personName => text().nullable()();
+  TextColumn get phone => text().nullable()();
+  IntColumn get scheduledAt => integer()(); // epoch ms
+  IntColumn get intervalMinutes => integer().nullable()();
+  BoolColumn get isAlertActive => boolean().withDefault(const Constant(true))();
+  BoolColumn get isCompleted => boolean().withDefault(const Constant(false))();
+  TextColumn get notes => text().nullable()();
+  IntColumn get createdAt => integer().clientDefault(nowMs)();
+  IntColumn get updatedAt => integer().clientDefault(nowMs)();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}

@@ -16,6 +16,7 @@ import '../../../core/widgets/common.dart';
 import '../../attendance/data/attendance_repository.dart';
 import '../../backup/presentation/backup_screen.dart';
 import '../../reports/presentation/dues_screen.dart';
+import '../../tasks/data/tasks_repository.dart';
 import '../../workers/data/workers_repository.dart';
 
 final _presentTodayProvider = StreamProvider<List<Worker>>(
@@ -50,6 +51,8 @@ class DashboardScreen extends ConsumerWidget {
           const _HeroCard(),
           const SizedBox(height: 20),
           const _QuickActions(),
+          const SizedBox(height: 20),
+          const _TasksPreviewCard(),
           const SizedBox(height: 20),
           const _TodayCard(),
         ],
@@ -309,6 +312,167 @@ class _QuickAction extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Quick card showing pending/overdue tasks & site visits (Module C8).
+class _TasksPreviewCard extends ConsumerWidget {
+  const _TasksPreviewCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final pendingAsync = ref.watch(pendingTasksProvider);
+
+    return pendingAsync.when(
+      data: (tasks) {
+        if (tasks.isEmpty) {
+          return Panel(
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.amber100,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.task_alt, color: AppColors.warningText),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Tasks & Visits',
+                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                      ),
+                      Text(
+                        'No pending tasks. Stay on track!',
+                        style: TextStyle(color: AppColors.slate600, fontSize: 13),
+                      ),
+                    ],
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => context.push(Routes.addTask),
+                  child: const Text('+ Add'),
+                ),
+              ],
+            ),
+          );
+        }
+
+        final now = DateTime.now();
+        final overdueCount = tasks.where((t) => t.dueAt.isBefore(now)).length;
+        final nextTask = tasks.first;
+        final df = DateFormat('dd MMM, hh:mm a');
+
+        return Panel(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: overdueCount > 0 ? AppColors.dangerSurface : AppColors.amber100,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      overdueCount > 0 ? Icons.notification_important : Icons.task_alt,
+                      color: overdueCount > 0 ? AppColors.dangerText : AppColors.warningText,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Text(
+                              'Tasks & Visits',
+                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                            ),
+                            if (overdueCount > 0) ...[
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: AppColors.dangerFill,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  '$overdueCount Overdue',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        Text(
+                          '${tasks.length} pending scheduled',
+                          style: const TextStyle(color: AppColors.slate600, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => context.push(Routes.tasks),
+                    child: const Text('View all'),
+                  ),
+                ],
+              ),
+              const Divider(height: 20),
+              InkWell(
+                onTap: () => context.push(Routes.tasks),
+                child: Row(
+                  children: [
+                    Icon(
+                      nextTask.taskType.icon,
+                      size: 18,
+                      color: AppColors.slate600,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        nextTask.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      df.format(nextTask.dueAt),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: nextTask.dueAt.isBefore(now)
+                            ? AppColors.dangerText
+                            : AppColors.slate600,
+                        fontWeight: nextTask.dueAt.isBefore(now)
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 }

@@ -76,3 +76,11 @@ test/
 - Schema badle to `AppDatabase.currentSchemaVersion` badhayein aur migration step jodein.
 - Secrets (PIN hash, backup key, device id) secure storage mein, DB mein nahi.
 - Generated files (`*.g.dart`) commit nahi hoti, CI banata hai.
+
+## Razorpay subscription + Cloudflare Worker (PRD C9)
+
+Secure backend code `cloudflare-subscription/` mein hai. Us folder ka README follow
+karke D1 migration, encrypted Razorpay secrets aur Worker deploy karein. Worker URL
+GitHub Actions secret `SUBSCRIPTION_API_URL` mein daalein, for example
+`https://thekedaar-subscription-api.<account>.workers.dev`. Razorpay Key Secret
+kabhi Flutter app, GitHub source, ya chat mein na daalein.

@@ -2,89 +2,178 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <title>Terms and Conditions - Thekedaar App</title>
+  <meta name="description" content="Terms of Service and Conditions for Thekedaar Application.">
+
+  <!-- Google Fonts: Oswald & Open Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
     :root {
-      --theme: #E65100;
-      --dark: #1B2129;
-      --text: #455A64;
-      --heading: #263238;
-      --border: #ECEFF1;
+      --theme-color: #E65100;
+      --theme-hover: #BF360C;
+      --dark-bg: #1B2129;
+      --text-dark: #2B313B;
+      --text-gray: #546E7A;
+      --border-color: #ECEFF1;
+      --white: #FFFFFF;
     }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Open Sans', sans-serif; color: var(--text); line-height: 1.8; background: #FFF; font-size: 15px; }
-    h1, h2, h3, h4 { font-family: 'Oswald', sans-serif; text-transform: uppercase; color: var(--heading); }
-    a { color: var(--theme); text-decoration: none; }
-    header { background: #FFF; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
-    .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
-    .nav-wrap { display: flex; justify-content: space-between; align-items: center; height: 75px; }
-    .brand-logo { display: flex; align-items: center; gap: 10px; font-family: 'Oswald', sans-serif; font-size: 24px; font-weight: 700; color: #1B2129; }
-    .brand-logo img { width: 38px; height: 38px; border-radius: 6px; }
-    .nav-links a { margin-left: 20px; font-family: 'Oswald', sans-serif; text-transform: uppercase; font-size: 14px; color: #546E7A; }
-    .nav-links a:hover { color: var(--theme); }
-    .page-header { background: var(--dark); color: #FFF; padding: 60px 0; text-align: center; border-bottom: 4px solid var(--theme); }
-    .page-header h1 { font-size: 38px; color: #FFF; letter-spacing: 1px; }
-    .content-box { max-width: 860px; margin: 50px auto; padding: 40px; background: #FFF; border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); }
-    .content-box h2 { font-size: 19px; margin: 28px 0 10px; color: #1B2129; border-bottom: 2px solid var(--border); padding-bottom: 6px; }
-    .content-box p, .content-box ul { margin-bottom: 15px; }
-    .content-box ul { padding-left: 20px; }
-    footer { background: var(--dark); color: #90A4AE; padding: 35px 0; text-align: center; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; border-top: 4px solid var(--theme); margin-top: 60px; }
+    body { font-family: 'Open Sans', sans-serif; font-size: 15px; line-height: 1.8; color: var(--text-gray); background-color: var(--white); }
+    h1, h2, h3, h4 { font-family: 'Oswald', sans-serif; text-transform: uppercase; color: var(--text-dark); font-weight: 600; }
+    a { text-decoration: none; transition: all 0.3s ease; }
+
+    .container { width: 100%; max-width: 1170px; margin: 0 auto; padding: 0 20px; }
+
+    /* HEADER */
+    #header {
+      background-color: rgba(255, 255, 255, 0.98);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky; top: 0; z-index: 999;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .navbar-wrap { display: flex; justify-content: space-between; align-items: center; height: 80px; }
+    .brand-logo { display: flex; align-items: center; gap: 12px; }
+    .brand-logo img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; }
+    .logo-text { font-family: 'Oswald', sans-serif; font-size: 26px; font-weight: 700; color: var(--text-dark); letter-spacing: 1px; }
+    .logo-text span { color: var(--theme-color); }
+    .main-nav { display: flex; gap: 28px; align-items: center; list-style: none; }
+    .main-nav a { font-family: 'Oswald', sans-serif; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #546E7A; font-weight: 500; }
+    .main-nav a:hover, .main-nav a.active { color: var(--theme-color); font-weight: 700; }
+
+    /* PAGE TITLE */
+    .page-header { background: var(--dark-bg); color: var(--white); padding: 60px 0; text-align: center; border-bottom: 4px solid var(--theme-color); }
+    .page-header h1 { font-size: 40px; color: var(--white); letter-spacing: 1px; }
+    .page-header p { color: #90A4AE; font-size: 14px; margin-top: 6px; }
+
+    /* CONTENT BOX */
+    .content-box { max-width: 880px; margin: 55px auto; padding: 45px; background: var(--white); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 18px rgba(0,0,0,0.04); }
+    .content-box h2 { font-size: 20px; margin: 30px 0 10px; color: var(--text-dark); border-bottom: 2px solid var(--border-color); padding-bottom: 6px; }
+    .content-box p, .content-box ul { margin-bottom: 16px; }
+    .content-box ul { padding-left: 22px; }
+    .content-box li { margin-bottom: 6px; }
+
+    /* FOOTER */
+    footer { background-color: var(--dark-bg); color: #90A4AE; padding: 65px 0 25px; border-top: 4px solid var(--theme-color); margin-top: 60px; }
+    .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 40px; padding-bottom: 45px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .footer-col h4 { color: var(--white); font-size: 16px; letter-spacing: 1px; margin-bottom: 18px; }
+    .footer-col p { font-size: 13px; line-height: 1.8; }
+    .footer-nav { list-style: none; }
+    .footer-nav li { margin-bottom: 10px; }
+    .footer-nav a { color: #90A4AE; font-size: 13px; }
+    .footer-nav a:hover { color: var(--theme-color); }
+    .footer-bottom { padding-top: 25px; text-align: center; font-size: 12px; color: #607D8B; text-transform: uppercase; letter-spacing: 1px; }
+
+    @media (max-width: 767px) {
+      .main-nav { display: none; }
+      .footer-grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
-  <header>
-    <div class="container nav-wrap">
-      <a href="index.html" class="brand-logo"><img src="img/logo.jpg" alt="Thekedaar Logo"> THEKEDAAR</a>
-      <div class="nav-links">
-        <a href="index.html">Home</a>
-        <a href="privacy.html">Privacy</a>
-        <a href="refund.html">Refund</a>
-        <a href="contact.html">Contact</a>
+
+  <!-- ================= HEADER (5 PAGES ONLY) ================= -->
+  <header id="header">
+    <div class="container">
+      <div class="navbar-wrap">
+        <a href="index.html" class="brand-logo">
+          <img src="img/logo.jpg" alt="Thekedaar App Logo">
+          <span class="logo-text">THEKE<span>DAAR</span></span>
+        </a>
+
+        <ul class="main-nav">
+          <li><a href="index.html">HOME</a></li>
+          <li><a href="privacy.html">PRIVACY POLICY</a></li>
+          <li><a href="terms.html" class="active">TERMS & CONDITIONS</a></li>
+          <li><a href="refund.html">REFUND POLICY</a></li>
+          <li><a href="contact.html">CONTACT US</a></li>
+        </ul>
       </div>
     </div>
   </header>
 
+  <!-- ================= TITLEBAR ================= -->
   <div class="page-header">
     <div class="container">
       <h1>TERMS AND CONDITIONS</h1>
-      <p style="color: #B0BEC5; margin-top: 5px;">LAST UPDATED: OCTOBER 2026</p>
+      <p>EFFECTIVE DATE: OCTOBER 4, 2026</p>
     </div>
   </div>
 
+  <!-- ================= CONTENT ================= -->
   <div class="container">
     <div class="content-box">
-      <p>These Terms and Conditions govern your use of the <strong>Thekedaar</strong> software service. By accessing or using our application, you agree to comply with and be bound by these terms.</p>
+      <p>These Terms and Conditions constitute a legally binding agreement between you and <strong>Thekedaar</strong> concerning your access to and use of our mobile application and related software services.</p>
 
-      <h2>1. Overview of Services</h2>
-      <p>Thekedaar provides digital management tools for civil construction contractors, site supervisors, and builders, including attendance tracking, material billing, reminders, and backup tools.</p>
+      <h2>1. Purpose of Service</h2>
+      <p>Thekedaar offers software utilities designed for civil contractors, project engineers, and builders to record site events, track labor attendance, document material expenses, and manage project ledger accounts.</p>
 
-      <h2>2. Subscription Billing & Fees</h2>
+      <h2>2. Subscription Model & Data Entry Access</h2>
       <ul>
-        <li><strong>Subscription Fee:</strong> The Pro plan fee is ₹299 per month.</li>
-        <li><strong>Autopay Mandate:</strong> Subscriptions are auto-renewed periodically via UPI Autopay, e-Mandate, or debit/credit card through Razorpay until cancelled by the user.</li>
-        <li><strong>Cancellation:</strong> You may cancel the autopay mandate at any time from your UPI app (PhonePe, Google Pay, Paytm) or inside app settings.</li>
+        <li><strong>Free Exploration Tier:</strong> Contractors may register their business account, explore all interface features, and view demo workflows at zero cost without entering payment credentials.</li>
+        <li><strong>Paid Data Entry (Pro Access):</strong> To create active construction sites, log worker attendance, record material transactions, and perform cloud synchronization, an active subscription of <strong>₹99 per month</strong> (inclusive of applicable taxes) is required.</li>
+        <li><strong>Recurring Billing:</strong> Subscriptions are established through e-Mandates, UPI Autopay, or card billing processed via Razorpay, authorizing scheduled debits every 30 days until cancelled.</li>
+        <li><strong>Cancellation Policy:</strong> You may cancel future recurring debits at any time directly through your UPI application (Google Pay, PhonePe, Paytm, BHIM) or via app settings. Upon cancellation, access remains active until the end of the paid 30-day billing cycle.</li>
       </ul>
 
-      <h2>3. Data Ownership & User Responsibility</h2>
-      <p>Users maintain full ownership over all financial entries and project photos. Because the app works offline, users are advised to enable the built-in encrypted Google Drive sync to protect against device loss or damage.</p>
+      <h2>3. Data Ownership & Cloud Backup</h2>
+      <p>You retain exclusive ownership of all project entries, photographs, and business ledgers recorded within the application. Because data is stored on local device storage, users are strongly advised to configure the provided encrypted Google Drive backup to guard against device loss or damage.</p>
 
-      <h2>4. Prohibited Uses</h2>
-      <p>Users shall not reverse engineer, decompile, redistribute, or tamper with the application code or security layers.</p>
+      <h2>4. Permitted Use</h2>
+      <p>You agree not to reverse engineer, decompile, redistribute, modify, or unlawfully exploit any component of Thekedaar application software.</p>
 
-      <h2>5. Dispute Resolution & Governing Law</h2>
-      <p>These terms shall be governed by and interpreted under the laws of the Republic of India.</p>
+      <h2>5. Limitation of Liability</h2>
+      <p>Thekedaar serves as an operational calculation and record-keeping tool. We do not assume liability for commercial contract disputes between contractors, sub-contractors, laborers, or third-party material vendors.</p>
 
-      <h2>6. Contact Us</h2>
-      <p>Questions about the Terms should be sent to <strong>support@thekedaar.app</strong> or via our <a href="contact.html">Contact Page</a>.</p>
+      <h2>6. Governing Law & Jurisdiction</h2>
+      <p>These terms shall be governed by and interpreted under the commercial laws of India, subject to the jurisdiction of the competent courts.</p>
+
+      <h2>7. Inquiries Concerning Terms</h2>
+      <p>For inquiries regarding these Terms and Conditions, please contact us at <strong>support@thekedaar.app</strong> or visit our <a href="contact.html" style="color: var(--theme-color);">Contact Page</a>.</p>
     </div>
   </div>
 
+  <!-- ================= FOOTER ================= -->
   <footer>
-    © 2026 Thekedaar App. All rights reserved. Powered by Razorpay.
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div class="brand-logo" style="margin-bottom: 15px;">
+            <img src="img/logo.jpg" alt="Thekedaar App Logo" style="width: 40px; height: 40px; border-radius: 8px;">
+            <span class="logo-text" style="color: #FFF;">THEKE<span style="color: var(--theme-color);">DAAR</span></span>
+          </div>
+          <p>India's leading mobile application for civil contractors, builders, and construction project supervisors.</p>
+        </div>
+
+        <div class="footer-col">
+          <h4>WEBSITE PAGES</h4>
+          <ul class="footer-nav">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="privacy.html">Privacy Policy</a></li>
+            <li><a href="terms.html">Terms & Conditions</a></li>
+            <li><a href="refund.html">Refund Policy</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>CUSTOMER SUPPORT</h4>
+          <p><strong>Email:</strong> support@thekedaar.app</p>
+          <p style="margin-top: 5px;"><strong>Helpline:</strong> +91 98765 43210</p>
+          <p style="margin-top: 5px;">Monday – Saturday (9:00 AM – 7:00 PM IST)</p>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        © 2026 THEKEDAAR APP. ALL RIGHTS RESERVED. POWERED BY RAZORPAY.
+      </div>
+    </div>
   </footer>
+
 </body>
 </html>

@@ -1,34 +1,29 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <title>Thekedaar - Construction & Site Management App</title>
-  <meta name="description" content="Thekedaar - Bharat ke contractors aur builders ke liye daily attendance, kharcha, bills aur private Google Drive backup ka premium app.">
-  <meta name="keywords" content="thekedaar app, construction site khata, civil thekedaar, contractor app, hajri register, site expense app">
+  <title>Thekedaar - Construction & Contractor Management Software</title>
+  <meta name="description" content="Thekedaar - Professional mobile software for civil contractors, builders, and construction supervisors. Manage daily labor attendance, site expenses, material bills, and secure Google Drive backup.">
+  <meta name="keywords" content="thekedaar app, construction management, contractor app, site expense tracking, labor attendance, builder software">
 
-  <!-- Google Fonts: Oswald (Headings like xLander) + Open Sans (Body) -->
+  <!-- Google Fonts: Oswald & Open Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,400&family=Oswald:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,400&family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    /* =======================================================
-       xLander THEME ENGINE STYLING
-       Clean, Bold, High-Contrast Corporate Landing Page
-    ======================================================= */
     :root {
-      --theme-color: #E65100;         /* xLander Vibrant Construction Orange */
+      --theme-color: #E65100;
       --theme-hover: #BF360C;
       --theme-light: #FFF3E0;
-      --dark-bg: #1B2129;             /* xLander Classic Dark Intro Background */
+      --dark-bg: #1B2129;
       --dark-secondary: #14181F;
       --light-bg: #F7F9FB;
-      --border-color: #E2E8F0;
+      --border-color: #ECEFF1;
       --text-dark: #2B313B;
       --text-gray: #6C7A89;
-      --text-light: #ECEFF1;
       --white: #FFFFFF;
       --accent-green: #2ECC71;
     }
@@ -40,7 +35,7 @@
     }
 
     body {
-      font-family: 'Open Sans', 'Noto Sans Devanagari', sans-serif;
+      font-family: 'Open Sans', sans-serif;
       font-size: 15px;
       line-height: 1.7;
       color: var(--text-gray);
@@ -68,7 +63,6 @@
       padding: 0 20px;
     }
 
-    /* BUTTONS (xLander Style) */
     .btn {
       display: inline-block;
       font-family: 'Oswald', sans-serif;
@@ -109,7 +103,7 @@
       border-color: var(--white);
     }
 
-    /* ================= HEADER / NAVBAR ================= */
+    /* HEADER */
     #header {
       background-color: rgba(255, 255, 255, 0.98);
       border-bottom: 1px solid #ECEFF1;
@@ -137,7 +131,6 @@
       height: 44px;
       border-radius: 8px;
       object-fit: cover;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
 
     .logo-text {
@@ -154,7 +147,7 @@
 
     .main-nav {
       display: flex;
-      gap: 24px;
+      gap: 28px;
       align-items: center;
       list-style: none;
     }
@@ -170,9 +163,10 @@
 
     .main-nav a:hover, .main-nav a.active {
       color: var(--theme-color);
+      font-weight: 700;
     }
 
-    /* ================= INTRO / HERO SECTION (xLander Style) ================= */
+    /* HERO */
     #intro {
       background: linear-gradient(135deg, rgba(20, 24, 31, 0.92) 0%, rgba(27, 33, 41, 0.95) 100%),
                   radial-gradient(circle at 80% 20%, rgba(230, 81, 0, 0.18) 0%, transparent 60%);
@@ -185,7 +179,7 @@
 
     .intro-tagline {
       font-family: 'Oswald', sans-serif;
-      font-size: 16px;
+      font-size: 15px;
       color: var(--theme-color);
       letter-spacing: 3px;
       margin-bottom: 15px;
@@ -195,7 +189,7 @@
     }
 
     .intro-title {
-      font-size: 52px;
+      font-size: 50px;
       font-weight: 700;
       color: var(--white);
       line-height: 1.15;
@@ -208,9 +202,9 @@
     }
 
     .intro-desc {
-      font-size: 18px;
+      font-size: 17px;
       color: #B0BEC5;
-      max-width: 780px;
+      max-width: 800px;
       margin: 0 auto 35px;
       font-weight: 300;
       line-height: 1.8;
@@ -223,7 +217,7 @@
       flex-wrap: wrap;
     }
 
-    /* ================= STATS BAR ================= */
+    /* COUNTERS BAR */
     .counters-bar {
       background-color: var(--white);
       box-shadow: 0 10px 30px rgba(0,0,0,0.06);
@@ -272,7 +266,7 @@
       color: #90A4AE;
     }
 
-    /* ================= SECTION TITLEBAR (Signature xLander) ================= */
+    /* SECTION TITLEBAR */
     .section-wrap {
       padding: 95px 0;
     }
@@ -316,7 +310,7 @@
       font-size: 15px;
     }
 
-    /* ================= FEATURES GRID ================= */
+    /* GRID */
     .features-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -370,7 +364,7 @@
       line-height: 1.7;
     }
 
-    /* ================= PRICING SECTION (xLander Style) ================= */
+    /* PRICING */
     .bg-light {
       background-color: var(--light-bg);
       border-top: 1px solid #ECEFF1;
@@ -473,33 +467,7 @@
       padding: 0 35px 35px;
     }
 
-    /* ================= FAQ SECTION ================= */
-    .faq-container {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 30px;
-    }
-
-    .faq-card {
-      background: var(--white);
-      border: 1px solid #ECEFF1;
-      border-radius: 6px;
-      padding: 25px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-    }
-
-    .faq-card h4 {
-      font-size: 17px;
-      margin-bottom: 10px;
-      color: var(--text-dark);
-    }
-
-    .faq-card p {
-      font-size: 14px;
-      line-height: 1.6;
-    }
-
-    /* ================= FOOTER (xLander Classic Dark) ================= */
+    /* FOOTER */
     footer {
       background-color: var(--dark-bg);
       color: #90A4AE;
@@ -509,8 +477,8 @@
 
     .footer-grid {
       display: grid;
-      grid-template-columns: 1.4fr 1fr 1fr 1fr;
-      gap: 35px;
+      grid-template-columns: 1.5fr 1fr 1fr;
+      gap: 40px;
       padding-bottom: 45px;
       border-bottom: 1px solid rgba(255,255,255,0.08);
     }
@@ -553,26 +521,23 @@
       letter-spacing: 1px;
     }
 
-    /* ================= RESPONSIVE ================= */
     @media (max-width: 991px) {
       .features-grid { grid-template-columns: 1fr 1fr; }
       .counters-grid { grid-template-columns: 1fr 1fr; gap: 30px; }
       .counter-item { border-right: none; }
-      .faq-container { grid-template-columns: 1fr; }
-      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .footer-grid { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 767px) {
       .main-nav { display: none; }
       .intro-title { font-size: 34px; }
       .features-grid { grid-template-columns: 1fr; }
-      .footer-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-  <!-- ================= HEADER ================= -->
+  <!-- ================= HEADER (5 PAGES ONLY) ================= -->
   <header id="header">
     <div class="container">
       <div class="navbar-wrap">
@@ -581,198 +546,164 @@
           <span class="logo-text">THEKE<span>DAAR</span></span>
         </a>
 
+        <!-- Exactly 5 Pages Navigation -->
         <ul class="main-nav">
-          <li><a href="#intro" class="active">HOME</a></li>
-          <li><a href="#about">ABOUT</a></li>
-          <li><a href="#features">FEATURES</a></li>
-          <li><a href="#pricing">PRICING</a></li>
-          <li><a href="#faq">FAQ</a></li>
-          <li><a href="privacy.html">PRIVACY</a></li>
-          <li><a href="terms.html">TERMS</a></li>
-          <li><a href="refund.html">REFUND</a></li>
-          <li><a href="contact.html">CONTACTS</a></li>
+          <li><a href="index.html" class="active">HOME</a></li>
+          <li><a href="privacy.html">PRIVACY POLICY</a></li>
+          <li><a href="terms.html">TERMS & CONDITIONS</a></li>
+          <li><a href="refund.html">REFUND POLICY</a></li>
+          <li><a href="contact.html">CONTACT US</a></li>
         </ul>
       </div>
     </div>
   </header>
 
-  <!-- ================= INTRO / HERO SECTION ================= -->
+  <!-- ================= HERO SECTION ================= -->
   <section id="intro">
     <div class="container">
       <div style="margin-bottom: 25px;">
-        <img src="img/logo.jpg" alt="Thekedaar App Icon" style="width: 110px; height: 110px; border-radius: 22px; box-shadow: 0 12px 30px rgba(0,0,0,0.45); border: 3px solid rgba(255,255,255,0.2);">
+        <img src="img/logo.jpg" alt="Thekedaar App Icon" style="width: 105px; height: 105px; border-radius: 20px; box-shadow: 0 12px 30px rgba(0,0,0,0.45); border: 3px solid rgba(255,255,255,0.2);">
       </div>
-      <span class="intro-tagline">SMART SITE ACCOUNTING SOFTWARE</span>
+      <span class="intro-tagline">SMART SITE MANAGEMENT SOFTWARE</span>
       <h1 class="intro-title">CONSTRUCTION MANAGEMENT<br><span>MADE ULTRA SIMPLE</span></h1>
       <p class="intro-desc">
-        Dairy aur register ka jhanjhat khatam. Multiple construction sites ka kharcha, mistri-majdoor ki haziri, vouchers ki photo aur client ka lena-dena ek hi jagah. 100% offline aur personal Google Drive backup ke sath.
+        Eliminate paperwork and manual registers. Manage multiple construction projects, labor attendance, material bills, vouchers, and party ledgers in one secure application. Works 100% offline with encrypted personal Google Drive backup.
       </p>
 
       <div class="intro-buttons">
-        <a href="#pricing" class="btn btn-theme">GET PRO ACCESS (₹299/MO)</a>
-        <a href="#features" class="btn btn-outline-white">DISCOVER FEATURES</a>
+        <a href="#pricing-section" class="btn btn-theme">EXPLORE APP FREE (SUBSCRIBE ₹99/MO)</a>
+        <a href="contact.html" class="btn btn-outline-white">CONTACT SALES</a>
       </div>
     </div>
   </section>
 
-  <!-- ================= STATS COUNTERS ================= -->
+  <!-- ================= COUNTERS ================= -->
   <div class="container">
     <div class="counters-bar">
       <div class="counters-grid">
         <div class="counter-item">
           <div class="counter-num">100<span>%</span></div>
-          <div class="counter-label">OFFLINE WORKING</div>
+          <div class="counter-label">OFFLINE READY</div>
         </div>
         <div class="counter-item">
           <div class="counter-num">0<span>₹</span></div>
-          <div class="counter-label">HIDDEN SETUP CHARGES</div>
+          <div class="counter-label">SETUP / HIDDEN FEES</div>
         </div>
         <div class="counter-item">
           <div class="counter-num">AES<span>256</span></div>
-          <div class="counter-label">DRIVE ENCRYPTED BACKUP</div>
+          <div class="counter-label">ENCRYPTED CLOUD SYNC</div>
         </div>
         <div class="counter-item">
           <div class="counter-num">24<span>x7</span></div>
-          <div class="counter-label">DATA PRIVACY & SAFETY</div>
+          <div class="counter-label">LOCAL DATA PRIVACY</div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- ================= ABOUT SECTION ================= -->
-  <section class="section-wrap" id="about">
+  <section class="section-wrap">
     <div class="container">
       <div class="titlebar">
         <h3>WHO WE ARE</h3>
-        <h2>BUILT FOR CIVIL CONTRACTORS</h2>
-        <p>Thekedaar app ko construction line ke real field challenges ko dekh kar design kiya gaya hai.</p>
+        <h2>ENGINEERED FOR CIVIL CONTRACTORS</h2>
+        <p>Built ground-up to resolve the real field operational challenges of modern construction supervisors.</p>
       </div>
 
       <div class="features-grid">
         <div class="feature-item">
           <div class="feature-icon-circle">🏗️</div>
           <h4>MULTI-SITE TRACKING</h4>
-          <p>Har project ka alag budget, total material expense, aur customer payment record bina kisi confusion ke maintain karein.</p>
+          <p>Maintain separate site budgets, track expense records, and monitor client receipts across all your active construction sites.</p>
         </div>
 
         <div class="feature-item">
           <div class="feature-icon-circle">👷</div>
-          <h4>LABOR HAZIRI REGISTER</h4>
-          <p>Mistri aur majdoor ki daily attendance, overtime, advance payments aur weekly settlement ek click me banayein.</p>
+          <h4>LABOR ATTENDANCE REGISTER</h4>
+          <p>Record daily labor presence, half-day shifts, overtime hours, advances, and compute weekly payouts accurately.</p>
         </div>
 
         <div class="feature-item">
           <div class="feature-icon-circle">🧾</div>
-          <h4>BILL & CHALLAN PHOTOS</h4>
-          <p>Cement, saria, ret aur gitti ke kachhe bills ki photo kheench kar site par attach karein. Bill kabhi kho nahi sakta.</p>
+          <h4>BILL & VOUCHER ATTACHMENTS</h4>
+          <p>Capture and attach instant camera photos of cement, sand, brick, and rebar bills directly to specific project ledgers.</p>
         </div>
       </div>
     </div>
   </section>
 
   <!-- ================= FEATURES SECTION ================= -->
-  <section class="section-wrap bg-light" id="features">
+  <section class="section-wrap bg-light">
     <div class="container">
       <div class="titlebar">
-        <h3>WHAT WE OFFER</h3>
-        <h2>POWERFUL MOBILE UTILITIES</h2>
-        <p>Bina kisi computer ya accounting software seekhe apne mobile se site control karein.</p>
+        <h3>CORE CAPABILITIES</h3>
+        <h2>ADVANCED BUSINESS UTILITIES</h2>
+        <p>Comprehensive supervision tools designed for smartphone use directly on job sites.</p>
       </div>
 
       <div class="features-grid">
         <div class="feature-item">
           <div class="feature-icon-circle">💰</div>
-          <h4>PARTY & SUPPLIER LENA-DENA</h4>
-          <p>Kis client se kitne paise lene hain aur kis dukaandar ko kitna dena hai, transparent digital khata statement banayein.</p>
+          <h4>PARTY & SUPPLIER LEDGERS</h4>
+          <p>Keep transparent financial records of dues payable to suppliers and pending collections receivable from property owners.</p>
         </div>
 
         <div class="feature-item">
           <div class="feature-icon-circle">⏰</div>
-          <h4>SITE VISITS & TASK ALERTS</h4>
-          <p>Kal kis site par meeting hai, kis client se milna hai, app scheduled notifications bhej kar timely yaad dilata hai.</p>
+          <h4>SITE VISITS & TASK REMINDERS</h4>
+          <p>Schedule client meetings, architect reviews, and material delivery alerts with precise notifications.</p>
         </div>
 
         <div class="feature-item">
           <div class="feature-icon-circle">☁️</div>
-          <h4>PRIVATE GOOGLE DRIVE SYNC</h4>
-          <p>Data hamare server par nahi, balki aapke personal Google account mein encrypted backup hota hai. 100% private & safe.</p>
+          <h4>PRIVATE GOOGLE DRIVE BACKUP</h4>
+          <p>Your business database is stored on your device and backed up to your personal Google Drive with client-side encryption.</p>
         </div>
       </div>
     </div>
   </section>
 
   <!-- ================= PRICING SECTION ================= -->
-  <section class="section-wrap" id="pricing">
+  <section class="section-wrap" id="pricing-section">
     <div class="container">
       <div class="titlebar">
-        <h3>SIMPLE PRICING</h3>
-        <h2>THEKEDAAR PRO PLAN</h2>
-        <p>Sabhi contractors ke liye ek transparent, affordable monthly subscription.</p>
+        <h3>TRANSPARENT SUBSCRIPTION</h3>
+        <h2>THEKEDAAR PRO MEMBERSHIP</h2>
+        <p>A single, affordable, and flexible plan for contractors and builders across India.</p>
       </div>
 
       <div class="pricing-table-wrap">
         <div class="pricing-table">
           <div class="pricing-top">
             <h4>PRO CONTRACTOR ACCESS</h4>
-            <div class="plan-subtitle">MONTHLY RENEWABLE SUBSCRIPTION</div>
+            <div class="plan-subtitle">FREE EXPLORATION • ₹99 / MONTH TO RECORD DATA</div>
           </div>
 
           <div class="price-amount">
             <span class="currency">₹</span>
-            <span class="num">299</span>
+            <span class="num">99</span>
             <span class="cycle">PER MONTH • CANCEL ANYTIME</span>
           </div>
 
           <ul class="pricing-features">
-            <li><span class="icon-check">✓</span> Unlimited Construction Sites</li>
-            <li><span class="icon-check">✓</span> Unlimited Labor & Attendance Management</li>
-            <li><span class="icon-check">✓</span> Daily Bill & Voucher Photo Attachments</li>
-            <li><span class="icon-check">✓</span> Automated Encrypted Google Drive Sync</li>
-            <li><span class="icon-check">✓</span> PDF Reports & WhatsApp Sharing</li>
-            <li><span class="icon-check">✓</span> Site Visit & Task Reminder Alerts</li>
-            <li><span class="icon-check">✓</span> Dedicated WhatsApp Helpline Support</li>
+            <li><span class="icon-check">✓</span> Free Account Registration & Feature Exploration</li>
+            <li><span class="icon-check">✓</span> Create & Manage Unlimited Construction Sites</li>
+            <li><span class="icon-check">✓</span> Record Daily Worker Attendance & Overtime</li>
+            <li><span class="icon-check">✓</span> Capture & Attach Material Bills & Photos</li>
+            <li><span class="icon-check">✓</span> Maintain Party, Client & Vendor Ledgers</li>
+            <li><span class="icon-check">✓</span> Automated Encrypted Google Drive Backup</li>
+            <li><span class="icon-check">✓</span> Generate Shareable PDF & WhatsApp Reports</li>
+            <li><span class="icon-check">✓</span> Dedicated WhatsApp & Phone Support</li>
           </ul>
 
           <div class="pricing-bottom">
             <a href="contact.html" class="btn btn-theme" style="width: 100%;">
-              SUBSCRIBE VIA UPI / CARD (₹299)
+              SUBSCRIBE TO ACTIVATE DATA ENTRY (₹99/MO)
             </a>
             <p style="font-size: 12px; color: #78909C; margin-top: 12px;">
-              Powered by Razorpay Verified Gateway. 7-Day Money Back Guarantee.
+              Monthly recurring via UPI / Card. Free to browse and explore app features.
             </p>
           </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ================= FAQ SECTION ================= -->
-  <section class="section-wrap bg-light" id="faq">
-    <div class="container">
-      <div class="titlebar">
-        <h3>FREQUENTLY ASKED</h3>
-        <h2>COMMON QUESTIONS</h2>
-      </div>
-
-      <div class="faq-container">
-        <div class="faq-card">
-          <h4>Agar site par internet connection na ho?</h4>
-          <p>Thekedaar app 100% offline chalta hai. Site par bina net ke hajri aur bills darj karein. Jab bhi internet aayega, data apne aap sync ho jayega.</p>
-        </div>
-
-        <div class="faq-card">
-          <h4>Agar phone badal jaye ya kho jaye?</h4>
-          <p>Aapka saara hisab aapki personal Google Drive par safe hota hai. Naye phone me app install karke Google Drive se ek click me poora data wapas aa jata hai.</p>
-        </div>
-
-        <div class="faq-card">
-          <h4>Subscription cancel kaise hogi?</h4>
-          <p>Aap kabhi bhi apne Google Pay, PhonePe ya Paytm app ke mandate section se ya app settings se subscription band kar sakte hain.</p>
-        </div>
-
-        <div class="faq-card">
-          <h4>Refund policy kya hai?</h4>
-          <p>Agar pehle 7 dino ke andar aapko service sahi na lage, to hume email/WhatsApp karein, aapka pura ₹299 refund ho jayega.</p>
         </div>
       </div>
     </div>
@@ -791,35 +722,26 @@
         </div>
 
         <div class="footer-col">
-          <h4>NAVIGATION</h4>
+          <h4>WEBSITE PAGES</h4>
           <ul class="footer-nav">
-            <li><a href="#intro">Home</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#features">Features</a></li>
-            <li><a href="#pricing">Pricing</a></li>
-          </ul>
-        </div>
-
-        <div class="footer-col">
-          <h4>LEGAL POLICIES</h4>
-          <ul class="footer-nav">
+            <li><a href="index.html">Home</a></li>
             <li><a href="privacy.html">Privacy Policy</a></li>
             <li><a href="terms.html">Terms & Conditions</a></li>
-            <li><a href="refund.html">Refund & Cancellation</a></li>
+            <li><a href="refund.html">Refund Policy</a></li>
             <li><a href="contact.html">Contact Us</a></li>
           </ul>
         </div>
 
         <div class="footer-col">
-          <h4>CONTACT SUPPORT</h4>
+          <h4>CUSTOMER SUPPORT</h4>
           <p><strong>Email:</strong> support@thekedaar.app</p>
           <p style="margin-top: 5px;"><strong>Helpline:</strong> +91 98765 43210</p>
-          <p style="margin-top: 5px;">Mon - Sat (9:00 AM - 7:00 PM IST)</p>
+          <p style="margin-top: 5px;">Monday – Saturday (9:00 AM – 7:00 PM IST)</p>
         </div>
       </div>
 
       <div class="footer-bottom">
-        © 2026 THEKEDAAR APP. ALL RIGHTS RESERVED. SECURED BY RAZORPAY.
+        © 2026 THEKEDAAR APP. ALL RIGHTS RESERVED. POWERED BY RAZORPAY.
       </div>
     </div>
   </footer>

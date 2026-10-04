@@ -10,6 +10,7 @@ import '../../../core/db/database.dart';
 import '../../../core/db/enums.dart';
 import '../../../core/utils/dates.dart';
 import '../../../core/widgets/common.dart';
+import '../../subscription/presentation/subscription_screen.dart';
 import '../data/attendance_repository.dart';
 
 /// Icon + short label + colour per status (PRD I-D3: never colour alone).
@@ -25,16 +26,16 @@ class StatusStyle {
 StatusStyle statusStyle(AttendanceStatus status) => switch (status) {
       AttendanceStatus.present =>
         const StatusStyle('P', 'Present', Icons.check, AppColors.successText),
-      AttendanceStatus.half =>
-        const StatusStyle('½', 'Half day', Icons.timelapse, AppColors.warningText),
+      AttendanceStatus.half => const StatusStyle(
+          '½', 'Half day', Icons.timelapse, AppColors.warningText),
       AttendanceStatus.absent =>
         const StatusStyle('A', 'Absent', Icons.close, AppColors.dangerText),
-      AttendanceStatus.leavePaid =>
-        const StatusStyle('PL', 'Paid leave', Icons.beach_access, AppColors.blue700),
-      AttendanceStatus.leaveUnpaid =>
-        const StatusStyle('UL', 'Unpaid leave', Icons.event_busy, AppColors.slate600),
-      AttendanceStatus.off =>
-        const StatusStyle('Off', 'Weekly off', Icons.weekend, AppColors.slate600),
+      AttendanceStatus.leavePaid => const StatusStyle(
+          'PL', 'Paid leave', Icons.beach_access, AppColors.blue700),
+      AttendanceStatus.leaveUnpaid => const StatusStyle(
+          'UL', 'Unpaid leave', Icons.event_busy, AppColors.slate600),
+      AttendanceStatus.off => const StatusStyle(
+          'Off', 'Weekly off', Icons.weekend, AppColors.slate600),
     };
 
 /// Sets one worker's status for one day, showing lock errors as a message.
@@ -46,6 +47,7 @@ Future<void> markAttendance(
   required AttendanceStatus? status,
   int? otMilliHours,
 }) async {
+  if (!await requirePro(context, ref)) return;
   try {
     final repo = ref.read(attendanceRepositoryProvider);
     if (status == null) {
@@ -113,7 +115,8 @@ Future<void> showStatusSheet(
 
 /// Month grid for one worker (PRD AT-04). Tap a day to change it.
 class AttendanceCalendar extends ConsumerStatefulWidget {
-  const AttendanceCalendar({super.key, required this.worker, this.initialMonth});
+  const AttendanceCalendar(
+      {super.key, required this.worker, this.initialMonth});
 
   final Worker worker;
 
@@ -136,11 +139,13 @@ class _AttendanceCalendarState extends ConsumerState<AttendanceCalendar> {
 
   @override
   Widget build(BuildContext context) {
-    final marks = ref.watch(workerMonthAttendanceProvider((
-          workerId: widget.worker.id,
-          year: _month.year,
-          month: _month.month,
-        ))).valueOrNull ??
+    final marks = ref
+            .watch(workerMonthAttendanceProvider((
+              workerId: widget.worker.id,
+              year: _month.year,
+              month: _month.month,
+            )))
+            .valueOrNull ??
         const <String, Attendance>{};
     final today = dateOnly(DateTime.now());
     final joined = parseIsoDate(widget.worker.joinDate);
@@ -179,7 +184,8 @@ class _AttendanceCalendarState extends ConsumerState<AttendanceCalendar> {
               for (final d in const ['M', 'T', 'W', 'T', 'F', 'S', 'S'])
                 Expanded(
                   child: Center(
-                    child: Text(d, style: const TextStyle(color: AppColors.slate600)),
+                    child: Text(d,
+                        style: const TextStyle(color: AppColors.slate600)),
                   ),
                 ),
             ],
@@ -196,7 +202,8 @@ class _AttendanceCalendarState extends ConsumerState<AttendanceCalendar> {
               for (var day = 1; day <= days; day++)
                 _DayCell(
                   date: DateTime(_month.year, _month.month, day),
-                  mark: marks[isoDate(DateTime(_month.year, _month.month, day))],
+                  mark:
+                      marks[isoDate(DateTime(_month.year, _month.month, day))],
                   enabled: !DateTime(_month.year, _month.month, day)
                           .isAfter(today) &&
                       !DateTime(_month.year, _month.month, day)

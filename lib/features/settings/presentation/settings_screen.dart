@@ -30,9 +30,10 @@ class SettingsScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         children: [
-          tile(Icons.store, 'Business profile', profile?.name, Routes.businessProfile),
-          tile(Icons.handyman, 'Trades',
-              trades.map((t) => t.label).join(', '), Routes.trades),
+          tile(Icons.store, 'Business profile', profile?.name,
+              Routes.businessProfile),
+          tile(Icons.handyman, 'Trades', trades.map((t) => t.label).join(', '),
+              Routes.trades),
           tile(Icons.rule, 'Work rules', 'Monthly salary, weekly off',
               Routes.rules),
           tile(
@@ -43,6 +44,8 @@ class SettingsScreen extends ConsumerWidget {
                 : 'Google Drive · ${backup.email ?? ''}',
             Routes.backup,
           ),
+          tile(Icons.workspace_premium, 'Thekedaar Pro',
+              '₹99/month subscription', Routes.subscription),
           tile(Icons.lock, 'App lock', 'PIN and fingerprint', Routes.appLock),
           tile(Icons.notifications, 'Reminders',
               'Backup, overdue bills, month end', Routes.reminders),

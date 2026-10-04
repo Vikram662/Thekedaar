@@ -9,6 +9,7 @@ import '../../../core/utils/qty.dart';
 import '../../../core/widgets/common.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/pickers.dart';
+import '../../subscription/presentation/subscription_screen.dart';
 import '../data/attendance_repository.dart';
 import 'attendance_widgets.dart';
 
@@ -46,6 +47,7 @@ class _DailyAttendanceViewState extends ConsumerState<DailyAttendanceView> {
   }
 
   Future<void> _markAll(AttendanceStatus status) async {
+    if (!await requirePro(context, ref)) return;
     final count = await ref
         .read(attendanceRepositoryProvider)
         .markAllUnmarked(_date, status);
@@ -58,6 +60,7 @@ class _DailyAttendanceViewState extends ConsumerState<DailyAttendanceView> {
   }
 
   Future<void> _copyYesterday() async {
+    if (!await requirePro(context, ref)) return;
     final count = await ref.read(attendanceRepositoryProvider).copyDay(
           from: DateTime(_date.year, _date.month, _date.day - 1),
           to: _date,
@@ -77,106 +80,107 @@ class _DailyAttendanceViewState extends ConsumerState<DailyAttendanceView> {
     final isWeeklyOff = settings?.weeklyOffDay == _date.weekday;
 
     return Column(
-        children: [
-          Material(
-            color: AppColors.surface,
-            child: Row(
-              children: [
-                IconButton(
-                  tooltip: 'Previous day',
-                  icon: const Icon(Icons.chevron_left),
-                  onPressed: () => _shift(-1),
-                ),
-                Expanded(
-                  child: InkWell(
-                    onTap: () async {
-                      final picked = await pickDate(
-                        context,
-                        initial: _date,
-                        last: DateTime.now(),
-                      );
-                      if (picked != null) {
-                        setState(() => _date = dateOnly(picked));
-                      }
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Column(
-                        children: [
-                          Text(
-                            _isToday ? 'Today' : dayFormat.format(_date),
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          if (isWeeklyOff)
-                            const Text('Weekly off',
-                                style: TextStyle(color: AppColors.slate600)),
-                        ],
-                      ),
+      children: [
+        Material(
+          color: AppColors.surface,
+          child: Row(
+            children: [
+              IconButton(
+                tooltip: 'Previous day',
+                icon: const Icon(Icons.chevron_left),
+                onPressed: () => _shift(-1),
+              ),
+              Expanded(
+                child: InkWell(
+                  onTap: () async {
+                    final picked = await pickDate(
+                      context,
+                      initial: _date,
+                      last: DateTime.now(),
+                    );
+                    if (picked != null) {
+                      setState(() => _date = dateOnly(picked));
+                    }
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Column(
+                      children: [
+                        Text(
+                          _isToday ? 'Today' : dayFormat.format(_date),
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        if (isWeeklyOff)
+                          const Text('Weekly off',
+                              style: TextStyle(color: AppColors.slate600)),
+                      ],
                     ),
                   ),
                 ),
-                IconButton(
-                  tooltip: 'Next day',
-                  icon: const Icon(Icons.chevron_right),
-                  onPressed: _isToday ? null : () => _shift(1),
-                ),
-              ],
-            ),
+              ),
+              IconButton(
+                tooltip: 'Next day',
+                icon: const Icon(Icons.chevron_right),
+                onPressed: _isToday ? null : () => _shift(1),
+              ),
+            ],
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: FilledButton.icon(
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size(64, AppSizes.tapMin),
-                      textStyle: const TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.w700),
-                    ),
-                    onPressed: () => _markAll(isWeeklyOff
-                        ? AttendanceStatus.off
-                        : AttendanceStatus.present),
-                    icon: const Icon(Icons.done_all),
-                    label: Text(isWeeklyOff ? 'Mark all Off' : 'Mark all present'),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          child: Row(
+            children: [
+              Expanded(
+                child: FilledButton.icon(
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(64, AppSizes.tapMin),
+                    textStyle: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w700),
                   ),
+                  onPressed: () => _markAll(isWeeklyOff
+                      ? AttendanceStatus.off
+                      : AttendanceStatus.present),
+                  icon: const Icon(Icons.done_all),
+                  label:
+                      Text(isWeeklyOff ? 'Mark all Off' : 'Mark all present'),
                 ),
-                const SizedBox(width: AppSizes.gap),
-                OutlinedButton.icon(
-                  onPressed: _copyYesterday,
-                  icon: const Icon(Icons.content_copy),
-                  label: const Text('Copy yesterday'),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(width: AppSizes.gap),
+              OutlinedButton.icon(
+                onPressed: _copyYesterday,
+                icon: const Icon(Icons.content_copy),
+                label: const Text('Copy yesterday'),
+              ),
+            ],
           ),
-          Expanded(
-            child: rows.when(
-              loading: () => const ListSkeleton(),
-              error: (e, _) => Center(child: Text('$e')),
-              data: (list) {
-                if (list.isEmpty) {
-                  return const EmptyState(
-                    icon: Icons.groups,
-                    title: 'No workers on this day',
-                    message: 'Add workers first, or pick a later date.',
-                  );
-                }
-                final marked = list.where((r) => r.attendance != null).length;
-                return ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-                  children: [
-                    Text('$marked of ${list.length} marked',
-                        style: const TextStyle(color: AppColors.slate600)),
-                    const SizedBox(height: 8),
-                    for (final row in list)
-                      _AttendanceRowTile(row: row, date: _date),
-                  ],
+        ),
+        Expanded(
+          child: rows.when(
+            loading: () => const ListSkeleton(),
+            error: (e, _) => Center(child: Text('$e')),
+            data: (list) {
+              if (list.isEmpty) {
+                return const EmptyState(
+                  icon: Icons.groups,
+                  title: 'No workers on this day',
+                  message: 'Add workers first, or pick a later date.',
                 );
-              },
-            ),
+              }
+              final marked = list.where((r) => r.attendance != null).length;
+              return ListView(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                children: [
+                  Text('$marked of ${list.length} marked',
+                      style: const TextStyle(color: AppColors.slate600)),
+                  const SizedBox(height: 8),
+                  for (final row in list)
+                    _AttendanceRowTile(row: row, date: _date),
+                ],
+              );
+            },
           ),
-        ],
+        ),
+      ],
     );
   }
 }
@@ -191,8 +195,8 @@ class _AttendanceRowTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final current = row.attendance?.status;
     final ot = row.attendance?.otMilliHours ?? 0;
-    final working = current == AttendanceStatus.present ||
-        current == AttendanceStatus.half;
+    final working =
+        current == AttendanceStatus.present || current == AttendanceStatus.half;
 
     Future<void> mark(AttendanceStatus status) => markAttendance(
           context,

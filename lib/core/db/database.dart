@@ -40,6 +40,7 @@ Future<String> databaseFilePath() async =>
   SupplierLedger,
   AuditLogs,
   BackupLogs,
+  TaskReminders,
 ])
 class AppDatabase extends _$AppDatabase {
   /// Pass an [executor] (e.g. `NativeDatabase.memory()`) in tests.
@@ -47,8 +48,9 @@ class AppDatabase extends _$AppDatabase {
 
   /// Bump on every schema change and add a step in [migration] (PRD Part F).
   ///
-  /// v1: first release. v2: suppliers + supplier khata.
-  static const currentSchemaVersion = 2;
+  /// v1: first release. v2: suppliers + supplier khata. v3: task reminders.
+  /// v4: subscription cache moved from SQLite to secure storage.
+  static const currentSchemaVersion = 4;
 
   @override
   int get schemaVersion => currentSchemaVersion;
@@ -60,6 +62,16 @@ class AppDatabase extends _$AppDatabase {
           if (from < 2) {
             await m.createTable(suppliers);
             await m.createTable(supplierLedger);
+          }
+          if (from < 3) {
+            await m.createTable(taskReminders);
+          }
+          if (from < 4) {
+            await customStatement(
+              'DELETE FROM app_meta WHERE meta_key IN '
+              "('razorpay_customer_id', 'subscription_id', "
+              "'subscription_status', 'subscription_verified_at')",
+            );
           }
         },
         beforeOpen: (details) async {

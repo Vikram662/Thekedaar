@@ -1,21 +1,19 @@
 # Thekedaar App: PRD, Design System aur Gap Analysis
 
-> **Version:** 2.2 (har tarah ke contractor ke liye, mobile-only, offline, admin-only, auto backup on internet)  ·  **Date:** 2026-10-03
+> **Version:** 2.3 (har tarah ke contractor ke liye, mobile-only, offline, admin-only, task reminders, Razorpay ₹99/mo subscription)  ·  **Date:** 2026-10-04
 > **Platform:** Android app (Flutter). iOS baad mein, dekhein [I-M3](#b1-mobile-only-architecture-ke-risks)
 > **User:** Sirf **Admin (thekedaar)**. Workers app use nahi karte, unka saara record admin rakhta hai.
 > **Trades:** ✅ **Har type ka contractor**: Electrical, Plumbing, Civil / Construction, Painting, Tiles / Flooring, Carpentry / Interior, POP / False Ceiling, Fabrication / Welding, Labour Supply, ya Other. Setup ke waqt trade chuno, aur app usi hisaab se roles, units, items aur templates bhar deta hai ([C0](#c0-business-type-aur-trade-setup))
-> **Server:** ❌ Koi server nahi. Saara data admin ke phone ki **SQLite** file mein rehta hai.
+> **Server:** Business data ke liye koi server nahi; saara data admin ke phone ki **SQLite** file mein rehta hai. Razorpay secrets aur subscription verification ke liye sirf ek minimal **Cloudflare Worker** payment gateway hai.
+> **Subscription & Monetization:** ✅ Razorpay ₹99/month recurring UPI Autopay. Free explore mode (view-only) + Paywall on data entry (sites, attendance, kharcha). Zero backend / direct Razorpay customer & subscription sync.
 > **Backup:** ✅ Ek baar Google Drive permission lene ke baad **din mein 4 baar automatic** encrypted backup, aur naye phone par restore.
 > **UI Language:** English only (simple words, bade icons)
 
 ### Version history
 | Ver | Change |
 |---|---|
-| 1.0 | Original PRD (Next.js PWA, worker app, WebAuthn) |
-| 1.1 | Issues aur gap analysis |
-| 1.2 | SQLite + Google Drive backup, naye features, Hindi UI hataya |
-| 1.3 | Server-based SQLite |
-| **2.2** | ✅ **Generic contractor app**: sirf electrician nahi, har trade ke liye. Trade setup (C0), custom roles/units, "Points" ki jagah generic **Work-rate** line, measurement (L × W × H) billing, piece-rate (theka) worker payment, configurable expense categories |
+| **2.3** | ✅ **Site Tasks & Visits Scheduler (C8)**: Client meeting, site visit, payment reminders, interval alerts, turn-off toggle. Purana reminder menu ab "Notification Settings".<br>✅ **Razorpay ₹99/Month Subscription (C9)**: Secure Cloudflare Worker-based monetization. Onboarding par Razorpay Customer banna (tracking ke liye), Free View-Only Explore mode, aur data entry par paywall. 1-click in-app cancel & refund. |
+| 2.2 | ✅ **Generic contractor app**: sirf electrician nahi, har trade ke liye. Trade setup (C0), custom roles/units, "Points" ki jagah generic **Work-rate** line, measurement (L × W × H) billing, piece-rate (theka) worker payment, configurable expense categories |
 | 2.1 | ✅ Offline → online auto backup: internet na ho to backup pending, aur internet aate hi apne aap (D3.1) |
 | 2.0 | ✅ **Final direction: server nahi, app sirf admin ke mobile par chalega. Google Drive par din mein 3–4 baar auto backup.** Worker app, WebAuthn, geofence aur multi-tenant hataye. Stack Next.js PWA se Flutter kiya (wajah: [I-M1](#b1-mobile-only-architecture-ke-risks)) |
 
@@ -277,18 +275,25 @@ App kisi ek trade ke liye hardcoded nahi hai. Saari trade-specific cheezein (rol
 | EX-02 | **Supplier khata**: udhaar purchase aur payment, due balance |
 | EX-03 | **Job profit**: invoice total − material − labour (attendance × day rate + piece-work) − other expense |
 
-### C7. Dashboard, Reports aur Utility
+### C8. Site Tasks & Visits Reminder System
 | ID | Requirement |
 |---|---|
-| DB-01 | Header: business name, **pending client balance** pill, backup status dot (green/amber/red) |
-| DB-02 | Quick actions: **[+ New Bill]**, **[+ Advance]**, **[Today's Attendance]** |
-| DB-03 | Today strip: aaj present workers ke avatars (green badge) |
-| DB-04 | KPI cards: is mahine ki billing, collection, outstanding, labour cost, expense. 6 mahine ka trend |
-| DB-05 | **Reports (PDF / Excel)**: salary sheet, attendance register, client outstanding, job profit, expense report |
-| DB-06 | **Global search**: client, worker, bill number, phone |
-| DB-07 | **Local notifications**: backup failed, overdue bill, month-end settlement reminder, holiday |
-| DB-08 | Themes: Light, Dark, **Sunlight** (high contrast, bade fonts) |
-| DB-09 | Audit log viewer (kisne kya kab badla, before/after) |
+| TK-01 | **Menu Reorganization**: Purana drawer item "Reminders" ab **"Notification Settings"** banega (jisme backup fail, month-end alert settings hongi). Naya fresh dedicated side menu item: **"Tasks & Reminders"** (Site visits, meetings, material follow-ups). |
+| TK-02 | **Create Task / Site Visit**: Fields: Title, Task Type (Site Visit, Client Meeting, Material Procurement, Worker Wage Payment, Engineer Review), Linked Site/Job (dropdown), Person/Client name & phone, Date & Time (e.g., Kal 10:30 AM), Notes. |
+| TK-03 | **Reminder Intervals & Recurring Alerts**: Event se 1 ghante pehle initial alert + same day recurring interval alerts (e.g. har 1-2 ghante mein alert) jab tak contractor action na le. |
+| TK-04 | **Turn Off Alert / Mark Done**: Task list par har card ke paas quick action toggle: **"Turn Off Alert"** ya **"Mark Done"**. Toggle off hote hi OS ke future scheduled alarms cancel ho jaate hain. |
+| TK-05 | **Offline Alarm Engine**: `flutter_local_notifications` + Android AlarmManager exact alarms use honge taaki bina internet ke bhi phone par sound aur vibration ke sath reminder pop-up ho. |
+
+### C9. Razorpay ₹99/Month Subscription Engine (Secure Payment Worker)
+| ID | Requirement |
+|---|---|
+| RZ-01 | **Onboarding Customer Creation**: Pehli baar app kholne par user name + phone number submit hote hi Cloudflare Worker ke through Razorpay Customers API (`POST /v1/customers`) se **Razorpay Customer** (`cust_xxxx`) create hoga. Isse bina kisi backend DB ke Razorpay Dashboard par total onboarded users ki live report dikhegi. |
+| RZ-02 | **Product-Led Freemium (Explore Free Mode)**: Naya user bina kisi payment ke poore app ka UI, sample demo data, settings aur menus browse aur explore kar sakta hai (View-Only). |
+| RZ-03 | **Paywall on Data Entry**: Jaise hi user pehla record add karne ki koshish karega (New Site, Mark Attendance, Add Expense/Bill, New Invoice), paywall pop-up hoga: *"Subscribe to Thekedaar Pro at ₹99/month to record sites and daily data."* |
+| RZ-04 | **Razorpay Subscriptions (UPI Autopay & Cards)**: User ₹99/month recurring mandate setup karega via Razorpay Checkout. Mandate create hone par `subscription_id` (`sub_xxxx`) phone ke encrypted storage aur SQLite mein save hoga. |
+| RZ-05 | **Zero Backend Status Verification**: App start hote waqt Cloudflare Worker ke through Razorpay Subscription API (`GET /v1/subscriptions/{sub_id}`) call karegi. Status: `active` → full unlock; `halted` / `cancelled` → subscription prompt. Offline rehne par cached active status allow hoga (7-day offline grace). |
+| RZ-06 | **Device Lost / Change Recovery**: User naye phone par Google Drive Restore karega to backup ke sath uska `subscription_id` bhi naye phone par restore ho jayega aur direct unlock ho jayega. Secondary option: Razorpay receipt SMS/email se Subscription ID daal kar 1-click restore. Zero OTP cost. |
+| RZ-07 | **1-Click In-App Cancellation & Refund**: Settings > Manage Subscription mein 1-click button. Cancel karne par Cloudflare Worker Razorpay API se mandate revoke karega. Pehle 7 din mein voluntary cancel karne par immediate refund trigger hoga. |
 
 ---
 
@@ -459,7 +464,18 @@ App Lock (biometric / PIN)
     ├── Billing     → Invoices | Quotations | Clients | Payments
     ├── Khata       → Advances | Loans | Settlements
     └── Workers     → list → Worker detail (summary card, calendar, entries)
-Header menu → Attendance · Jobs · Expenses · Suppliers · Reports · Settings (Business, Rules, Items, Templates, Backup, App Lock, Theme)
+Side drawer / Header menu:
+    ├── Tasks & Reminders (Site visits, client meetings, recurring alerts)
+    ├── Attendance
+    ├── Jobs & Sites
+    ├── Expenses & Suppliers
+    ├── Reports & Statements
+    └── Settings:
+        ├── Subscription (Thekedaar Pro ₹99/mo, Razorpay status, 1-click cancel)
+        ├── Notification Settings (Daily backup, month-end alert times)
+        ├── Business Profile & Trades
+        ├── Google Drive Backup & Restore
+        └── App Lock & Theme
 ```
 
 ### E2. Key Screens
@@ -553,12 +569,14 @@ SupplierLedger(id, supplierId, type[PURCHASE|PAYMENT], amountPaise, date, remark
 SiteReport(id, jobId, date, notes)
 SiteReportPhoto(id, siteReportId, path, tag[BEFORE|AFTER|PROGRESS], fileHash)
 
+TaskReminder(id, title, type[SITE_VISIT|CLIENT_MEETING|MATERIAL_PROCUREMENT|WORKER_PAYMENT|OTHER], jobId?, personName, phoneE164?, scheduledAt, intervalMinutes?, isAlertActive, isCompleted, notes)
+
 AuditLog(id, entity, entityId, action[CREATE|UPDATE|REVERSE|DELETE], before JSON, after JSON, at)
 BackupLog(id, trigger[SCHEDULED|ON_CHANGE|MANUAL|PRE_RESTORE], status[SUCCESS|FAILED|SKIPPED], driveFileId, sizeBytes, sha256, schemaVersion, startedAt, finishedAt, error)
 SyncedFile(fileHash, driveFileId, uploadedAt)        # incremental photo backup ke liye
-AppMeta(key, value)                                   # dirtySince, deviceId, lastBackupAt
+AppMeta(key, value)                                   # dirtySince, deviceId, lastBackupAt, razorpayCustomerId, subscriptionId, subscriptionStatus, subscriptionExpiry
 ```
-Backup ki secret cheezein (refresh token, PIN hash, encryption key) **DB mein nahi**, `flutter_secure_storage` (Android Keystore) mein rahengi.
+Backup aur Subscription ki secret cheezein (refresh token, PIN hash, encryption key, subscription token) **DB mein nahi**, `flutter_secure_storage` (Android Keystore) mein rahengi.
 
 ---
 
@@ -574,6 +592,8 @@ Backup ki secret cheezein (refresh token, PIN hash, encryption key) **DB mein na
 - Billing: clients, quotation/invoice (material, labour, work-rate, lump-sum), **measurement (L × W × H) se qty**, PDF + share, payment received, quotation → invoice convert
 - **Google Drive backup (4 baar roz + on-change + manual) aur restore**
 - Dashboard (quick actions, today strip, outstanding)
+- **Site Tasks & Visits Scheduler (C8)**: client meeting, site visit, recurring intervals, turn-off toggle
+- **Razorpay ₹99/Month Subscription Engine (C9)**: secure Cloudflare Worker, onboarding customer creation (`cust_xxxx`), Explore-Free view-only mode, and Paywall on data entry (sites, attendance, bills)
 
 ### Phase 2
 - Item master, templates, running bill (RA), UPI QR on invoice, payment reminder, duplicate
@@ -621,6 +641,8 @@ Backup ki secret cheezein (refresh token, PIN hash, encryption key) **DB mein na
 | D-7 | Google Cloud project (OAuth client) | Aapke Google account mein banega. Release keystore ka SHA-1 chahiye hoga |
 | D-8 | Kaun-kaun se trades ka default seed data (roles, items, rates, templates) launch par | ✅ **Final: sabhi 9 trades + "Other"**, poori list [Part J](#part-j-default-seed-data-sabhi-trades) mein. Items bina rate ke aayenge (rate har sheher mein alag hai). Pehli baar use karne par admin rate daalega, aur wo yaad rahega |
 | D-9 | Piece-rate Phase 1 mein ya Phase 2 mein | ✅ **Final: Phase 1** |
+| D-10 | Site Tasks & Reminders Scheduler | ✅ **Final: Phase 1 (C8)**: Site visits, client meetings, recurring alerts + turn-off toggle |
+| D-11 | App Monetization Model | ✅ **Final: ₹99/month recurring UPI Autopay via Razorpay (C9)**. Business data remains offline; Razorpay secrets/status/cancel/refund use a minimal Cloudflare Worker. Free explore mode (view-only), Paywall on data entry, direct Razorpay customer tracking, aur 1-click self-service cancellation |
 
 ---
 

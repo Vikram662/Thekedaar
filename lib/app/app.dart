@@ -6,6 +6,7 @@ import '../core/backup/backup_providers.dart';
 import '../core/db/providers.dart';
 import '../core/notify/notifications.dart';
 import '../features/lock/lock_screens.dart';
+import '../features/subscription/subscription_controller.dart';
 import 'router.dart';
 import 'theme.dart';
 
@@ -21,6 +22,7 @@ class ThekedaarApp extends ConsumerStatefulWidget {
 
 class _ThekedaarAppState extends ConsumerState<ThekedaarApp> {
   late final GoRouter _router = buildRouter(
+    ref: ref,
     initialLocation:
         widget.needsOnboarding ? Routes.onboarding : Routes.dashboard,
   );
@@ -31,6 +33,8 @@ class _ThekedaarAppState extends ConsumerState<ThekedaarApp> {
     // Auto backup triggers live as long as this app scope (PRD D3.1).
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(backupCoordinatorProvider).start();
+      ref.read(subscriptionControllerProvider.notifier).refresh();
+      ref.read(subscriptionServiceProvider).startFcmTokenSync();
     });
     final notifications = AppNotifications.instance;
     notifications.tapped.addListener(_onNotificationTapped);
@@ -59,6 +63,7 @@ class _ThekedaarAppState extends ConsumerState<ThekedaarApp> {
       NotificationKind.overdueBills => Routes.dues(),
       NotificationKind.monthEnd => Routes.khataTab(0),
       NotificationKind.holiday => Routes.attendanceMonth,
+      NotificationKind.taskReminder => Routes.tasks,
     };
     // Tabs (khata, attendance) are switched with go; others open on top.
     if (route.startsWith('/khata') || route.startsWith('/attendance')) {
@@ -71,8 +76,7 @@ class _ThekedaarAppState extends ConsumerState<ThekedaarApp> {
 
   @override
   void dispose() {
-    AppNotifications.instance.tapped
-        .removeListener(_onNotificationTapped);
+    AppNotifications.instance.tapped.removeListener(_onNotificationTapped);
     _router.dispose();
     super.dispose();
   }

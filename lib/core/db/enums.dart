@@ -1,6 +1,8 @@
 // Enums are stored in SQLite by their `name`. Never rename or remove a value
 // without a schema migration, or existing rows will fail to load.
 
+import 'package:flutter/material.dart';
+
 /// Trades a contractor can work in (PRD C0). [seedFile] is the JSON file in
 /// `assets/seed/` holding that trade's default roles, items and templates.
 enum Trade {
@@ -71,3 +73,25 @@ enum AuditAction { create, update, reverse, delete }
 enum BackupTrigger { scheduled, onChange, manual, internetBack, preRestore }
 
 enum BackupStatus { success, failed, skipped }
+
+/// Task & Site Visit categories (PRD C8).
+enum TaskType {
+  siteVisit('Site Visit'),
+  clientMeeting('Client Meeting'),
+  materialProcurement('Material Purchase'),
+  workerPayment('Worker Payment'),
+  engineerReview('Engineer Review'),
+  other('Other Task');
+
+  const TaskType(this.label);
+  final String label;
+
+  IconData get icon => switch (this) {
+        TaskType.siteVisit => Icons.location_on_outlined,
+        TaskType.clientMeeting => Icons.handshake_outlined,
+        TaskType.materialProcurement => Icons.local_shipping_outlined,
+        TaskType.workerPayment => Icons.payments_outlined,
+        TaskType.engineerReview => Icons.engineering_outlined,
+        TaskType.other => Icons.task_alt_outlined,
+      };
+}

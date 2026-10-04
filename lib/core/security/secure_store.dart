@@ -20,6 +20,11 @@ class SecureStore {
   static const biometricEnabled = 'biometric_enabled';
   static const backupMasterKey = 'backup_master_key';
   static const deviceIdKey = 'device_id';
+  static const subscriptionToken = 'subscription_api_token';
+  static const subscriptionCustomerId = 'subscription_customer_id';
+  static const subscriptionId = 'subscription_id';
+  static const subscriptionStatus = 'subscription_status';
+  static const subscriptionVerifiedAt = 'subscription_verified_at';
 
   Future<String?> read(String key) => _storage.read(key: key);
 
