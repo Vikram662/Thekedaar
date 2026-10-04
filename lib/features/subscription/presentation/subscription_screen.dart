@@ -17,13 +17,15 @@ Future<bool> requirePro(BuildContext context, WidgetRef ref) async {
   await showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    builder: (context) => const _PaywallSheet(),
+    builder: (context) =>
+        _PaywallSheet(trialEligible: access?.trialEligible != false),
   );
   return ref.read(subscriptionControllerProvider).valueOrNull?.canWrite == true;
 }
 
 class _PaywallSheet extends StatelessWidget {
-  const _PaywallSheet();
+  const _PaywallSheet({required this.trialEligible});
+  final bool trialEligible;
   @override
   Widget build(BuildContext context) => SafeArea(
         child: Padding(
@@ -35,8 +37,10 @@ class _PaywallSheet extends StatelessWidget {
             Text('Thekedaar Pro',
                 style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 8),
-            const Text(
-              'Subscribe at ₹99/month to record sites, attendance, expenses and bills. You can explore everything free.',
+            Text(
+              trialEligible
+                  ? '5 din free try karein. Mandate aaj set hoga, lekin ₹99 ka pehla payment 5 din baad hoga. Trial ke andar kabhi bhi cancel kar sakte hain.'
+                  : '₹99/month mein sites, attendance, expenses aur bills record karein. Subscription kabhi bhi cancel kar sakte hain.',
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
@@ -47,7 +51,9 @@ class _PaywallSheet extends StatelessWidget {
                   Navigator.pop(context);
                   context.push('/settings/subscription');
                 },
-                child: const Text('Subscribe for ₹99/month'),
+                child: Text(trialEligible
+                    ? 'Start 5-day free trial'
+                    : 'Subscribe for ₹99/month'),
               ),
             ),
             TextButton(
@@ -82,8 +88,10 @@ class ProRouteGate extends ConsumerWidget {
             Text('Record data with Pro',
                 style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 8),
-            const Text(
-              'Subscribe at ₹99/month to add or change records. All view screens remain free.',
+            Text(
+              access?.trialEligible != false
+                  ? '5-day free trial start karke records add ya change karein. Payment mandate abhi set hoga aur ₹99 pehli baar 5 din baad katega.'
+                  : '₹99/month subscription se records add ya change karein. All view screens remain free.',
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
@@ -143,7 +151,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
           'key': session.keyId,
           'subscription_id': session.subscriptionId,
           'name': 'Thekedaar Pro',
-          'description': '₹99 monthly subscription',
+          'description': '5-day free trial, then ₹99/month',
           'prefill': {'name': profile.name, 'contact': profile.phone ?? ''},
           'theme': {'color': '#B45309'},
           'retry': {'enabled': true, 'max_count': 3},
@@ -155,7 +163,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
           'key': session.keyId,
           'subscription_id': session.subscriptionId,
           'name': 'Thekedaar Pro',
-          'description': '₹99 monthly subscription',
+          'description': '5-day free trial, then ₹99/month',
           'prefill': {'name': profile.name, 'contact': profile.phone ?? ''},
           'theme': {'color': '#B45309'},
         });
@@ -168,7 +176,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
   }
 
   Future<void> _success(PaymentSuccessResponse response) async {
-    _say('Payment received. Verifying subscription…');
+    _say('Mandate authorised. Activating your free trial…');
     await Future<void>.delayed(const Duration(seconds: 2));
     await ref.read(subscriptionControllerProvider.notifier).refresh();
   }
@@ -213,7 +221,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
       builder: (context) => AlertDialog(
         title: const Text('Cancel subscription?'),
         content: const Text(
-            'Your recurring mandate will be cancelled. Eligible payments from the first 7 days are sent for refund.'),
+            'Your recurring mandate will be cancelled immediately. If you are still in the 5-day trial, no monthly payment will be charged.'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
@@ -259,14 +267,21 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                 size: 72,
                 color: active ? AppColors.successText : AppColors.amber500),
             const SizedBox(height: 12),
-            Text(active ? 'Pro is active' : 'Explore free',
+            Text(
+                access?.isTrial == true
+                    ? '5-day free trial is active'
+                    : active
+                        ? 'Pro is active'
+                        : 'Explore free',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 8),
             Text(
-              active
-                  ? 'You can record all business data.${access?.kind == AccessKind.offlineGrace ? '\n${access?.message}' : ''}'
-                  : 'Browse the complete app free. Subscribe when you want to add or change records.',
+              access?.isTrial == true
+                  ? 'Your mandate is ready. ₹99 will be charged after the trial unless you cancel first.'
+                  : active
+                      ? 'You can record all business data.${access?.kind == AccessKind.offlineGrace ? '\n${access?.message}' : ''}'
+                      : 'Browse the complete app free. Start your free trial when you want to add or change records.',
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -276,7 +291,9 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
               FilledButton.icon(
                 onPressed: _opening ? null : _subscribe,
                 icon: const Icon(Icons.payment),
-                label: const Text('Subscribe · ₹99/month'),
+                label: Text(access?.trialEligible == false
+                    ? 'Subscribe · ₹99/month'
+                    : 'Try 5 days free · then ₹99/month'),
               ),
             if (active)
               OutlinedButton.icon(
@@ -290,6 +307,12 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
               label: const Text('Restore with Subscription ID'),
             ),
             const Divider(height: 36),
+            const ListTile(
+              leading: Icon(Icons.hourglass_top),
+              title: Text('5-day free trial'),
+              subtitle: Text(
+                  'Mandate is authorised on day 1. First ₹99 charge is after 5 days; cancel before then to avoid the charge.'),
+            ),
             const ListTile(
               leading: Icon(Icons.visibility_outlined),
               title: Text('Free mode'),

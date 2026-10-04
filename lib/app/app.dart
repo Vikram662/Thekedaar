@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../core/backup/backup_providers.dart';
 import '../core/db/providers.dart';
 import '../core/notify/notifications.dart';
+import '../core/update/app_update.dart';
 import '../features/lock/lock_screens.dart';
 import '../features/subscription/subscription_controller.dart';
 import 'router.dart';
@@ -35,6 +36,7 @@ class _ThekedaarAppState extends ConsumerState<ThekedaarApp> {
       ref.read(backupCoordinatorProvider).start();
       ref.read(subscriptionControllerProvider.notifier).refresh();
       ref.read(subscriptionServiceProvider).startFcmTokenSync();
+      const AppUpdateChecker().check(context);
     });
     final notifications = AppNotifications.instance;
     notifications.tapped.addListener(_onNotificationTapped);

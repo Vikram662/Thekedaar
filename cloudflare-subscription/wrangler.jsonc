@@ -11,6 +11,10 @@
     }
   ],
   "vars": {
-    "ALLOWED_ORIGIN": "*"
+    "ALLOWED_ORIGIN": "*",
+    "APP_LATEST_BUILD": "1",
+    "APP_MINIMUM_BUILD": "1",
+    "APP_UPDATE_URL": "https://play.google.com/store/apps/details?id=com.thekedaar.thekedaar",
+    "APP_UPDATE_MESSAGE": "Thekedaar ka naya version available hai. Abhi update karein."
   }
 }

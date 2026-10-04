@@ -10,11 +10,18 @@ enum AccessKind { loading, explore, active, offlineGrace, setupRequired }
 
 class SubscriptionAccess {
   const SubscriptionAccess(this.kind,
-      {this.status = 'none', this.subscriptionId, this.message});
+      {this.status = 'none',
+      this.subscriptionId,
+      this.message,
+      this.trialEndsAt,
+      this.trialEligible = false});
   final AccessKind kind;
   final String status;
   final String? subscriptionId;
   final String? message;
+  final int? trialEndsAt;
+  final bool trialEligible;
+  bool get isTrial => status == 'authenticated';
   bool get canWrite =>
       kind == AccessKind.active || kind == AccessKind.offlineGrace;
 }
@@ -109,6 +116,9 @@ class SubscriptionController
     final status = data['status'] as String? ?? 'none';
     final active = data['active'] == true || status == 'active';
     return SubscriptionAccess(active ? AccessKind.active : AccessKind.explore,
-        status: status, subscriptionId: data['subscriptionId'] as String?);
+        status: status,
+        subscriptionId: data['subscriptionId'] as String?,
+        trialEndsAt: data['trialEndsAt'] as int?,
+        trialEligible: data['trialEligible'] == true);
   }
 }

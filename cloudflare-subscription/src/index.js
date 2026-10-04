@@ -17,6 +17,8 @@ export default {
       let response;
       if (request.method === 'GET' && path === '/health') {
         response = ok({ service: 'thekedaar-subscription-api' });
+      } else if (request.method === 'GET' && path === '/v1/app-config') {
+        response = appConfig(env);
       } else if (request.method === 'POST' && path === '/v1/install') {
         response = await install(request, env);
       } else if (request.method === 'POST' && path === '/v1/notifications/token') {
@@ -149,12 +151,15 @@ async function createSubscription(request, env) {
     );
     return checkout(current, env);
   }
+  const trialEligible = !user.subscription_created_at;
   const subscription = await razorpay(env, '/subscriptions', 'POST', {
     plan_id: env.RAZORPAY_PLAN_ID,
     total_count: 120,
     quantity: 1,
+    // Authorise the recurring mandate now; start paid billing after the trial.
+    ...(trialEligible ? { start_at: epoch() + 5 * 86400 } : {}),
     customer_notify: 1,
-    notes: { thekedaar_install_id: user.install_id },
+    notes: { thekedaar_install_id: user.install_id, trial_days: '5' },
   });
   await env.DB.prepare(
     `UPDATE installs SET subscription_id = ?, subscription_status = ?,
@@ -168,12 +173,18 @@ async function createSubscription(request, env) {
       user.install_id,
     )
     .run();
-  return checkout(subscription, env);
+  return checkout(subscription, env, trialEligible);
 }
 
 async function subscriptionStatus(request, env) {
   const user = await authenticated(request, env);
-  if (!user.subscription_id) return ok({ status: 'none', active: false });
+  if (!user.subscription_id) {
+    return ok({
+      status: 'none',
+      active: false,
+      trialEligible: !user.subscription_created_at,
+    });
+  }
   const subscription = await razorpay(
     env,
     `/subscriptions/${encodeURIComponent(user.subscription_id)}`,
@@ -185,7 +196,7 @@ async function subscriptionStatus(request, env) {
     null,
     subscription.created_at,
   );
-  return ok(statusPayload(subscription));
+  return ok({ ...statusPayload(subscription), trialEligible: false });
 }
 
 async function linkSubscription(request, env) {
@@ -253,27 +264,7 @@ async function cancelSubscription(request, env) {
     subscription.status || 'cancelled',
   );
 
-  let refundStatus = null;
-  const created = user.subscription_created_at || subscription.created_at;
-  if (
-    user.latest_payment_id &&
-    created &&
-    epoch() - created <= 7 * 86400
-  ) {
-    try {
-      const refund = await razorpay(
-        env,
-        `/payments/${encodeURIComponent(user.latest_payment_id)}/refund`,
-        'POST',
-        {},
-      );
-      refundStatus = refund.status;
-    } catch (error) {
-      console.error('Automatic refund failed', error);
-      refundStatus = 'manual_review_required';
-    }
-  }
-  return ok({ ...statusPayload(subscription), refundStatus });
+  return ok({ ...statusPayload(subscription), trialEligible: false });
 }
 
 async function razorpayWebhook(request, env) {
@@ -298,11 +289,13 @@ async function razorpayWebhook(request, env) {
   return ok({ received: true });
 }
 
-function checkout(subscription, env) {
+function checkout(subscription, env, trialEligible = false) {
   return ok({
     keyId: env.RAZORPAY_KEY_ID,
     subscriptionId: subscription.id,
     status: subscription.status,
+    trialEndsAt: subscription.start_at || null,
+    trialEligible,
   });
 }
 
@@ -313,7 +306,25 @@ function statusPayload(subscription) {
     status,
     active: ['active', 'authenticated'].includes(status),
     currentEnd: subscription.current_end || null,
+    trialEndsAt: subscription.start_at || null,
   };
+}
+
+function appConfig(env) {
+  const latestBuild = positiveInteger(env.APP_LATEST_BUILD, 1);
+  const minimumBuild = positiveInteger(env.APP_MINIMUM_BUILD, 1);
+  return ok({
+    latestBuild,
+    minimumBuild: Math.min(minimumBuild, latestBuild),
+    updateUrl: env.APP_UPDATE_URL || '',
+    message: env.APP_UPDATE_MESSAGE ||
+      'Thekedaar ka naya version available hai. Abhi update karein.',
+  });
+}
+
+function positiveInteger(value, fallback) {
+  const parsed = Number.parseInt(String(value || ''), 10);
+  return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : fallback;
 }
 
 async function updateSubscription(

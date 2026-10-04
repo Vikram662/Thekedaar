@@ -28,3 +28,17 @@ subscription state.
 
 Use Razorpay Test Mode keys first. Configure the Flutter build with
 `--dart-define=SUBSCRIPTION_API_URL=https://<worker>.workers.dev`.
+
+## Trigger the app update popup
+
+Set these Worker variables in `wrangler.jsonc` and deploy:
+
+- `APP_LATEST_BUILD`: newest published Flutter build number. If it is greater
+  than `AppConfig.appBuildNumber`, the popup appears.
+- `APP_MINIMUM_BUILD`: oldest allowed build. A lower installed build makes the
+  popup mandatory; otherwise users can choose **Baad mein**.
+- `APP_UPDATE_URL`: Play Store or APK download page.
+- `APP_UPDATE_MESSAGE`: text displayed in the popup.
+
+For every release, increment both `version: ...+N` in `pubspec.yaml` and
+`AppConfig.appBuildNumber`, publish the app, then raise `APP_LATEST_BUILD`.
