@@ -150,7 +150,7 @@ class _EntriesTab extends ConsumerWidget {
     final entries = ref.watch(recentLedgerProvider);
     return entries.when(
       loading: () => const ListSkeleton(),
-      error: (e, _) => Center(child: Text('$e')),
+      error: (e, _) => Center(child: Text(errorText(e))),
       data: (list) => list.isEmpty
           ? EmptyState(
               icon: Icons.receipt,

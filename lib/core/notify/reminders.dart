@@ -188,7 +188,7 @@ class ReminderService {
         NotificationKind.backupFailed,
         tr('Backup failed'),
         tr('Google Drive backup failed {count} times. ', {'count': count}) +
-            (error == null ? '' : '$error ') +
+            (error == null ? '' : '${tr(error)} ') +
             tr('Open the app to fix it.'),
       ),
       DateTime.now(),

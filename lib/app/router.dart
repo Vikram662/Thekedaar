@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/db/enums.dart';
+import '../core/i18n/i18n.dart';
 import '../core/utils/dates.dart';
 import '../features/attendance/presentation/attendance_screen.dart';
 import '../features/backup/presentation/backup_screen.dart';
@@ -430,5 +431,5 @@ class NotFoundBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      const Center(child: Text('This record was not found.'));
+      Center(child: Text(tr('This record was not found.')));
 }

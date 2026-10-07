@@ -58,7 +58,7 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
             ),
       body: workers.when(
         loading: () => const ListSkeleton(),
-        error: (error, _) => Center(child: Text(tr('Could not load workers: {error}', {'error': error}))),
+        error: (error, _) => Center(child: Text(tr('Could not load workers: {error}', {'error': errorText(error)}))),
         data: (items) {
           if (items.isEmpty) {
             return _showInactive

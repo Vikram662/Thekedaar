@@ -170,7 +170,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
         });
       }
     } catch (error) {
-      _say('$error');
+      _say(errorText(error));
     } finally {
       if (mounted) setState(() => _opening = false);
     }
@@ -212,7 +212,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
       await ref.read(subscriptionControllerProvider.notifier).link(id);
       _say(tr('Subscription restored.'));
     } catch (error) {
-      _say('$error');
+      _say(errorText(error));
     }
   }
 
@@ -242,7 +242,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
           : tr('Subscription cancelled. Refund: {status}',
               {'status': result['refundStatus']}));
     } catch (error) {
-      _say('$error');
+      _say(errorText(error));
     }
   }
 

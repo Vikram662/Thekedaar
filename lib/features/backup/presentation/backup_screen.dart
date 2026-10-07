@@ -26,9 +26,10 @@ String backupResultMessage(BackupResult result) => switch (result.outcome) {
       BackupOutcome.success => tr('Backup done ✓'),
       BackupOutcome.waitingForInternet =>
         tr('No internet. Backup will upload by itself when internet is back.'),
-      BackupOutcome.skipped => result.message ?? tr('Nothing to back up'),
+      BackupOutcome.skipped =>
+        tr(result.message ?? 'Nothing to back up'),
       BackupOutcome.notSetUp => tr('Backup is not set up'),
-      _ => result.message ?? tr('Backup failed'),
+      _ => tr(result.message ?? 'Backup failed'),
     };
 
 /// Manual backup from anywhere (home pull-down, menu, cloud button).
@@ -148,7 +149,7 @@ class _BackupSetupFlowState extends ConsumerState<_BackupSetupFlow> {
         _step = 1;
       });
     } catch (e) {
-      setState(() => _error = tr('Could not connect: {e}', {'e': e}));
+      setState(() => _error = tr('Could not connect: {e}', {'e': errorText(e)}));
     } finally {
       lock.suspendRelock = false;
       if (mounted) setState(() => _busy = false);
@@ -188,7 +189,7 @@ class _BackupSetupFlowState extends ConsumerState<_BackupSetupFlow> {
       await meta.setBool(MetaKeys.claimDevice, true);
       setState(() => _step = 3);
     } catch (e) {
-      setState(() => _error = '$e');
+      setState(() => _error = errorText(e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -481,7 +482,7 @@ class _BackupDashboard extends ConsumerWidget {
       await MetaStore(ref.read(databaseProvider)).remove(MetaKeys.lastBackupError);
       if (context.mounted) await _backupNow(context, ref);
     } catch (e) {
-      if (context.mounted) showMessage(context, tr('Could not connect: {e}', {'e': e}));
+      if (context.mounted) showMessage(context, tr('Could not connect: {e}', {'e': errorText(e)}));
     } finally {
       lock.suspendRelock = false;
     }
@@ -523,7 +524,7 @@ class _BackupDashboard extends ConsumerWidget {
     final (statusText, statusColor) = state.blocked
         ? (tr('Stopped: data moved to another phone'), AppColors.dangerText)
         : state.health == BackupHealth.failed
-            ? (state.lastError ?? tr('No backup in 24 hours'), AppColors.dangerText)
+            ? (tr(state.lastError ?? 'No backup in 24 hours'), AppColors.dangerText)
             : state.health == BackupHealth.pending
                 ? (
                     trPlural(state.pendingChanges, '1 change waiting to upload',

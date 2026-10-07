@@ -59,7 +59,7 @@ class WorkerDetailScreen extends ConsumerWidget {
       await ref.read(khataRepositoryProvider).reverseSettlement(settlementId);
       if (context.mounted) showMessage(context, tr('Settlement reversed'));
     } catch (e) {
-      if (context.mounted) showMessage(context, '$e');
+      if (context.mounted) showMessage(context, errorText(e));
     }
   }
 
@@ -150,7 +150,7 @@ class WorkerDetailScreen extends ConsumerWidget {
           const SizedBox(height: AppSizes.gutter),
           summary.when(
             loading: () => const LinearProgressIndicator(),
-            error: (e, _) => Text(tr('Could not calculate: {e}', {'e': e})),
+            error: (e, _) => Text(tr('Could not calculate: {e}', {'e': errorText(e)})),
             data: (s) => WorkerSummaryCard(summary: s),
           ),
           const SizedBox(height: AppSizes.gap),

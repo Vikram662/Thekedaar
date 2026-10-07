@@ -132,7 +132,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(tr('Failed to save task: {e}', {'e': e}))),
+          SnackBar(content: Text(tr('Failed to save task: {e}', {'e': errorText(e)}))),
         );
       }
     } finally {
@@ -163,7 +163,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
         ),
         error: (e, _) => Scaffold(
           appBar: AppBar(title: Text(tr('Error'))),
-          body: Center(child: Text(tr('Error loading task: {e}', {'e': e}))),
+          body: Center(child: Text(tr('Error loading task: {e}', {'e': errorText(e)}))),
         ),
       );
     }

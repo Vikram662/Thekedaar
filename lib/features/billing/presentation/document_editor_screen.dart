@@ -180,7 +180,7 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
-      showMessage(context, tr('Could not save: {e}', {'e': e}));
+      showMessage(context, tr('Could not save: {e}', {'e': errorText(e)}));
     }
   }
 

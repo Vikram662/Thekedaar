@@ -76,7 +76,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
           Expanded(
             child: tasksAsync.when(
               loading: () => const ListSkeleton(),
-              error: (e, _) => Center(child: Text(tr('Error loading tasks: {e}', {'e': e}))),
+              error: (e, _) => Center(child: Text(tr('Error loading tasks: {e}', {'e': errorText(e)}))),
               data: (list) {
                 final filtered = list.where((item) {
                   if (_filterIndex == 0) return !item.task.isCompleted;

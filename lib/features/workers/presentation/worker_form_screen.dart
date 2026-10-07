@@ -136,7 +136,7 @@ class _WorkerFormScreenState extends ConsumerState<WorkerFormScreen> {
     } catch (error) {
       if (!mounted) return;
       setState(() => _saving = false);
-      showMessage(context, tr('Could not save. Please try again. ({error})', {'error': error}));
+      showMessage(context, tr('Could not save. Please try again. ({error})', {'error': errorText(error)}));
     }
   }
 
@@ -201,7 +201,7 @@ class _WorkerFormScreenState extends ConsumerState<WorkerFormScreen> {
             ),
             roles.when(
               loading: () => const LinearProgressIndicator(),
-              error: (error, _) => Text(tr('Could not load roles: {error}', {'error': error})),
+              error: (error, _) => Text(tr('Could not load roles: {error}', {'error': errorText(error)})),
               data: (list) => Wrap(
                 spacing: AppSizes.gap,
                 runSpacing: AppSizes.gap,

@@ -115,7 +115,7 @@ class _DocumentsTab extends ConsumerWidget {
     final isInvoice = kind == DocumentKind.invoice;
     return docs.when(
       loading: () => const ListSkeleton(),
-      error: (e, _) => Center(child: Text('$e')),
+      error: (e, _) => Center(child: Text(errorText(e))),
       data: (list) => list.isEmpty
           ? EmptyState(
               icon: isInvoice ? Icons.receipt_long : Icons.request_quote,
@@ -144,7 +144,7 @@ class _ClientsTab extends ConsumerWidget {
     final clients = ref.watch(clientsProvider);
     return clients.when(
       loading: () => const ListSkeleton(),
-      error: (e, _) => Center(child: Text('$e')),
+      error: (e, _) => Center(child: Text(errorText(e))),
       data: (list) => list.isEmpty
           ? EmptyState(
               icon: Icons.people_outline,
@@ -204,7 +204,7 @@ class _PaymentsTab extends ConsumerWidget {
     final payments = ref.watch(paymentsProvider(null));
     return payments.when(
       loading: () => const ListSkeleton(),
-      error: (e, _) => Center(child: Text('$e')),
+      error: (e, _) => Center(child: Text(errorText(e))),
       data: (list) => list.isEmpty
           ? EmptyState(
               icon: Icons.payments_outlined,

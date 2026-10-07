@@ -118,7 +118,7 @@ class LedgerTile extends ConsumerWidget {
       await ref.read(khataRepositoryProvider).reverseEntry(item.entry.id);
       if (context.mounted) showMessage(context, tr('Entry reversed'));
     } catch (e) {
-      if (context.mounted) showMessage(context, '$e');
+      if (context.mounted) showMessage(context, errorText(e));
     }
   }
 
@@ -136,7 +136,8 @@ class LedgerTile extends ConsumerWidget {
     final subtitle = [
       dayTimeFormat.format(item.at),
       if (entry.mode != null) paymentModeLabel(entry.mode!),
-      if (entry.remarks != null && entry.remarks!.isNotEmpty) entry.remarks!,
+      if (entry.remarks != null && entry.remarks!.isNotEmpty)
+        tr(entry.remarks!),
     ].join(' · ');
 
     return ListTile(

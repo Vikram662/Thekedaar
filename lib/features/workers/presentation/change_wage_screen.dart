@@ -69,7 +69,7 @@ class _ChangeWageScreenState extends ConsumerState<ChangeWageScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
-      showMessage(context, '$e');
+      showMessage(context, errorText(e));
     }
   }
 

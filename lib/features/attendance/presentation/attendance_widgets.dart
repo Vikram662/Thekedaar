@@ -63,7 +63,7 @@ Future<void> markAttendance(
     }
     HapticFeedback.mediumImpact();
   } on PeriodLockedException catch (e) {
-    if (context.mounted) showMessage(context, e.message);
+    if (context.mounted) showMessage(context, tr(e.message));
   }
 }
 

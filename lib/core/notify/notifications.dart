@@ -19,11 +19,14 @@ enum NotificationKind {
   backupProgress(7, 'backup_progress', 'Backup progress'),
   taskReminder(8, 'tasks', 'Tasks & Site Visits');
 
-  const NotificationKind(this.id, this.channelId, this.channelName);
+  const NotificationKind(this.id, this.channelId, this._channelName);
 
   final int id;
   final String channelId;
-  final String channelName;
+  final String _channelName;
+
+  /// Shown in the phone's notification settings.
+  String get channelName => tr(_channelName);
 }
 
 /// Thin wrapper over flutter_local_notifications. Works in the app and in

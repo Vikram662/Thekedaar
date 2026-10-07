@@ -728,7 +728,7 @@ class _BackupBanner extends StatelessWidget {
         tr('Backup not set up. Your data is only on this phone.'),
       BackupHealth.failed => state.blocked
           ? tr('Backup stopped: this data was restored on another phone.')
-          : '${tr('No backup in the last 24 hours.')} ${state.lastError ?? ''}',
+          : '${tr('No backup in the last 24 hours.')} ${tr(state.lastError ?? '')}',
       BackupHealth.pending => state.pendingTooLong
           ? tr('Backup pending for over a day. Connect to the internet.')
           : null,

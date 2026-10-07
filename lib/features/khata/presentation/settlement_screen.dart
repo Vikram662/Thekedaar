@@ -94,7 +94,7 @@ class _SettlementScreenState extends ConsumerState<SettlementScreen> {
       HapticFeedback.mediumImpact();
       if (mounted) setState(() => _done = settlement);
     } catch (e) {
-      if (mounted) showMessage(context, '$e');
+      if (mounted) showMessage(context, errorText(e));
     } finally {
       if (mounted) setState(() => _saving = false);
     }

@@ -196,7 +196,7 @@ class CalendarRepository {
             : CalendarEventKind.workerOther,
         date: isoDate(at),
         title: '${_ledgerLabel(type)} · ${r.read<String>('worker')}',
-        subtitle: remarks,
+        subtitle: remarks == null ? null : tr(remarks),
         amountPaise: r.read<int>('amount_paise'),
         flow: paid ? MoneyFlow.outgoing : MoneyFlow.none,
         route: Routes.worker(r.read<String>('worker_id')),

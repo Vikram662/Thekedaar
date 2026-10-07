@@ -96,7 +96,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
           Expanded(
             child: items.when(
               loading: () => const ListSkeleton(),
-              error: (e, _) => Center(child: Text('$e')),
+              error: (e, _) => Center(child: Text(errorText(e))),
               data: (list) {
                 if (list.isEmpty) {
                   return EmptyState(

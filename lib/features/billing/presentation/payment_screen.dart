@@ -68,7 +68,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
-      showMessage(context, tr('Could not save: {e}', {'e': e}));
+      showMessage(context, tr('Could not save: {e}', {'e': errorText(e)}));
     }
   }
 

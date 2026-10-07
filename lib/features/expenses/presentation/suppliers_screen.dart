@@ -32,7 +32,7 @@ class SuppliersScreen extends ConsumerWidget {
       ),
       body: suppliers.when(
         loading: () => const ListSkeleton(),
-        error: (e, _) => Center(child: Text('$e')),
+        error: (e, _) => Center(child: Text(errorText(e))),
         data: (list) {
           if (list.isEmpty) {
             return EmptyState(

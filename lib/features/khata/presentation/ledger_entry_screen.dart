@@ -99,11 +99,11 @@ class _LedgerEntryScreenState extends ConsumerState<LedgerEntryScreen> {
     } on PeriodLockedException catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
-      showMessage(context, e.message);
+      showMessage(context, tr(e.message));
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
-      showMessage(context, tr('Could not save: {e}', {'e': e}));
+      showMessage(context, tr('Could not save: {e}', {'e': errorText(e)}));
     }
   }
 

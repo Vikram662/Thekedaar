@@ -170,7 +170,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
         setState(() => _error = tr('Please choose the account {email}', {'email': email}));
       }
     } catch (e) {
-      if (mounted) setState(() => _error = tr('Google sign-in failed: {e}', {'e': e}));
+      if (mounted) setState(() => _error = tr('Google sign-in failed: {e}', {'e': errorText(e)}));
     }
   }
 

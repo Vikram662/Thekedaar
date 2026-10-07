@@ -134,7 +134,7 @@ class _PieceWorkScreenState extends ConsumerState<PieceWorkScreen> {
     } on PeriodLockedException catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
-      showMessage(context, e.message);
+      showMessage(context, tr(e.message));
     }
   }
 

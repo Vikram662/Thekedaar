@@ -55,7 +55,7 @@ class _ExpenseEntryScreenState extends ConsumerState<ExpenseEntryScreen> {
       await deletePhoto(_photoName); // replace the previous one
       setState(() => _photoName = name);
     } catch (e) {
-      if (mounted) showMessage(context, tr('Could not take photo: {e}', {'e': e}));
+      if (mounted) showMessage(context, tr('Could not take photo: {e}', {'e': errorText(e)}));
     } finally {
       lock.suspendRelock = false;
     }
@@ -120,7 +120,7 @@ class _ExpenseEntryScreenState extends ConsumerState<ExpenseEntryScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
-      showMessage(context, tr('Could not save: {e}', {'e': e}));
+      showMessage(context, tr('Could not save: {e}', {'e': errorText(e)}));
     }
   }
 

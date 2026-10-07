@@ -94,7 +94,7 @@ class _MonthRegisterViewState extends ConsumerState<MonthRegisterView> {
         Expanded(
           child: register.when(
             loading: () => const ListSkeleton(),
-            error: (e, _) => Center(child: Text('$e')),
+            error: (e, _) => Center(child: Text(errorText(e))),
             data: (r) => r.workers.isEmpty
                 ? EmptyState(
                     icon: Icons.groups,

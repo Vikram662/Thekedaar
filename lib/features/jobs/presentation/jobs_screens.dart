@@ -48,7 +48,7 @@ class JobsScreen extends ConsumerWidget {
       ),
       body: jobs.when(
         loading: () => const ListSkeleton(),
-        error: (e, _) => Center(child: Text('$e')),
+        error: (e, _) => Center(child: Text(errorText(e))),
         data: (list) => list.isEmpty
             ? EmptyState(
                 icon: Icons.location_city,

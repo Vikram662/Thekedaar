@@ -69,7 +69,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       if (!mounted) return;
       setState(() => _saving = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr('Could not save. Please try again. ({error})', {'error': error}))),
+        SnackBar(content: Text(tr('Could not save. Please try again. ({error})', {'error': errorText(error)}))),
       );
     }
   }

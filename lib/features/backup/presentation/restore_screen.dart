@@ -71,11 +71,11 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
     } on WrongSecretException {
       fail(_useRecoveryKey ? tr('Wrong Recovery Key') : tr('Wrong Backup Password'));
     } on RestoreException catch (e) {
-      fail(e.message);
+      fail(tr(e.message));
     } on BackupFormatException catch (e) {
-      fail(e.message);
+      fail(tr(e.message));
     } catch (e) {
-      fail('$e');
+      fail(errorText(e));
     } finally {
       lock.suspendRelock = false;
       if (mounted) {

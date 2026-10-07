@@ -78,6 +78,18 @@ String tr(String text, [Map<String, Object?> args = const {}]) {
   return result;
 }
 
+/// User-facing text for a caught error: its message without the
+/// "Bad state:" style prefix, translated when it is a known app message.
+String errorText(Object error) {
+  var message = switch (error) {
+    StateError(:final message) => message,
+    ArgumentError(:final message) => '$message',
+    _ => '$error',
+  };
+  if (message.startsWith('Exception: ')) message = message.substring(11);
+  return tr(message);
+}
+
 /// Picks the singular or plural English form, then translates it.
 /// [count] is available to both forms as `{count}`.
 String trPlural(

@@ -527,7 +527,7 @@ class BackupEngine {
 /// "1.2 MB of 3.4 MB".
 String _sizeText(int sent, int total) {
   String mb(int b) => (b / (1024 * 1024)).toStringAsFixed(1);
-  return '${mb(sent)} MB of ${mb(total)} MB';
+  return tr('{got} MB of {total} MB', {'got': mb(sent), 'total': mb(total)});
 }
 
 /// Master key is kept in secure storage as comma separated bytes.

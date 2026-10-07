@@ -44,6 +44,8 @@ const hindiStrings = <String, String>{
       '5 दिन फ़्री ट्रायल, फिर ₹99/महीना',
   'A new version is available.':
       'नया वर्ज़न उपलब्ध है।',
+  'A reversal cannot be reversed':
+      'उलटी एंट्री को दोबारा नहीं उलटा जा सकता',
   'Absent':
       'ग़ैरहाज़िर',
   'Active members can work offline for up to 7 days.':
@@ -122,6 +124,10 @@ const hindiStrings = <String, String>{
       'सभी मज़दूर, महीने का कैलेंडर',
   'Almost done':
       'लगभग हो गया',
+  'Already reversed':
+      'पहले ही उलटा जा चुका है',
+  'Already running':
+      'पहले से चल रहा है',
   'Already settled up to today. Nothing new to settle yet.':
       'आज तक का हिसाब हो चुका है। अभी नया हिसाब करने को कुछ नहीं।',
   'Already settled up to {date}. Nothing new to settle yet.':
@@ -130,6 +136,8 @@ const hindiStrings = <String, String>{
       'पहले से ठेकेदार इस्तेमाल करते हैं?',
   'Amount':
       'रकम',
+  'Amount must be more than 0':
+      'रकम 0 से ज़्यादा होनी चाहिए',
   'App lock':
       'ऐप लॉक',
   'App lock PIN':
@@ -156,8 +164,12 @@ const hindiStrings = <String, String>{
       'गूगल ड्राइव पर बैकअप हो रहा है · {percent}%',
   'Backing up…':
       'बैकअप हो रहा है…',
+  'Backup':
+      'बैकअप',
   'Backup & restore':
       'बैकअप और रिस्टोर',
+  'Backup checksum does not match':
+      'बैकअप फ़ाइल की जाँच मेल नहीं खाती',
   'Backup complete':
       'बैकअप पूरा हुआ',
   'Backup database is damaged ({result})':
@@ -172,12 +184,18 @@ const hindiStrings = <String, String>{
       'बैकअप फ़ाइल',
   'Backup file (.tkbak)':
       'बैकअप फ़ाइल (.tkbak)',
+  'Backup file is incomplete':
+      'बैकअप फ़ाइल अधूरी है',
   'Backup is already running':
       'बैकअप पहले से चल रहा है',
   'Backup is not set up':
       'बैकअप सेट नहीं है',
   'Backup is not set up yet':
       'बैकअप अभी सेट नहीं है',
+  'Backup key missing on this phone':
+      'इस फ़ोन में बैकअप की नहीं मिली',
+  'Backup keyring missing':
+      'बैकअप की-रिंग नहीं मिली',
   'Backup not set up':
       'बैकअप सेट नहीं है',
   'Backup not set up. Your data is only on this phone.':
@@ -196,6 +214,8 @@ const hindiStrings = <String, String>{
       'बैकअप में दिक्कत',
   'Backup problems':
       'बैकअप की दिक्कतें',
+  'Backup progress':
+      'बैकअप की प्रगति',
   'Backup settings & restore':
       'बैकअप सेटिंग्स और रिस्टोर',
   'Backup started…':
@@ -564,8 +584,12 @@ const hindiStrings = <String, String>{
       'फ़्री में देखें',
   'Fabrication / Welding':
       'फ़ैब्रिकेशन / वेल्डिंग',
+  'Failed':
+      'नहीं हो सका',
   'Failed to save task: {e}':
       'काम सेव नहीं हो सका: {e}',
+  'File is too small':
+      'फ़ाइल बहुत छोटी है',
   'Finish and back up now':
       'पूरा करें और अभी बैकअप लें',
   'Forgot PIN?':
@@ -594,8 +618,12 @@ const hindiStrings = <String, String>{
       'गूगल ड्राइव बैकअप जुड़ा नहीं है, इसलिए यहाँ पिन रीसेट नहीं हो सकता। ऐप दोबारा इंस्टॉल करें और बैकअप फ़ाइल से रिस्टोर करें।',
   'Google Drive backup is not switched on in this app build yet. It needs the Google Cloud OAuth client id (PRD D-7). Your data is only on this phone until then.':
       'इस ऐप बिल्ड में गूगल ड्राइव बैकअप अभी चालू नहीं है। इसके लिए Google Cloud OAuth client id चाहिए (PRD D-7)। तब तक आपका डेटा सिर्फ़ इसी फ़ोन में है।',
+  'Google Drive disconnected. Please reconnect.':
+      'गूगल ड्राइव का कनेक्शन टूट गया। कृपया फिर से जोड़ें।',
   'Google Drive is almost full (PRD I-M11). Free some space.':
       'गूगल ड्राइव लगभग भर गया है (PRD I-M11)। कुछ जगह ख़ाली करें।',
+  'Google Drive is not set up in this app build yet (missing OAuth client id).':
+      'इस ऐप बिल्ड में गूगल ड्राइव अभी सेट नहीं है (OAuth client id नहीं है)।',
   'Google Drive · {email}':
       'गूगल ड्राइव · {email}',
   'Google sign-in failed: {e}':
@@ -662,6 +690,8 @@ const hindiStrings = <String, String>{
       'खाता बैलेंस',
   'Khata entries':
       'खाता एंट्री',
+  'Khata reminders':
+      'खाता रिमाइंडर',
   'Label (e.g. Hall wall)':
       'नाम (जैसे हॉल की दीवार)',
   'Labour':
@@ -782,6 +812,8 @@ const hindiStrings = <String, String>{
       'नाम',
   'Net payable':
       'कुल देना है',
+  'Network timeout':
+      'नेटवर्क का समय ख़त्म हो गया',
   'New':
       'नया',
   'New Backup Password':
@@ -834,6 +866,8 @@ const hindiStrings = <String, String>{
       'अभी कोई बिल नहीं।',
   'No bills, payments or expenses on this day':
       'इस दिन कोई बिल, भुगतान या खर्चा नहीं',
+  'No changes':
+      'कोई नया बदलाव नहीं',
   'No client or worker owes you money right now.':
       'अभी किसी ग्राहक या मज़दूर पर आपका पैसा बाकी नहीं है।',
   'No clients yet':
@@ -896,6 +930,8 @@ const hindiStrings = <String, String>{
       'कोई नहीं',
   'Nos':
       'नग',
+  'Not a Thekedaar backup file':
+      'यह ठेकेदार की बैकअप फ़ाइल नहीं है',
   'Not available on this phone':
       'इस फ़ोन में उपलब्ध नहीं',
   'Not marked':
@@ -924,6 +960,8 @@ const hindiStrings = <String, String>{
       'कुछ देना नहीं',
   'Nothing to receive':
       'कुछ लेना नहीं',
+  'Nothing to settle before this date':
+      'इस तारीख़ से पहले हिसाब करने को कुछ नहीं',
   'Notification settings':
       'नोटिफ़िकेशन सेटिंग्स',
   'Notifications are off for this app':
@@ -944,6 +982,8 @@ const hindiStrings = <String, String>{
       'इस दिन "सबको मार्क करें" छुट्टी लगाएगा। साप्ताहिक छुट्टी महीने वाले मज़दूरों के लिए पैसे वाली और रोज़ वाले मज़दूरों के लिए बिना पैसे की होती है।',
   'On Xiaomi, Oppo, Vivo, Realme and some other phones, turn off battery saving for this app so auto backup is not stopped:\nSettings → Apps → Thekedaar → Battery → No restrictions.':
       'Xiaomi, Oppo, Vivo, Realme और कुछ दूसरे फ़ोन में इस ऐप के लिए बैटरी सेविंग बंद करें ताकि ऑटो बैकअप न रुके:\nसेटिंग्स → ऐप्स → Thekedaar → बैटरी → कोई पाबंदी नहीं।',
+  'Only the latest settlement can be reversed':
+      'सिर्फ़ सबसे नया हिसाब ही उलटा जा सकता है',
   'Open client':
       'ग्राहक खोलें',
   'Open the app to fix it.':
@@ -978,6 +1018,10 @@ const hindiStrings = <String, String>{
       'हा {present} · ½ {half} · ग़ै {absent}',
   'Paid':
       'दिया',
+  'Paid amount cannot be negative':
+      'दी गई रकम माइनस में नहीं हो सकती',
+  'Paid at reversed settlement':
+      'उलटे गए हिसाब में दिया गया',
   'Paid by':
       'किससे दिया',
   'Paid days':
@@ -1018,6 +1062,8 @@ const hindiStrings = <String, String>{
       'भुगतान की तारीख़ निकल गई',
   'Payment received':
       'भुगतान मिला',
+  'Payment reminders':
+      'भुगतान रिमाइंडर',
   'Payment to {business}':
       '{business} को भुगतान',
   'Payment was not completed.':
@@ -1046,6 +1092,8 @@ const hindiStrings = <String, String>{
       'फ़ोन का समय गूगल से {skew} है। फ़ोन सेटिंग्स में ऑटोमैटिक तारीख़ और समय चालू करें।',
   'PhonePe':
       'PhonePe',
+  'Photo backup is damaged':
+      'फ़ोटो का बैकअप ख़राब है',
   'Photo not found on this phone':
       'यह फ़ोटो इस फ़ोन में नहीं मिली',
   'Piece work':
@@ -1116,6 +1164,8 @@ const hindiStrings = <String, String>{
       'कोटेशन',
   'Quotation / purchase':
       'कोटेशन / ख़रीद',
+  'Quotation not found':
+      'कोटेशन नहीं मिला',
   'Quotation prefix':
       'कोटेशन का प्रीफ़िक्स',
   'Quotation {number} from {business}: {amount}':
@@ -1142,6 +1192,8 @@ const hindiStrings = <String, String>{
       '₹99/महीने में साइट, हाज़िरी, खर्चे और बिल दर्ज करें। सब्सक्रिप्शन कभी भी रद्द कर सकते हैं।',
   'Recovery Key':
       'रिकवरी की',
+  'Registration is not complete.':
+      'रजिस्ट्रेशन पूरा नहीं हुआ है।',
   'Reminders':
       'रिमाइंडर',
   'Reminders are working.':
@@ -1192,6 +1244,8 @@ const hindiStrings = <String, String>{
       'हिसाब उलटें?',
   'Reverse this entry?':
       'यह एंट्री उलटें?',
+  'Reversed':
+      'उलटा गया',
   'Reversed · {details}':
       'उलटा गया · {details}',
   'Ring / notify at scheduled time':
@@ -1256,6 +1310,8 @@ const hindiStrings = <String, String>{
       '{name} का हिसाब',
   'Settled':
       'चुकता',
+  'Settlement':
+      'हिसाब',
   'Settlement reversed':
       'हिसाब उलट दिया गया',
   'Settlement · {name}':
@@ -1304,8 +1360,12 @@ const hindiStrings = <String, String>{
       'सब्सक्रिप्शन रद्द हो गया। रिफ़ंड: {status}',
   'Subscription ID':
       'सब्सक्रिप्शन ID',
+  'Subscription request failed.':
+      'सब्सक्रिप्शन की रिक्वेस्ट नहीं हो सकी।',
   'Subscription restored.':
       'सब्सक्रिप्शन वापस आ गया।',
+  'Subscription service is not configured in this build.':
+      'इस बिल्ड में सब्सक्रिप्शन सर्विस सेट नहीं है।',
   'Subscription service is not configured.':
       'सब्सक्रिप्शन सर्विस सेट नहीं है।',
   'Subtotal':
@@ -1332,6 +1392,8 @@ const hindiStrings = <String, String>{
       'काम का शीर्षक *',
   'Tasks & Reminders':
       'काम और रिमाइंडर',
+  'Tasks & Site Visits':
+      'काम और साइट विज़िट',
   'Tasks & Visits':
       'काम और विज़िट',
   'Template':
@@ -1360,8 +1422,16 @@ const hindiStrings = <String, String>{
       'यह बैकअप ऐप के नए वर्ज़न का है। कृपया पहले ऐप अपडेट करें।',
   'This build is missing SUBSCRIPTION_API_URL.':
       'इस बिल्ड में SUBSCRIPTION_API_URL नहीं है।',
+  'This data has moved to another phone. Backup is stopped here.':
+      'यह डेटा दूसरे फ़ोन पर चला गया है। यहाँ बैकअप रोक दिया गया है।',
+  'This date is in a settled period. Pick a later date.':
+      'यह तारीख़ हिसाब हो चुकी अवधि में है। बाद की तारीख़ चुनें।',
+  'This period is settled and locked':
+      'इस अवधि का हिसाब हो चुका है और यह लॉक है',
   'This PIN is too easy. Choose another.':
       'यह पिन बहुत आसान है। दूसरा चुनें।',
+  'This record was not found.':
+      'यह रिकॉर्ड नहीं मिला।',
   'This task does not exist.':
       'यह काम मौजूद नहीं है।',
   'This will cancel all scheduled reminder alarms.':
@@ -1514,6 +1584,8 @@ const hindiStrings = <String, String>{
       'जिन मज़दूरों को \'छोड़ दिया\' मार्क करेंगे वे यहाँ दिखेंगे।',
   'Wrong Backup Password':
       'बैकअप पासवर्ड ग़लत है',
+  'Wrong password or recovery key':
+      'पासवर्ड या रिकवरी की ग़लत है',
   'Wrong PIN.':
       'ग़लत पिन।',
   'Wrong PIN. {attemptsLeft} tries left.':
