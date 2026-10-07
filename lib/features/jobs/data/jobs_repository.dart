@@ -6,6 +6,7 @@ import '../../../core/db/database.dart';
 import '../../../core/db/enums.dart';
 import '../../../core/db/providers.dart';
 import '../../../core/db/watch.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/utils/ids.dart';
 
 final jobsRepositoryProvider = Provider<JobsRepository>(
@@ -21,9 +22,9 @@ final jobDetailProvider = StreamProvider.family<JobDetail?, String>(
 );
 
 String jobStatusLabel(JobStatus status) => switch (status) {
-      JobStatus.planned => 'Planned',
-      JobStatus.inProgress => 'In progress',
-      JobStatus.completed => 'Completed',
+      JobStatus.planned => tr('Planned'),
+      JobStatus.inProgress => tr('In progress'),
+      JobStatus.completed => tr('Completed'),
     };
 
 class JobListItem {

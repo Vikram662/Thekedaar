@@ -7,6 +7,7 @@ import '../../app/theme.dart';
 import '../../core/backup/google_drive_auth.dart';
 import '../../core/db/meta_store.dart';
 import '../../core/db/providers.dart';
+import '../../core/i18n/i18n.dart';
 import '../../core/security/pin.dart';
 import '../../core/widgets/shimmer.dart';
 import 'app_lock_controller.dart';
@@ -126,7 +127,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
     final lock = ref.read(appLockProvider);
     if (!lock.biometricEnabled) return;
     final ok = await lock.authenticateBiometric(
-      reason: widget.reason ?? 'Unlock Thekedaar',
+      reason: widget.reason ?? tr('Unlock Thekedaar'),
       unlock: !widget.confirmOnly,
     );
     if (ok && mounted) _done();
@@ -143,10 +144,10 @@ class _LockScreenState extends ConsumerState<LockScreen> {
         _done();
       case PinWrong(:final attemptsLeft):
         setState(() => _error = attemptsLeft > 0
-            ? 'Wrong PIN. $attemptsLeft tries left.'
-            : 'Wrong PIN.');
+            ? tr('Wrong PIN. {attemptsLeft} tries left.', {'attemptsLeft': attemptsLeft})
+            : tr('Wrong PIN.'));
       case PinLockedOut():
-        setState(() => _error = 'Too many wrong tries.');
+        setState(() => _error = tr('Too many wrong tries.'));
     }
   }
 
@@ -156,8 +157,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
     if (!mounted) return;
     if (email == null) {
       setState(() => _error =
-          'Google Drive backup is not connected, so the PIN cannot be reset '
-          'here. Reinstall the app and restore from a backup file.');
+          tr('Google Drive backup is not connected, so the PIN cannot be reset here. Reinstall the app and restore from a backup file.'));
       return;
     }
     try {
@@ -167,10 +167,10 @@ class _LockScreenState extends ConsumerState<LockScreen> {
         ref.read(appLockProvider).startPinReset();
         if (widget.confirmOnly) Navigator.of(context).pop(false);
       } else {
-        setState(() => _error = 'Please choose the account $email');
+        setState(() => _error = tr('Please choose the account {email}', {'email': email}));
       }
     } catch (e) {
-      if (mounted) setState(() => _error = 'Google sign-in failed: $e');
+      if (mounted) setState(() => _error = tr('Google sign-in failed: {e}', {'e': e}));
     }
   }
 
@@ -186,7 +186,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
       child: Scaffold(
         backgroundColor: AppColors.surface,
         appBar: widget.confirmOnly
-            ? AppBar(title: const Text('Confirm it is you'))
+            ? AppBar(title: Text(tr('Confirm it is you')))
             : null,
         body: SafeArea(
           child: Center(
@@ -197,7 +197,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
                   const Icon(Icons.lock_outline, size: 48),
                   const SizedBox(height: 12),
                   Text(
-                    widget.reason ?? 'Enter your PIN',
+                    widget.reason ?? tr('Enter your PIN'),
                     style: Theme.of(context).textTheme.titleLarge,
                     textAlign: TextAlign.center,
                   ),
@@ -205,7 +205,9 @@ class _LockScreenState extends ConsumerState<LockScreen> {
                   SizedBox(
                     height: 48,
                     child: Text(
-                      waiting ? 'Try again in $seconds s' : (_error ?? ''),
+                      waiting
+                          ? tr('Try again in {seconds} s', {'seconds': seconds})
+                          : (_error ?? ''),
                       textAlign: TextAlign.center,
                       style: const TextStyle(color: AppColors.dangerText),
                     ),
@@ -220,7 +222,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
                   const SizedBox(height: 12),
                   TextButton(
                     onPressed: _forgotPin,
-                    child: const Text('Forgot PIN?'),
+                    child: Text(tr('Forgot PIN?')),
                   ),
                 ],
               ),
@@ -250,7 +252,7 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
   Future<void> _onPin(String pin) async {
     if (_first == null) {
       if (isWeakPin(pin)) {
-        setState(() => _error = 'This PIN is too easy. Choose another.');
+        setState(() => _error = tr('This PIN is too easy. Choose another.'));
         return;
       }
       setState(() {
@@ -262,7 +264,7 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
     if (pin != _first) {
       setState(() {
         _first = null;
-        _error = 'PINs did not match. Start again.';
+        _error = tr('PINs did not match. Start again.');
       });
       return;
     }
@@ -272,16 +274,16 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
       final enable = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Use fingerprint?'),
-          content: const Text('Unlock the app with fingerprint or face.'),
+          title: Text(tr('Use fingerprint?')),
+          content: Text(tr('Unlock the app with fingerprint or face.')),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Not now'),
+              child: Text(tr('Not now')),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Use fingerprint'),
+              child: Text(tr('Use fingerprint')),
             ),
           ],
         ),
@@ -295,7 +297,7 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: AppBar(title: const Text('App lock PIN')),
+      appBar: AppBar(title: Text(tr('App lock PIN'))),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -303,14 +305,14 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
             child: Column(
               children: [
                 Text(
-                  _first == null ? 'Create a 4-digit PIN' : 'Enter the PIN again',
+                  _first == null ? tr('Create a 4-digit PIN') : tr('Enter the PIN again'),
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 8),
                 SizedBox(
                   height: 40,
                   child: Text(
-                    _error ?? 'You will use it to open the app.',
+                    _error ?? tr('You will use it to open the app.'),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: _error == null

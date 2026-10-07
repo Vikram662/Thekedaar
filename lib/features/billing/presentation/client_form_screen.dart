@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/theme.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/utils/phone.dart';
 import '../../../core/widgets/common.dart';
 import '../data/billing_repository.dart';
@@ -44,7 +45,7 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
           address: address.isEmpty ? null : address,
         );
     if (!mounted) return;
-    showMessage(context, 'Client saved');
+    showMessage(context, tr('Client saved'));
     context.pop();
   }
 
@@ -65,7 +66,7 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.clientId == null ? 'New Client' : 'Edit Client'),
+        title: Text(widget.clientId == null ? tr('New Client') : tr('Edit Client')),
       ),
       body: Form(
         key: _formKey,
@@ -75,35 +76,35 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
             TextFormField(
               controller: _name,
               textCapitalization: TextCapitalization.words,
-              decoration: const InputDecoration(labelText: 'Name'),
+              decoration: InputDecoration(labelText: tr('Name')),
               validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? 'Enter name' : null,
+                  (v == null || v.trim().isEmpty) ? tr('Enter name') : null,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _phone,
               keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
-                labelText: 'Mobile number (optional)',
+              decoration: InputDecoration(
+                labelText: tr('Mobile number (optional)'),
                 prefixText: '+91 ',
               ),
               validator: (v) =>
                   (v == null || v.trim().isEmpty || normalizeIndianPhone(v) != null)
                       ? null
-                      : 'Enter a valid 10-digit mobile number',
+                      : tr('Enter a valid 10-digit mobile number'),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _address,
               maxLines: 3,
               textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(labelText: 'Address (optional)'),
+              decoration: InputDecoration(labelText: tr('Address (optional)')),
             ),
           ],
         ),
       ),
       bottomNavigationBar:
-          BottomActionBar(label: 'Save', busy: _saving, onPressed: _save),
+          BottomActionBar(label: tr('Save'), busy: _saving, onPressed: _save),
     );
   }
 }

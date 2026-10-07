@@ -14,6 +14,7 @@ import '../../../core/config.dart';
 import '../../../core/db/enums.dart';
 import '../../../core/db/meta_store.dart';
 import '../../../core/db/providers.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/security/secure_store.dart';
 import '../../../core/settings/app_settings.dart';
 import '../../../core/settings/settings_providers.dart';
@@ -22,12 +23,12 @@ import '../../lock/app_lock_controller.dart';
 import '../../lock/lock_screens.dart';
 
 String backupResultMessage(BackupResult result) => switch (result.outcome) {
-      BackupOutcome.success => 'Backup done ✓',
+      BackupOutcome.success => tr('Backup done ✓'),
       BackupOutcome.waitingForInternet =>
-        'No internet. Backup will upload by itself when internet is back.',
-      BackupOutcome.skipped => result.message ?? 'Nothing to back up',
-      BackupOutcome.notSetUp => 'Backup is not set up',
-      _ => result.message ?? 'Backup failed',
+        tr('No internet. Backup will upload by itself when internet is back.'),
+      BackupOutcome.skipped => result.message ?? tr('Nothing to back up'),
+      BackupOutcome.notSetUp => tr('Backup is not set up'),
+      _ => result.message ?? tr('Backup failed'),
     };
 
 /// Manual backup from anywhere (home pull-down, menu, cloud button).
@@ -35,12 +36,12 @@ String backupResultMessage(BackupResult result) => switch (result.outcome) {
 Future<void> runManualBackup(BuildContext context, WidgetRef ref) async {
   final state = ref.read(backupStateProvider).valueOrNull;
   if (state == null || !state.configured) {
-    showMessage(context, 'Backup is not set up yet');
+    showMessage(context, tr('Backup is not set up yet'));
     await context.push(Routes.backup);
     return;
   }
   if (ref.read(backupRunningProvider)) {
-    showMessage(context, 'Backup is already running');
+    showMessage(context, tr('Backup is already running'));
     return;
   }
   final result =
@@ -70,7 +71,7 @@ class BackupScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(backupStateProvider).valueOrNull;
     return Scaffold(
-      appBar: AppBar(title: const Text('Backup & restore')),
+      appBar: AppBar(title: Text(tr('Backup & restore'))),
       body: state == null
           ? const ListSkeleton()
           : !AppConfig.driveConfigured
@@ -90,18 +91,16 @@ class _NotAvailable extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(AppSizes.gutter),
       children: [
-        const Panel(
+        Panel(
           child: Text(
-            'Google Drive backup is not switched on in this app build yet. '
-            'It needs the Google Cloud OAuth client id (PRD D-7). '
-            'Your data is only on this phone until then.',
+            tr('Google Drive backup is not switched on in this app build yet. It needs the Google Cloud OAuth client id (PRD D-7). Your data is only on this phone until then.'),
           ),
         ),
         const SizedBox(height: 12),
         OutlinedButton.icon(
           onPressed: () => context.push(Routes.restore),
           icon: const Icon(Icons.file_open),
-          label: const Text('Restore from a backup file'),
+          label: Text(tr('Restore from a backup file')),
         ),
       ],
     );
@@ -149,7 +148,7 @@ class _BackupSetupFlowState extends ConsumerState<_BackupSetupFlow> {
         _step = 1;
       });
     } catch (e) {
-      setState(() => _error = 'Could not connect: $e');
+      setState(() => _error = tr('Could not connect: {e}', {'e': e}));
     } finally {
       lock.suspendRelock = false;
       if (mounted) setState(() => _busy = false);
@@ -159,9 +158,9 @@ class _BackupSetupFlowState extends ConsumerState<_BackupSetupFlow> {
   void _checkPassword() {
     final pw = _password.text;
     if (pw.length < 8) {
-      setState(() => _error = 'Use at least 8 characters');
+      setState(() => _error = tr('Use at least 8 characters'));
     } else if (pw != _confirm.text) {
-      setState(() => _error = 'Passwords do not match');
+      setState(() => _error = tr('Passwords do not match'));
     } else {
       setState(() {
         _error = null;
@@ -228,58 +227,52 @@ class _BackupSetupFlowState extends ConsumerState<_BackupSetupFlow> {
       0 => [
           const Icon(Icons.cloud_upload, size: 56),
           const SizedBox(height: 12),
-          Text('Protect your data', style: textTheme.titleLarge),
+          Text(tr('Protect your data'), style: textTheme.titleLarge),
           const SizedBox(height: 8),
-          const Text(
-            'Your data is saved only on this phone. Connect your Google Drive '
-            'and the app backs up automatically 4 times a day, and as soon as '
-            'internet is back. The app can see only its own backup files in '
-            'your Drive.',
+          Text(
+            tr('Your data is saved only on this phone. Connect your Google Drive and the app backs up automatically 4 times a day, and as soon as internet is back. The app can see only its own backup files in your Drive.'),
           ),
           error,
           const SizedBox(height: 16),
           FilledButton.icon(
             onPressed: _busy ? null : _connect,
             icon: const Icon(Icons.login),
-            label: const Text('Connect Google Drive'),
+            label: Text(tr('Connect Google Drive')),
           ),
           TextButton(
             onPressed: () => context.push(Routes.restore),
-            child: const Text('Restore an existing backup instead'),
+            child: Text(tr('Restore an existing backup instead')),
           ),
         ],
       1 => [
-          Text('Set a Backup Password', style: textTheme.titleLarge),
+          Text(tr('Set a Backup Password'), style: textTheme.titleLarge),
           const SizedBox(height: 8),
-          Text('Connected: $_email'),
+          Text(tr('Connected: {email}', {'email': _email})),
           const SizedBox(height: 8),
-          const Text(
-            'Backups are locked with this password before upload. You need it '
-            'to restore on a new phone.',
+          Text(
+            tr('Backups are locked with this password before upload. You need it to restore on a new phone.'),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _password,
             obscureText: true,
-            decoration: const InputDecoration(labelText: 'Password (min 8)'),
+            decoration: InputDecoration(labelText: tr('Password (min 8)')),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _confirm,
             obscureText: true,
-            decoration: const InputDecoration(labelText: 'Password again'),
+            decoration: InputDecoration(labelText: tr('Password again')),
           ),
           error,
           const SizedBox(height: 16),
-          FilledButton(onPressed: _checkPassword, child: const Text('Next')),
+          FilledButton(onPressed: _checkPassword, child: Text(tr('Next'))),
         ],
       2 => [
-          Text('Your Recovery Key', style: textTheme.titleLarge),
+          Text(tr('Your Recovery Key'), style: textTheme.titleLarge),
           const SizedBox(height: 8),
-          const Text(
-            'If you forget the password, this key opens your backups. '
-            'Write it on paper and keep it safe. Without the password AND '
-            'this key, backups can never be opened.',
+          Text(
+            tr('If you forget the password, this key opens your backups. Write it on paper and keep it safe. Without the password AND this key, backups can never be opened.'),
             style: TextStyle(color: AppColors.dangerText),
           ),
           const SizedBox(height: 16),
@@ -298,16 +291,16 @@ class _BackupSetupFlowState extends ConsumerState<_BackupSetupFlow> {
           TextButton.icon(
             onPressed: () async {
               await Clipboard.setData(ClipboardData(text: _recoveryKey));
-              if (context.mounted) showMessage(context, 'Copied');
+              if (context.mounted) showMessage(context, tr('Copied'));
             },
             icon: const Icon(Icons.copy),
-            label: const Text('Copy'),
+            label: Text(tr('Copy')),
           ),
           CheckboxListTile(
             contentPadding: EdgeInsets.zero,
             value: _keyWritten,
             onChanged: (v) => setState(() => _keyWritten = v ?? false),
-            title: const Text('I have written down the Recovery Key'),
+            title: Text(tr('I have written down the Recovery Key')),
           ),
           error,
           const SizedBox(height: 8),
@@ -318,33 +311,31 @@ class _BackupSetupFlowState extends ConsumerState<_BackupSetupFlow> {
                     dimension: 24,
                     child: CircularProgressIndicator(strokeWidth: 3),
                   )
-                : const Text('Next'),
+                : Text(tr('Next')),
           ),
         ],
       _ => [
-          Text('Almost done', style: textTheme.titleLarge),
+          Text(tr('Almost done'), style: textTheme.titleLarge),
           const SizedBox(height: 12),
           RadioListTile<bool>(
             contentPadding: EdgeInsets.zero,
             value: false,
             groupValue: _wifiOnly,
             onChanged: (v) => setState(() => _wifiOnly = v ?? false),
-            title: const Text('Wi-Fi + mobile data'),
-            subtitle: const Text('Recommended: backups are small'),
+            title: Text(tr('Wi-Fi + mobile data')),
+            subtitle: Text(tr('Recommended: backups are small')),
           ),
           RadioListTile<bool>(
             contentPadding: EdgeInsets.zero,
             value: true,
             groupValue: _wifiOnly,
             onChanged: (v) => setState(() => _wifiOnly = v ?? true),
-            title: const Text('Wi-Fi only'),
+            title: Text(tr('Wi-Fi only')),
           ),
           const SizedBox(height: 12),
-          const Panel(
+          Panel(
             child: Text(
-              'On Xiaomi, Oppo, Vivo, Realme and some other phones, turn off '
-              'battery saving for this app so auto backup is not stopped:\n'
-              'Settings → Apps → Thekedaar → Battery → No restrictions.',
+              tr('On Xiaomi, Oppo, Vivo, Realme and some other phones, turn off battery saving for this app so auto backup is not stopped:\nSettings → Apps → Thekedaar → Battery → No restrictions.'),
             ),
           ),
           const SizedBox(height: 16),
@@ -366,7 +357,7 @@ class _BackupSetupFlowState extends ConsumerState<_BackupSetupFlow> {
                     dimension: 24,
                     child: CircularProgressIndicator(strokeWidth: 3),
                   )
-                : const Text('Finish and back up now'),
+                : Text(tr('Finish and back up now')),
           ),
         ],
     };
@@ -405,8 +396,7 @@ class _BackupDashboard extends ConsumerWidget {
     try {
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
-        text: 'Thekedaar backup file. Keep it safe; it opens only with your '
-            'Backup Password or Recovery Key.',
+        text: tr('Thekedaar backup file. Keep it safe; it opens only with your Backup Password or Recovery Key.'),
       ));
     } finally {
       lock.suspendRelock = false;
@@ -414,7 +404,7 @@ class _BackupDashboard extends ConsumerWidget {
   }
 
   Future<void> _changePassword(BuildContext context, WidgetRef ref) async {
-    if (!await confirmIdentity(context, reason: 'Confirm to change password')) {
+    if (!await confirmIdentity(context, reason: tr('Confirm to change password'))) {
       return;
     }
     if (!context.mounted) return;
@@ -423,31 +413,31 @@ class _BackupDashboard extends ConsumerWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('New Backup Password'),
+        title: Text(tr('New Backup Password')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: password,
               obscureText: true,
-              decoration: const InputDecoration(labelText: 'Password (min 8)'),
+              decoration: InputDecoration(labelText: tr('Password (min 8)')),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: confirm,
               obscureText: true,
-              decoration: const InputDecoration(labelText: 'Password again'),
+              decoration: InputDecoration(labelText: tr('Password again')),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(tr('Cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Save'),
+            child: Text(tr('Save')),
           ),
         ],
       ),
@@ -458,7 +448,7 @@ class _BackupDashboard extends ConsumerWidget {
     confirm.dispose();
     if (ok != true || !context.mounted) return;
     if (newPassword.length < 8 || !matches) {
-      showMessage(context, 'Password must be 8+ characters and match');
+      showMessage(context, tr('Password must be 8+ characters and match'));
       return;
     }
     final meta = MetaStore(ref.read(databaseProvider));
@@ -471,7 +461,7 @@ class _BackupDashboard extends ConsumerWidget {
         .withNewPassword(masterKey, newPassword);
     await meta.set(MetaKeys.keyring, ring.toJsonString());
     if (context.mounted) {
-      showMessage(context, 'Password changed. Old backups open with it too.');
+      showMessage(context, tr('Password changed. Old backups open with it too.'));
     }
     await ref.read(backupCoordinatorProvider).runNow(BackupTrigger.manual);
   }
@@ -484,14 +474,14 @@ class _BackupDashboard extends ConsumerWidget {
       if (state.email != null &&
           email.toLowerCase() != state.email!.toLowerCase()) {
         if (context.mounted) {
-          showMessage(context, 'Please choose the account ${state.email}');
+          showMessage(context, tr('Please choose the account {email}', {'email': state.email}));
         }
         return;
       }
       await MetaStore(ref.read(databaseProvider)).remove(MetaKeys.lastBackupError);
       if (context.mounted) await _backupNow(context, ref);
     } catch (e) {
-      if (context.mounted) showMessage(context, 'Could not connect: $e');
+      if (context.mounted) showMessage(context, tr('Could not connect: {e}', {'e': e}));
     } finally {
       lock.suspendRelock = false;
     }
@@ -500,14 +490,13 @@ class _BackupDashboard extends ConsumerWidget {
   Future<void> _turnOff(BuildContext context, WidgetRef ref) async {
     final ok = await confirmDialog(
       context,
-      title: 'Turn off backup?',
-      message: 'Backups already on Drive stay there. New changes will only '
-          'be on this phone.',
-      confirmLabel: 'Turn off',
+      title: tr('Turn off backup?'),
+      message: tr('Backups already on Drive stay there. New changes will only be on this phone.'),
+      confirmLabel: tr('Turn off'),
       destructive: true,
     );
     if (!ok || !context.mounted) return;
-    if (!await confirmIdentity(context, reason: 'Confirm to turn off backup')) {
+    if (!await confirmIdentity(context, reason: tr('Confirm to turn off backup'))) {
       return;
     }
     await MetaStore(ref.read(databaseProvider))
@@ -532,16 +521,16 @@ class _BackupDashboard extends ConsumerWidget {
         state.lastError?.toLowerCase().contains('disconnected') ?? false;
 
     final (statusText, statusColor) = state.blocked
-        ? ('Stopped: data moved to another phone', AppColors.dangerText)
+        ? (tr('Stopped: data moved to another phone'), AppColors.dangerText)
         : state.health == BackupHealth.failed
-            ? (state.lastError ?? 'No backup in 24 hours', AppColors.dangerText)
+            ? (state.lastError ?? tr('No backup in 24 hours'), AppColors.dangerText)
             : state.health == BackupHealth.pending
                 ? (
-                    '${state.pendingChanges} change${state.pendingChanges == 1 ? '' : 's'} '
-                        'waiting to upload',
+                    trPlural(state.pendingChanges, '1 change waiting to upload',
+                        '{count} changes waiting to upload'),
                     AppColors.warningText
                   )
-                : ('All data backed up', AppColors.successText);
+                : (tr('All data backed up'), AppColors.successText);
 
     return ListView(
       padding: const EdgeInsets.all(AppSizes.gutter),
@@ -554,14 +543,14 @@ class _BackupDashboard extends ConsumerWidget {
                 children: [
                   const Icon(Icons.cloud_done),
                   const SizedBox(width: 8),
-                  Expanded(child: Text(state.email ?? 'Google Drive')),
+                  Expanded(child: Text(state.email ?? tr('Google Drive'))),
                 ],
               ),
               const Divider(),
               Text(
                 state.lastBackupAt == null
-                    ? 'Last backup: never'
-                    : 'Last backup: ${dayTimeFormat.format(state.lastBackupAt!)}',
+                    ? tr('Last backup: never')
+                    : tr('Last backup: {date}', {'date': dayTimeFormat.format(state.lastBackupAt!)}),
               ),
               const SizedBox(height: 4),
               Row(
@@ -579,16 +568,16 @@ class _BackupDashboard extends ConsumerWidget {
                   child: Text(
                     [
                       if (lastSuccess?.sizeBytes != null)
-                        'Size ${_size(lastSuccess!.sizeBytes!)}',
+                        tr('Size {size}', {'size': _size(lastSuccess!.sizeBytes!)}),
                       if (quota?.freeBytes != null)
-                        'Drive free ${_size(quota!.freeBytes!)}',
+                        tr('Drive free {size}', {'size': _size(quota!.freeBytes!)}),
                     ].join(' · '),
                     style: const TextStyle(color: AppColors.slate600),
                   ),
                 ),
               if ((quota?.usedFraction ?? 0) > 0.9)
-                const Text(
-                  'Google Drive is almost full (PRD I-M11). Free some space.',
+                Text(
+                  tr('Google Drive is almost full (PRD I-M11). Free some space.'),
                   style: TextStyle(color: AppColors.dangerText),
                 ),
             ],
@@ -613,7 +602,7 @@ class _BackupDashboard extends ConsumerWidget {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : const Icon(Icons.backup),
-          label: Text(running ? 'Backing up…' : 'Backup Now'),
+          label: Text(running ? tr('Backing up…') : tr('Backup Now')),
         ),
         if (disconnected)
           Padding(
@@ -621,27 +610,27 @@ class _BackupDashboard extends ConsumerWidget {
             child: OutlinedButton.icon(
               onPressed: () => _reconnect(context, ref),
               icon: const Icon(Icons.link),
-              label: const Text('Reconnect Google Drive'),
+              label: Text(tr('Reconnect Google Drive')),
             ),
           ),
         const SizedBox(height: 8),
         OutlinedButton.icon(
           onPressed: () => context.push(Routes.restore),
           icon: const Icon(Icons.restore),
-          label: const Text('Restore'),
+          label: Text(tr('Restore')),
         ),
         const SizedBox(height: 8),
         OutlinedButton.icon(
           onPressed: () => _download(context, ref),
           icon: const Icon(Icons.download),
-          label: const Text('Download backup file'),
+          label: Text(tr('Download backup file')),
         ),
-        const SectionTitle('Settings'),
+        SectionTitle(tr('Settings')),
         if (settings != null) ...[
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.schedule),
-            title: const Text('Auto backup times'),
+            title: Text(tr('Auto backup times')),
             subtitle: Text(settings.backupSlots
                 .map((h) => '${h.toString().padLeft(2, '0')}:00')
                 .join(' · ')),
@@ -664,7 +653,7 @@ class _BackupDashboard extends ConsumerWidget {
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
             secondary: const Icon(Icons.wifi),
-            title: const Text('Wi-Fi only'),
+            title: Text(tr('Wi-Fi only')),
             value: settings.backupWifiOnly,
             onChanged: (v) async {
               await ref
@@ -681,16 +670,16 @@ class _BackupDashboard extends ConsumerWidget {
         ListTile(
           contentPadding: EdgeInsets.zero,
           leading: const Icon(Icons.password),
-          title: const Text('Change Backup Password'),
+          title: Text(tr('Change Backup Password')),
           onTap: () => _changePassword(context, ref),
         ),
         ListTile(
           contentPadding: EdgeInsets.zero,
           leading: const Icon(Icons.cloud_off, color: AppColors.dangerText),
-          title: const Text('Turn off backup'),
+          title: Text(tr('Turn off backup')),
           onTap: () => _turnOff(context, ref),
         ),
-        const SectionTitle('History'),
+        SectionTitle(tr('History')),
         for (final log in history.take(15))
           ListTile(
             dense: true,
@@ -721,10 +710,10 @@ class _BackupDashboard extends ConsumerWidget {
   }
 
   static String _triggerLabel(BackupTrigger trigger) => switch (trigger) {
-        BackupTrigger.scheduled => 'Auto',
-        BackupTrigger.onChange => 'On change',
-        BackupTrigger.manual => 'Manual',
-        BackupTrigger.internetBack => 'Internet back',
-        BackupTrigger.preRestore => 'Before restore',
+        BackupTrigger.scheduled => tr('Auto'),
+        BackupTrigger.onChange => tr('On change'),
+        BackupTrigger.manual => tr('Manual'),
+        BackupTrigger.internetBack => tr('Internet back'),
+        BackupTrigger.preRestore => tr('Before restore'),
       };
 }

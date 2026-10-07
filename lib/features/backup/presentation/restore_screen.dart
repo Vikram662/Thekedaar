@@ -13,6 +13,7 @@ import '../../../core/backup/restore_service.dart';
 import '../../../core/config.dart';
 import '../../../core/db/enums.dart';
 import '../../../core/db/providers.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/security/secure_store.dart';
 import '../../../core/widgets/common.dart';
 import '../../lock/app_lock_controller.dart';
@@ -68,7 +69,7 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
     try {
       return await action();
     } on WrongSecretException {
-      fail(_useRecoveryKey ? 'Wrong Recovery Key' : 'Wrong Backup Password');
+      fail(_useRecoveryKey ? tr('Wrong Recovery Key') : tr('Wrong Backup Password'));
     } on RestoreException catch (e) {
       fail(e.message);
     } on BackupFormatException catch (e) {
@@ -90,7 +91,7 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
   }
 
   Future<void> _fromDrive() async {
-    await _run('Connecting to Google Drive…', () async {
+    await _run(tr('Connecting to Google Drive…'), () async {
       final email = await ref.read(googleDriveAuthProvider).connect();
       final backups = await _service.listDriveBackups();
       if (!mounted) return;
@@ -102,13 +103,13 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
         _fileHeader = null;
       });
       if (backups.isEmpty) {
-        setState(() => _error = 'No backups found in $email');
+        setState(() => _error = tr('No backups found in {email}', {'email': email}));
       }
     });
   }
 
   Future<void> _fromFile() async {
-    await _run('Opening file…', () async {
+    await _run(tr('Opening file…'), () async {
       final result = await FilePicker.platform.pickFiles();
       final path = result?.files.single.path;
       if (path == null) return;
@@ -128,42 +129,41 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
     final secret = _secret.text.trim();
     if (secret.isEmpty) {
       setState(() => _error = _useRecoveryKey
-          ? 'Enter the Recovery Key'
-          : 'Enter the Backup Password');
+          ? tr('Enter the Recovery Key')
+          : tr('Enter the Backup Password'));
       return;
     }
     final hasData = ref.read(businessProfileProvider).valueOrNull != null;
     if (hasData) {
       final ok = await confirmDialog(
         context,
-        title: 'Replace data on this phone?',
-        message: 'Everything on this phone will be replaced by the backup. '
-            'A copy of the current data is backed up first.',
-        confirmLabel: 'Restore',
+        title: tr('Replace data on this phone?'),
+        message: tr('Everything on this phone will be replaced by the backup. A copy of the current data is backed up first.'),
+        confirmLabel: tr('Restore'),
         destructive: true,
       );
       if (!ok || !mounted) return;
-      if (!await confirmIdentity(context, reason: 'Confirm to restore')) return;
+      if (!await confirmIdentity(context, reason: tr('Confirm to restore'))) return;
     }
 
-    await _run('Restoring…', () async {
+    await _run(tr('Restoring…'), () async {
       final service = _service;
       final fromDrive = _chosenDrive != null;
-      _step('Downloading backup', 0.02);
+      _step(tr('Downloading backup'), 0.02);
       final bytes = fromDrive
           ? await service.downloadBackup(
               _chosenDrive!.id,
               onProgress: (got, total) => _step(
-                'Downloading backup',
+                tr('Downloading backup'),
                 total == null || total == 0 ? null : 0.6 * got / total,
                 total == null
                     ? null
-                    : '${_mb(got)} MB of ${_mb(total)} MB',
+                    : tr('{got} MB of {total} MB', {'got': _mb(got), 'total': _mb(total)}),
               ),
             )
           : _fileBytes!;
       final keyring = fromDrive ? await service.driveKeyring() : null;
-      _step('Unlocking with your key', 0.65);
+      _step(tr('Unlocking with your key'), 0.65);
       final prepared = await service.prepare(
         bytes,
         password: _useRecoveryKey ? null : secret,
@@ -172,11 +172,11 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
       );
       if (hasData) {
         // PRD D6: PRE_RESTORE backup so the restore can be undone.
-        _step('Backing up current data', 0.7);
+        _step(tr('Backing up current data'), 0.7);
         final engine = ref.read(backupEngineProvider);
         // The backup's own % fills the 70–90% part of the restore bar.
         engine.onProgress = (p) => _step(
-              'Backing up current data',
+              tr('Backing up current data'),
               0.7 + 0.2 * p.fraction,
               p.detail == null ? p.step : '${p.step} · ${p.detail}',
             );
@@ -188,7 +188,7 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
           engine.onProgress = null;
         }
       }
-      _step('Replacing data', 0.92);
+      _step(tr('Replacing data'), 0.92);
       final email = _driveEmail;
       await ref.read(databaseReplacerProvider)(
         (path) => service.writeDatabase(prepared, path),
@@ -215,28 +215,28 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
     final ready = _chosenDrive != null || _fileBytes != null;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Restore')),
+      appBar: AppBar(title: Text(tr('Restore'))),
       body: AbsorbPointer(
         absorbing: _busy,
         child: ListView(
           padding: const EdgeInsets.all(AppSizes.gutter),
           children: [
-            const Text('Where is your backup?'),
+            Text(tr('Where is your backup?')),
             const SizedBox(height: 8),
             if (AppConfig.driveConfigured)
               OutlinedButton.icon(
                 onPressed: _fromDrive,
                 icon: const Icon(Icons.cloud_download),
-                label: const Text('Google Drive'),
+                label: Text(tr('Google Drive')),
               ),
             const SizedBox(height: 8),
             OutlinedButton.icon(
               onPressed: _fromFile,
               icon: const Icon(Icons.file_open),
-              label: const Text('Backup file (.tkbak)'),
+              label: Text(tr('Backup file (.tkbak)')),
             ),
             if (_driveBackups != null && _driveBackups!.isNotEmpty) ...[
-              const SectionTitle('Choose a backup'),
+              SectionTitle(tr('Choose a backup')),
               for (final b in _driveBackups!.take(30))
                 RadioListTile<String>(
                   contentPadding: EdgeInsets.zero,
@@ -248,7 +248,7 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
                 ),
             ],
             if (manifest != null) ...[
-              const SectionTitle('Backup file'),
+              SectionTitle(tr('Backup file')),
               Panel(
                 child: Text(
                   '${dayTimeFormat.format(manifest.createdAt)}\n'
@@ -257,12 +257,12 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
               ),
             ],
             if (ready) ...[
-              const SectionTitle('Unlock'),
+              SectionTitle(tr('Unlock')),
               SegmentedButton<bool>(
                 showSelectedIcon: false,
-                segments: const [
-                  ButtonSegment(value: false, label: Text('Backup Password')),
-                  ButtonSegment(value: true, label: Text('Recovery Key')),
+                segments: [
+                  ButtonSegment(value: false, label: Text(tr('Backup Password'))),
+                  ButtonSegment(value: true, label: Text(tr('Recovery Key'))),
                 ],
                 selected: {_useRecoveryKey},
                 onSelectionChanged: (s) =>
@@ -277,7 +277,7 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
                     : TextCapitalization.none,
                 decoration: InputDecoration(
                   labelText:
-                      _useRecoveryKey ? 'XXXX-XXXX-XXXX-…' : 'Backup Password',
+                      _useRecoveryKey ? 'XXXX-XXXX-XXXX-…' : tr('Backup Password'),
                 ),
               ),
             ],
@@ -303,7 +303,7 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
       ),
       bottomNavigationBar: ready
           ? BottomActionBar(
-              label: 'Restore',
+              label: tr('Restore'),
               busy: _busy,
               onPressed: _restore,
             )
@@ -313,9 +313,12 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
 
   static String _describe(Map<String, int> counts, int sizeBytes) {
     final parts = [
-      if (counts['workers'] != null) '${counts['workers']} workers',
-      if (counts['invoices'] != null) '${counts['invoices']} bills',
-      if (counts['clients'] != null) '${counts['clients']} clients',
+      if (counts['workers'] != null)
+        tr('{count} workers', {'count': counts['workers']}),
+      if (counts['invoices'] != null)
+        tr('{count} bills', {'count': counts['invoices']}),
+      if (counts['clients'] != null)
+        tr('{count} clients', {'count': counts['clients']}),
       '${(sizeBytes / 1024).ceil()} KB',
     ];
     return parts.join(' · ');

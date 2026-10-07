@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/theme.dart';
 import '../../../core/db/providers.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/settings/settings_providers.dart';
 import '../../../core/utils/phone.dart';
 import '../../../core/utils/photos.dart';
@@ -53,7 +54,7 @@ class _BusinessProfileScreenState extends ConsumerState<BusinessProfileScreen> {
           quotationPrefix: _quotationPrefix.text.trim().toUpperCase(),
         );
     if (!mounted) return;
-    showMessage(context, 'Saved');
+    showMessage(context, tr('Saved'));
     context.pop();
   }
 
@@ -70,7 +71,7 @@ class _BusinessProfileScreenState extends ConsumerState<BusinessProfileScreen> {
     if (name == null) return;
     await ref.read(settingsRepositoryProvider).saveLogo(name);
     await deletePhoto(oldLogo);
-    if (mounted) showMessage(context, 'Logo saved');
+    if (mounted) showMessage(context, tr('Logo saved'));
   }
 
   Future<void> _removeLogo(String logo) async {
@@ -94,14 +95,14 @@ class _BusinessProfileScreenState extends ConsumerState<BusinessProfileScreen> {
       _quotationPrefix.text = profile.quotationPrefix;
     }
     String? requiredField(String? v) =>
-        (v == null || v.trim().isEmpty) ? 'Required' : null;
+        (v == null || v.trim().isEmpty) ? tr('Required') : null;
     String? prefix(String? v) =>
         (v == null || !RegExp(r'^[A-Za-z0-9]{1,6}$').hasMatch(v.trim()))
-            ? '1–6 letters or digits'
+            ? tr('1–6 letters or digits')
             : null;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Business profile')),
+      appBar: AppBar(title: Text(tr('Business profile'))),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -134,10 +135,10 @@ class _BusinessProfileScreenState extends ConsumerState<BusinessProfileScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Logo',
+                        Text(tr('Logo'),
                             style: TextStyle(fontWeight: FontWeight.w700)),
-                        const Text(
-                          'Printed on bills, quotations and pay slips',
+                        Text(
+                          tr('Printed on bills, quotations and pay slips'),
                           style: TextStyle(
                               color: AppColors.slate600, fontSize: 13),
                         ),
@@ -147,8 +148,8 @@ class _BusinessProfileScreenState extends ConsumerState<BusinessProfileScreen> {
                             TextButton(
                               onPressed: () => _changeLogo(profile.logoPath),
                               child: Text(profile.logoPath == null
-                                  ? 'Choose logo'
-                                  : 'Change'),
+                                  ? tr('Choose logo')
+                                  : tr('Change')),
                             ),
                             if (profile.logoPath != null)
                               TextButton(
@@ -157,7 +158,7 @@ class _BusinessProfileScreenState extends ConsumerState<BusinessProfileScreen> {
                                 style: TextButton.styleFrom(
                                   foregroundColor: AppColors.dangerText,
                                 ),
-                                child: const Text('Remove'),
+                                child: Text(tr('Remove')),
                               ),
                           ],
                         ),
@@ -170,47 +171,47 @@ class _BusinessProfileScreenState extends ConsumerState<BusinessProfileScreen> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _name,
-              decoration: const InputDecoration(labelText: 'Business name'),
+              decoration: InputDecoration(labelText: tr('Business name')),
               validator: requiredField,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _phone,
               keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
-                labelText: 'Mobile number',
+              decoration: InputDecoration(
+                labelText: tr('Mobile number'),
                 prefixText: '+91 ',
               ),
               validator: (v) =>
                   (v == null || v.trim().isEmpty || normalizeIndianPhone(v) != null)
                       ? null
-                      : 'Enter a valid 10-digit mobile number',
+                      : tr('Enter a valid 10-digit mobile number'),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _address,
               maxLines: 2,
-              decoration: const InputDecoration(labelText: 'Address'),
+              decoration: InputDecoration(labelText: tr('Address')),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _upi,
-              decoration: const InputDecoration(
-                labelText: 'UPI ID (printed on bills)',
+              decoration: InputDecoration(
+                labelText: tr('UPI ID (printed on bills)'),
                 hintText: 'name@bank',
               ),
               validator: (v) =>
                   (v == null || v.trim().isEmpty || isValidUpiId(v))
                       ? null
-                      : 'Enter a UPI ID like name@okaxis',
+                      : tr('Enter a UPI ID like name@okaxis'),
             ),
-            const SectionTitle('Numbering'),
+            SectionTitle(tr('Numbering')),
             Row(
               children: [
                 Expanded(
                   child: TextFormField(
                     controller: _invoicePrefix,
-                    decoration: const InputDecoration(labelText: 'Bill prefix'),
+                    decoration: InputDecoration(labelText: tr('Bill prefix')),
                     validator: prefix,
                   ),
                 ),
@@ -219,22 +220,22 @@ class _BusinessProfileScreenState extends ConsumerState<BusinessProfileScreen> {
                   child: TextFormField(
                     controller: _quotationPrefix,
                     decoration:
-                        const InputDecoration(labelText: 'Quotation prefix'),
+                        InputDecoration(labelText: tr('Quotation prefix')),
                     validator: prefix,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Numbers restart every financial year, e.g. INV/26-27/0001.',
+            Text(
+              tr('Numbers restart every financial year, e.g. INV/26-27/0001.'),
               style: TextStyle(color: AppColors.slate600),
             ),
           ],
         ),
       ),
       bottomNavigationBar:
-          BottomActionBar(label: 'Save', busy: _saving, onPressed: _save),
+          BottomActionBar(label: tr('Save'), busy: _saving, onPressed: _save),
     );
   }
 }

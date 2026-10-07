@@ -6,6 +6,7 @@ import '../../../core/db/database.dart';
 import '../../../core/db/enums.dart';
 import '../../../core/db/providers.dart';
 import '../../../core/db/tables.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/notify/notifications.dart';
 import '../../../core/utils/ids.dart';
 import '../../../core/widgets/common.dart';
@@ -270,8 +271,8 @@ class TasksRepository {
       AppNotifications.instance.scheduleTaskNotifications(
         taskId: id,
         title: '${taskType.label}: $title',
-        body:
-            'Scheduled for ${dayTimeFormat.format(scheduledAt)}. Tap to open.',
+        body: tr('Scheduled for {date}. Tap to open.',
+            {'date': dayTimeFormat.format(scheduledAt)}),
         scheduledAt: scheduledAt,
         intervalMinutes: intervalMinutes,
       );

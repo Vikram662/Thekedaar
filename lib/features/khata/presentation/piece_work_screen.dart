@@ -7,6 +7,7 @@ import '../../../app/theme.dart';
 import '../../../core/db/audit.dart';
 import '../../../core/db/database.dart';
 import '../../../core/db/enums.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/utils/dates.dart';
 import '../../../core/utils/money.dart';
 import '../../../core/utils/qty.dart';
@@ -67,10 +68,10 @@ class _PieceWorkScreenState extends ConsumerState<PieceWorkScreen> {
         .toList();
     final picked = await showPickerSheet<ItemWithUnit>(
       context,
-      title: 'Choose work',
+      title: tr('Choose work'),
       options: items,
       label: (i) => i.item.name,
-      subtitle: (i) => 'per ${i.unit.name}',
+      subtitle: (i) => tr('per {name}', {'name': i.unit.name}),
     );
     if (picked == null) return;
     setState(() {
@@ -84,7 +85,7 @@ class _PieceWorkScreenState extends ConsumerState<PieceWorkScreen> {
     final units = ref.read(unitsProvider).valueOrNull ?? const [];
     final picked = await showPickerSheet<Unit>(
       context,
-      title: 'Unit',
+      title: tr('Unit'),
       options: units,
       label: (u) => u.name,
       selected: _unit,
@@ -102,13 +103,13 @@ class _PieceWorkScreenState extends ConsumerState<PieceWorkScreen> {
     final rate = parseRupeesToPaise(_rate.text);
     final description = _description.text.trim();
     final problem = _workerId == null
-        ? 'Choose a worker'
+        ? tr('Choose a worker')
         : description.isEmpty
-            ? 'Enter the work'
+            ? tr('Enter the work')
             : qty == null || qty <= 0
-                ? 'Enter quantity'
+                ? tr('Enter quantity')
                 : rate == null || rate <= 0
-                    ? 'Enter rate'
+                    ? tr('Enter rate')
                     : null;
     if (problem != null) {
       showMessage(context, problem);
@@ -128,7 +129,7 @@ class _PieceWorkScreenState extends ConsumerState<PieceWorkScreen> {
           );
       if (!mounted) return;
       HapticFeedback.mediumImpact();
-      showMessage(context, 'Piece work saved: ${formatPaise(_amount)}');
+      showMessage(context, tr('Piece work saved: {amount}', {'amount': formatPaise(_amount)}));
       context.pop();
     } on PeriodLockedException catch (e) {
       if (!mounted) return;
@@ -140,7 +141,7 @@ class _PieceWorkScreenState extends ConsumerState<PieceWorkScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Piece work')),
+      appBar: AppBar(title: Text(tr('Piece work'))),
       body: ListView(
         padding: const EdgeInsets.all(AppSizes.gutter),
         children: [
@@ -152,10 +153,10 @@ class _PieceWorkScreenState extends ConsumerState<PieceWorkScreen> {
           TextField(
             controller: _description,
             decoration: InputDecoration(
-              labelText: 'Work',
-              hintText: 'e.g. Floor tiling',
+              labelText: tr('Work'),
+              hintText: tr('e.g. Floor tiling'),
               suffixIcon: IconButton(
-                tooltip: 'Choose from list',
+                tooltip: tr('Choose from list'),
                 icon: const Icon(Icons.list),
                 onPressed: _pickItem,
               ),
@@ -172,9 +173,9 @@ class _PieceWorkScreenState extends ConsumerState<PieceWorkScreen> {
                       const TextInputType.numberWithOptions(decimal: true),
                   style: const TextStyle(fontSize: 20),
                   decoration: InputDecoration(
-                    labelText: 'Quantity',
+                    labelText: tr('Quantity'),
                     suffixIcon: IconButton(
-                      tooltip: 'Measure (L × W × H)',
+                      tooltip: tr('Measure (L × W × H)'),
                       icon: const Icon(Icons.straighten),
                       onPressed: _measure,
                     ),
@@ -184,7 +185,7 @@ class _PieceWorkScreenState extends ConsumerState<PieceWorkScreen> {
               const SizedBox(width: AppSizes.gap),
               Expanded(
                 child: PickerField(
-                  label: 'Unit',
+                  label: tr('Unit'),
                   value: _unit?.name,
                   onTap: _pickUnit,
                 ),
@@ -197,7 +198,9 @@ class _PieceWorkScreenState extends ConsumerState<PieceWorkScreen> {
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             style: const TextStyle(fontSize: 20),
             decoration: InputDecoration(
-              labelText: 'Rate${_unit == null ? '' : ' per ${_unit!.name}'}',
+              labelText: _unit == null
+                  ? tr('Rate')
+                  : tr('Rate per {unit}', {'unit': _unit!.name}),
               prefixText: '₹ ',
             ),
           ),
@@ -206,7 +209,7 @@ class _PieceWorkScreenState extends ConsumerState<PieceWorkScreen> {
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.event),
             title: Text(dayFormat.format(_date)),
-            trailing: const Text('Change'),
+            trailing: Text(tr('Change')),
             onTap: () async {
               final picked =
                   await pickDate(context, initial: _date, last: DateTime.now());
@@ -219,12 +222,12 @@ class _PieceWorkScreenState extends ConsumerState<PieceWorkScreen> {
           ),
           const SizedBox(height: 8),
           Panel(
-            child: AmountRow(label: 'Amount', paise: _amount, bold: true),
+            child: AmountRow(label: tr('Amount'), paise: _amount, bold: true),
           ),
         ],
       ),
       bottomNavigationBar: BottomActionBar(
-        label: 'Save',
+        label: tr('Save'),
         busy: _saving,
         onPressed: _save,
       ),

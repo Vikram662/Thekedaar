@@ -5,9 +5,11 @@ import 'package:go_router/go_router.dart';
 import '../core/backup/backup_providers.dart';
 import '../core/db/enums.dart';
 import '../core/db/providers.dart';
+import '../core/i18n/i18n.dart';
 import '../core/utils/phone.dart';
 import '../core/utils/photos.dart';
 import '../core/widgets/common.dart';
+import '../core/widgets/language_picker.dart';
 import '../features/backup/presentation/backup_screen.dart';
 import 'router.dart';
 import 'theme.dart';
@@ -118,7 +120,7 @@ class AppDrawer extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            profile?.name ?? 'Thekedaar',
+                            profile?.name ?? tr('Thekedaar'),
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 18,
@@ -130,8 +132,8 @@ class AppDrawer extends ConsumerWidget {
                               formatIndianPhone(profile!.phone!),
                               style: const TextStyle(color: Color(0xFFCBD5E1)),
                             ),
-                          const Text(
-                            'Edit business profile',
+                          Text(
+                            tr('Edit business profile'),
                             style: TextStyle(
                               color: AppColors.amber500,
                               fontSize: 12,
@@ -144,49 +146,50 @@ class AppDrawer extends ConsumerWidget {
                 ),
               ),
             ),
-            item(Icons.home_outlined, 'Home', Routes.dashboard, tab: true),
-            heading('Billing'),
-            item(Icons.receipt_long_outlined, 'Bills', Routes.billingTab(0),
+            item(Icons.home_outlined, tr('Home'), Routes.dashboard, tab: true),
+            heading(tr('Billing')),
+            item(Icons.receipt_long_outlined, tr('Bills'), Routes.billingTab(0),
                 tab: true),
-            item(Icons.request_quote_outlined, 'Quotations',
+            item(Icons.request_quote_outlined, tr('Quotations'),
                 Routes.billingTab(1),
                 tab: true),
-            item(Icons.people_outline, 'Clients', Routes.billingTab(2),
+            item(Icons.people_outline, tr('Clients'), Routes.billingTab(2),
                 tab: true),
-            item(Icons.payments_outlined, 'Payments received',
+            item(Icons.payments_outlined, tr('Payments received'),
                 Routes.billingTab(3),
                 tab: true),
-            item(Icons.location_city_outlined, 'Jobs / Sites', Routes.jobs),
-            heading('Workers & Khata'),
-            item(Icons.groups_outlined, 'Workers', Routes.workers, tab: true),
-            item(Icons.fact_check_outlined, 'Mark attendance',
+            item(Icons.location_city_outlined, tr('Jobs / Sites'), Routes.jobs),
+            heading(tr('Workers & Khata')),
+            item(Icons.groups_outlined, tr('Workers'), Routes.workers, tab: true),
+            item(Icons.fact_check_outlined, tr('Mark attendance'),
                 Routes.attendance(),
                 tab: true),
-            item(Icons.calendar_month_outlined, 'Attendance register',
+            item(Icons.calendar_month_outlined, tr('Attendance register'),
                 Routes.attendanceMonth,
-                subtitle: 'All workers, month calendar', tab: true),
-            item(Icons.account_balance_wallet_outlined, 'Khata balances',
+                subtitle: tr('All workers, month calendar'), tab: true),
+            item(Icons.account_balance_wallet_outlined, tr('Khata balances'),
                 Routes.khataTab(0),
                 tab: true),
-            item(Icons.history, 'Khata entries', Routes.khataTab(1), tab: true),
-            heading('Expenses'),
-            item(Icons.receipt_outlined, 'Expenses', Routes.expenses,
-                subtitle: 'Kharcha log, month-wise'),
-            item(Icons.store_outlined, 'Suppliers', Routes.suppliers,
-                subtitle: 'Udhaar purchases & payments'),
-            heading('Reports & Tasks'),
-            item(Icons.task_alt_outlined, 'Tasks & Reminders', Routes.tasks,
-                subtitle: 'Site visits, payments & alerts'),
-            item(Icons.calendar_month_outlined, 'Calendar', Routes.calendar,
-                subtitle: 'What happened on each day'),
-            item(Icons.account_balance_outlined, 'Lena / Dena', Routes.dues()),
-            heading('Settings'),
-            item(Icons.store_mall_directory_outlined, 'Business profile',
+            item(Icons.history, tr('Khata entries'), Routes.khataTab(1), tab: true),
+            heading(tr('Expenses')),
+            item(Icons.receipt_outlined, tr('Expenses'), Routes.expenses,
+                subtitle: tr('Kharcha log, month-wise')),
+            item(Icons.store_outlined, tr('Suppliers'), Routes.suppliers,
+                subtitle: tr('Udhaar purchases & payments')),
+            heading(tr('Reports & Tasks')),
+            item(Icons.task_alt_outlined, tr('Tasks & Reminders'), Routes.tasks,
+                subtitle: tr('Site visits, payments & alerts')),
+            item(Icons.calendar_month_outlined, tr('Calendar'), Routes.calendar,
+                subtitle: tr('What happened on each day')),
+            item(Icons.account_balance_outlined, tr('Lena / Dena'), Routes.dues()),
+            heading(tr('Settings')),
+            const LanguageTile(closeDrawer: true),
+            item(Icons.store_mall_directory_outlined, tr('Business profile'),
                 Routes.businessProfile),
             ListTile(
               leading: const Icon(Icons.backup_outlined),
-              title: const Text('Backup now'),
-              subtitle: const Text('Upload to Google Drive'),
+              title: Text(tr('Backup now')),
+              subtitle: Text(tr('Upload to Google Drive')),
               onTap: () {
                 // The drawer closes; keep what we need from its context.
                 final messenger = ScaffoldMessenger.of(context);
@@ -202,10 +205,10 @@ class AppDrawer extends ConsumerWidget {
                   ..hideCurrentSnackBar()
                   ..showSnackBar(SnackBar(content: Text(text)));
                 if (running) {
-                  say('Backup is already running');
+                  say(tr('Backup is already running'));
                   return;
                 }
-                say('Backup started…');
+                say(tr('Backup started…'));
                 coordinator
                     .runNow(BackupTrigger.manual)
                     .then((r) => say(backupResultMessage(r)));
@@ -213,17 +216,17 @@ class AppDrawer extends ConsumerWidget {
             ),
             item(
               Icons.cloud_upload_outlined,
-              'Backup & restore',
+              tr('Backup & restore'),
               Routes.backup,
               trailing: Icon(Icons.circle, size: 12, color: backupDot),
             ),
-            item(Icons.notifications_active_outlined, 'Notification settings',
+            item(Icons.notifications_active_outlined, tr('Notification settings'),
                 Routes.notificationSettings),
-            item(Icons.workspace_premium_outlined, 'Thekedaar Pro',
+            item(Icons.workspace_premium_outlined, tr('Thekedaar Pro'),
                 Routes.subscription,
-                subtitle: '₹99/month · Manage plan'),
-            item(Icons.settings_outlined, 'All settings', Routes.settings,
-                subtitle: 'Trades, work rules, app lock'),
+                subtitle: tr('₹99/month · Manage plan')),
+            item(Icons.settings_outlined, tr('All settings'), Routes.settings,
+                subtitle: tr('Trades, work rules, app lock')),
             const SizedBox(height: 16),
           ],
         ),

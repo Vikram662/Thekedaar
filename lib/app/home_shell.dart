@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/i18n/i18n.dart';
+
 /// Bottom tabs: Home, Attendance, Billing, Khata, Workers. The order must
 /// match the branches in router.dart.
 class HomeShell extends StatelessWidget {
@@ -18,31 +20,31 @@ class HomeShell extends StatelessWidget {
           index,
           initialLocation: index == navigationShell.currentIndex,
         ),
-        destinations: const [
+        destinations: [
           NavigationDestination(
             icon: Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home),
-            label: 'Home',
+            label: tr('Home'),
           ),
           NavigationDestination(
             icon: Icon(Icons.fact_check_outlined),
             selectedIcon: Icon(Icons.fact_check),
-            label: 'Attendance',
+            label: tr('Attendance'),
           ),
           NavigationDestination(
             icon: Icon(Icons.receipt_long_outlined),
             selectedIcon: Icon(Icons.receipt_long),
-            label: 'Billing',
+            label: tr('Billing'),
           ),
           NavigationDestination(
             icon: Icon(Icons.account_balance_wallet_outlined),
             selectedIcon: Icon(Icons.account_balance_wallet),
-            label: 'Khata',
+            label: tr('Khata'),
           ),
           NavigationDestination(
             icon: Icon(Icons.groups_outlined),
             selectedIcon: Icon(Icons.groups),
-            label: 'Workers',
+            label: tr('Workers'),
           ),
         ],
       ),

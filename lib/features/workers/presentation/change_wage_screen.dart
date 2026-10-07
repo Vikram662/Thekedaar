@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme.dart';
 import '../../../core/db/database.dart';
 import '../../../core/db/enums.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/utils/dates.dart';
 import '../../../core/utils/money.dart';
 import '../../../core/widgets/common.dart';
@@ -63,7 +64,7 @@ class _ChangeWageScreenState extends ConsumerState<ChangeWageScreen> {
             effectiveFrom: _from,
           );
       if (!mounted) return;
-      showMessage(context, 'Wage updated');
+      showMessage(context, tr('Wage updated'));
       context.pop();
     } catch (e) {
       if (!mounted) return;
@@ -80,17 +81,17 @@ class _ChangeWageScreenState extends ConsumerState<ChangeWageScreen> {
     _fill(history.where((w) => w.effectiveFrom.compareTo(today) <= 0).firstOrNull);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Change wage')),
+      appBar: AppBar(title: Text(tr('Change wage'))),
       body: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(AppSizes.gutter),
           children: [
             SegmentedButton<WageModel>(
-              segments: const [
-                ButtonSegment(value: WageModel.daily, label: Text('Daily')),
-                ButtonSegment(value: WageModel.monthly, label: Text('Monthly')),
-                ButtonSegment(value: WageModel.piece, label: Text('Piece-rate')),
+              segments: [
+                ButtonSegment(value: WageModel.daily, label: Text(tr('Daily'))),
+                ButtonSegment(value: WageModel.monthly, label: Text(tr('Monthly'))),
+                ButtonSegment(value: WageModel.piece, label: Text(tr('Piece-rate'))),
               ],
               selected: {_model},
               onSelectionChanged: (s) => setState(() => _model = s.first),
@@ -103,24 +104,24 @@ class _ChangeWageScreenState extends ConsumerState<ChangeWageScreen> {
                 style: const TextStyle(fontSize: 20),
                 decoration: InputDecoration(
                   labelText: _model == WageModel.daily
-                      ? 'Rate per day'
-                      : 'Salary per month',
+                      ? tr('Rate per day')
+                      : tr('Salary per month'),
                   prefixText: '₹ ',
                 ),
                 validator: (v) {
                   final p = parseRupeesToPaise(v ?? '');
-                  return p == null || p <= 0 ? 'Enter amount' : null;
+                  return p == null || p <= 0 ? tr('Enter amount') : null;
                 },
               ),
             if (_model == WageModel.monthly) ...[
-              const SectionTitle('Per-day rate for monthly salary'),
+              SectionTitle(tr('Per-day rate for monthly salary')),
               Wrap(
                 spacing: AppSizes.gap,
                 children: [
-                  for (final (value, label) in const [
+                  for (final (value, label) in [
                     (30, '÷ 30'),
                     (26, '÷ 26'),
-                    (0, '÷ days in month'),
+                    (0, tr('÷ days in month')),
                   ])
                     ChoiceChip(
                       label: Text(label),
@@ -134,8 +135,8 @@ class _ChangeWageScreenState extends ConsumerState<ChangeWageScreen> {
             TextFormField(
               controller: _otRate,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
-                labelText: 'OT rate per hour (optional)',
+              decoration: InputDecoration(
+                labelText: tr('OT rate per hour (optional)'),
                 prefixText: '₹ ',
               ),
             ),
@@ -143,7 +144,7 @@ class _ChangeWageScreenState extends ConsumerState<ChangeWageScreen> {
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.event),
-              title: const Text('New wage from'),
+              title: Text(tr('New wage from')),
               subtitle: Text(dayFormat.format(_from)),
               trailing: const Icon(Icons.chevron_right),
               onTap: () async {
@@ -151,18 +152,18 @@ class _ChangeWageScreenState extends ConsumerState<ChangeWageScreen> {
                 if (picked != null) setState(() => _from = dateOnly(picked));
               },
             ),
-            const SectionTitle('History'),
+            SectionTitle(tr('History')),
             for (final w in history)
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 title: Text(wageLabel(w)),
-                subtitle: Text('From ${dayFormat.format(parseIsoDate(w.effectiveFrom))}'),
+                subtitle: Text(tr('From {date}', {'date': dayFormat.format(parseIsoDate(w.effectiveFrom))})),
               ),
           ],
         ),
       ),
       bottomNavigationBar: BottomActionBar(
-        label: 'Save new wage',
+        label: tr('Save new wage'),
         busy: _saving,
         onPressed: _save,
       ),

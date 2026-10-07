@@ -11,6 +11,7 @@ import '../../../core/backup/clock_check.dart';
 import '../../../core/db/database.dart';
 import '../../../core/db/enums.dart';
 import '../../../core/db/providers.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/utils/money.dart';
 import '../../../core/widgets/common.dart';
 import '../../attendance/data/attendance_repository.dart';
@@ -37,7 +38,7 @@ class DashboardScreen extends ConsumerWidget {
       // All sections are in the side menu (☰); bottom tabs keep the main 5.
       drawer: const AppDrawer(),
       appBar: AppBar(
-        title: const Text('Home'),
+        title: Text(tr('Home')),
         actions: [
           if (backup != null) _BackupDot(state: backup),
           const SizedBox(width: 4),
@@ -67,9 +68,9 @@ class _HeroCard extends ConsumerWidget {
 
   static String _greeting() {
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
+    if (hour < 12) return tr('Good morning');
+    if (hour < 17) return tr('Good afternoon');
+    return tr('Good evening');
   }
 
   @override
@@ -104,7 +105,7 @@ class _HeroCard extends ConsumerWidget {
           ),
           const SizedBox(height: 2),
           Text(
-            profile?.name ?? 'Thekedaar',
+            profile?.name ?? tr('Thekedaar'),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
@@ -114,7 +115,7 @@ class _HeroCard extends ConsumerWidget {
             ),
           ),
           Text(
-            DateFormat('EEEE, d MMMM').format(DateTime.now()),
+            DateFormat('EEEE, d MMMM', uiDateLocale).format(DateTime.now()),
             style: const TextStyle(color: Color(0xFFCBD5E1), fontSize: 13),
           ),
           const SizedBox(height: 16),
@@ -122,18 +123,20 @@ class _HeroCard extends ConsumerWidget {
             children: [
               Expanded(
                 child: _HeroStat(
-                  label: 'Lena (to receive)',
+                  label: tr('Lena (to receive)'),
                   value: report == null ? '…' : formatPaise(report.lenaTotal),
                   icon: Icons.south_west,
                   accent: AppColors.amber500,
-                  note: overdue > 0 ? 'Overdue ${formatPaise(overdue)}' : null,
+                  note: overdue > 0
+                      ? tr('Overdue {amount}', {'amount': formatPaise(overdue)})
+                      : null,
                   onTap: () => context.push(Routes.dues(0)),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: _HeroStat(
-                  label: 'Dena (to pay)',
+                  label: tr('Dena (to pay)'),
                   value: report == null ? '…' : formatPaise(report.denaTotal),
                   icon: Icons.north_east,
                   accent: const Color(0xFF34D399),
@@ -231,14 +234,14 @@ class _QuickActions extends StatelessWidget {
       children: [
         _QuickAction(
           icon: Icons.receipt_long,
-          label: 'New Bill',
+          label: tr('New Bill'),
           tint: const Color(0xFFDBEAFE),
           iconColor: AppColors.blue700,
           onTap: () => context.push(Routes.newDocument(DocumentKind.invoice)),
         ),
         _QuickAction(
           icon: Icons.payments,
-          label: 'Advance',
+          label: tr('Advance'),
           tint: AppColors.amber100,
           iconColor: AppColors.warningText,
           onTap: () =>
@@ -246,14 +249,14 @@ class _QuickActions extends StatelessWidget {
         ),
         _QuickAction(
           icon: Icons.fact_check,
-          label: 'Attendance',
+          label: tr('Attendance'),
           tint: const Color(0xFFD1FAE5),
           iconColor: AppColors.successText,
           onTap: () => context.go(Routes.attendance()),
         ),
         _QuickAction(
           icon: Icons.receipt,
-          label: 'Expense',
+          label: tr('Expense'),
           tint: const Color(0xFFFFE4E6),
           iconColor: AppColors.dangerText,
           onTap: () => context.push(Routes.addExpense),
@@ -340,16 +343,16 @@ class _TasksPreviewCard extends ConsumerWidget {
                   child: const Icon(Icons.task_alt, color: AppColors.warningText),
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Tasks & Visits',
+                        tr('Tasks & Visits'),
                         style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
                       ),
                       Text(
-                        'No pending tasks. Stay on track!',
+                        tr('No pending tasks. Stay on track!'),
                         style: TextStyle(color: AppColors.slate600, fontSize: 13),
                       ),
                     ],
@@ -357,7 +360,7 @@ class _TasksPreviewCard extends ConsumerWidget {
                 ),
                 TextButton(
                   onPressed: () => context.push(Routes.addTask),
-                  child: const Text('+ Add'),
+                  child: Text(tr('+ Add')),
                 ),
               ],
             ),
@@ -367,7 +370,7 @@ class _TasksPreviewCard extends ConsumerWidget {
         final now = DateTime.now();
         final overdueCount = tasks.where((t) => t.dueAt.isBefore(now)).length;
         final nextTask = tasks.first;
-        final df = DateFormat('dd MMM, hh:mm a');
+        final df = DateFormat('dd MMM, hh:mm a', uiDateLocale);
 
         return Panel(
           child: Column(
@@ -395,8 +398,8 @@ class _TasksPreviewCard extends ConsumerWidget {
                       children: [
                         Row(
                           children: [
-                            const Text(
-                              'Tasks & Visits',
+                            Text(
+                              tr('Tasks & Visits'),
                               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
                             ),
                             if (overdueCount > 0) ...[
@@ -408,7 +411,7 @@ class _TasksPreviewCard extends ConsumerWidget {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Text(
-                                  '$overdueCount Overdue',
+                                  tr('{overdueCount} Overdue', {'overdueCount': overdueCount}),
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 10,
@@ -420,7 +423,7 @@ class _TasksPreviewCard extends ConsumerWidget {
                           ],
                         ),
                         Text(
-                          '${tasks.length} pending scheduled',
+                          tr('{count} pending scheduled', {'count': tasks.length}),
                           style: const TextStyle(color: AppColors.slate600, fontSize: 12),
                         ),
                       ],
@@ -428,7 +431,7 @@ class _TasksPreviewCard extends ConsumerWidget {
                   ),
                   TextButton(
                     onPressed: () => context.push(Routes.tasks),
-                    child: const Text('View all'),
+                    child: Text(tr('View all')),
                   ),
                 ],
               ),
@@ -497,11 +500,11 @@ class _TodayCard extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Today', style: textTheme.titleMedium),
+                    Text(tr('Today'), style: textTheme.titleMedium),
                     Text(
                       total == 0
-                          ? 'No workers added yet'
-                          : '${present.length} of $total workers present',
+                          ? tr('No workers added yet')
+                          : tr('{count} of {total} workers present', {'count': present.length, 'total': total}),
                       style: const TextStyle(color: AppColors.slate600),
                     ),
                   ],
@@ -516,7 +519,7 @@ class _TodayCard extends ConsumerWidget {
                 onPressed: () => context.go(
                     total == 0 ? Routes.workers : Routes.attendance()),
                 icon: Icon(total == 0 ? Icons.person_add : Icons.edit_calendar),
-                label: Text(total == 0 ? 'Add' : 'Mark'),
+                label: Text(total == 0 ? tr('Add') : tr('Mark')),
               ),
             ],
           ),
@@ -589,10 +592,10 @@ class _BackupDot extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final (color, label) = switch (state.health) {
-      BackupHealth.synced => (AppColors.successFill, 'Backed up'),
-      BackupHealth.pending => (AppColors.amber500, 'Backup pending'),
-      BackupHealth.failed => (AppColors.dangerFill, 'Backup problem'),
-      BackupHealth.notSetUp => (AppColors.dangerFill, 'Backup not set up'),
+      BackupHealth.synced => (AppColors.successFill, tr('Backed up')),
+      BackupHealth.pending => (AppColors.amber500, tr('Backup pending')),
+      BackupHealth.failed => (AppColors.dangerFill, tr('Backup problem')),
+      BackupHealth.notSetUp => (AppColors.dangerFill, tr('Backup not set up')),
     };
     return IconButton(
       tooltip: label,
@@ -649,8 +652,8 @@ void _showBackupSheet(
                 const SizedBox(height: 4),
                 Text(
                   last == null
-                      ? 'No backup yet'
-                      : 'Last backup: ${dayTimeFormat.format(last)}',
+                      ? tr('No backup yet')
+                      : tr('Last backup: {date}', {'date': dayTimeFormat.format(last)}),
                   style: const TextStyle(color: AppColors.slate600),
                 ),
                 const SizedBox(height: 16),
@@ -662,7 +665,7 @@ void _showBackupSheet(
                           runManualBackup(context, ref);
                         },
                   icon: const Icon(Icons.backup),
-                  label: Text(running ? 'Backing up…' : 'Backup now'),
+                  label: Text(running ? tr('Backing up…') : tr('Backup now')),
                 ),
                 const SizedBox(height: 8),
                 OutlinedButton.icon(
@@ -671,7 +674,7 @@ void _showBackupSheet(
                     context.push(Routes.backup);
                   },
                   icon: const Icon(Icons.settings_backup_restore),
-                  label: const Text('Backup settings & restore'),
+                  label: Text(tr('Backup settings & restore')),
                 ),
               ],
             ),
@@ -722,12 +725,12 @@ class _BackupBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final String? message = switch (state.health) {
       BackupHealth.notSetUp =>
-        'Backup not set up. Your data is only on this phone.',
+        tr('Backup not set up. Your data is only on this phone.'),
       BackupHealth.failed => state.blocked
-          ? 'Backup stopped: this data was restored on another phone.'
-          : 'No backup in the last 24 hours. ${state.lastError ?? ''}',
+          ? tr('Backup stopped: this data was restored on another phone.')
+          : '${tr('No backup in the last 24 hours.')} ${state.lastError ?? ''}',
       BackupHealth.pending => state.pendingTooLong
-          ? 'Backup pending for over a day. Connect to the internet.'
+          ? tr('Backup pending for over a day. Connect to the internet.')
           : null,
       BackupHealth.synced => null,
     };
@@ -736,8 +739,7 @@ class _BackupBanner extends StatelessWidget {
       return _banner(
         context,
         Icons.schedule,
-        'Phone time is ${describeClockSkew(skew)} compared to Google. '
-        'Turn on automatic date & time in phone settings.',
+        tr('Phone time is {skew} compared to Google. Turn on automatic date & time in phone settings.', {'skew': describeClockSkew(skew)}),
       );
     }
     if (message == null) return const SizedBox.shrink();

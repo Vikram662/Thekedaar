@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/settings/app_settings.dart';
 import '../../../core/settings/settings_providers.dart';
 import '../../../core/widgets/common.dart';
@@ -10,14 +11,14 @@ import '../../../core/widgets/common.dart';
 class RulesScreen extends ConsumerWidget {
   const RulesScreen({super.key});
 
-  static const _weekdays = {
-    DateTime.monday: 'Monday',
-    DateTime.tuesday: 'Tuesday',
-    DateTime.wednesday: 'Wednesday',
-    DateTime.thursday: 'Thursday',
-    DateTime.friday: 'Friday',
-    DateTime.saturday: 'Saturday',
-    DateTime.sunday: 'Sunday',
+  static Map<int, String> get _weekdays => {
+    DateTime.monday: tr('Monday'),
+    DateTime.tuesday: tr('Tuesday'),
+    DateTime.wednesday: tr('Wednesday'),
+    DateTime.thursday: tr('Thursday'),
+    DateTime.friday: tr('Friday'),
+    DateTime.saturday: tr('Saturday'),
+    DateTime.sunday: tr('Sunday'),
   };
 
   @override
@@ -30,24 +31,23 @@ class RulesScreen extends ConsumerWidget {
         ref.read(settingsRepositoryProvider).saveSettings(s);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Work rules')),
+      appBar: AppBar(title: Text(tr('Work rules'))),
       body: ListView(
         padding: const EdgeInsets.all(AppSizes.gutter),
         children: [
-          const SectionTitle('Monthly salary → per-day rate'),
-          const Text(
-            'Used for new monthly workers. Each worker can be changed from '
-            'their wage screen.',
+          SectionTitle(tr('Monthly salary → per-day rate')),
+          Text(
+            tr('Used for new monthly workers. Each worker can be changed from their wage screen.'),
             style: TextStyle(color: AppColors.slate600),
           ),
           const SizedBox(height: 8),
           Wrap(
             spacing: AppSizes.gap,
             children: [
-              for (final (value, label) in const [
-                (30, 'Salary ÷ 30'),
-                (26, 'Salary ÷ 26'),
-                (0, 'Salary ÷ days in month'),
+              for (final (value, label) in [
+                (30, tr('Salary ÷ 30')),
+                (26, tr('Salary ÷ 26')),
+                (0, tr('Salary ÷ days in month')),
               ])
                 ChoiceChip(
                   label: Text(label),
@@ -57,10 +57,9 @@ class RulesScreen extends ConsumerWidget {
                 ),
             ],
           ),
-          const SectionTitle('Weekly off'),
-          const Text(
-            'On this day "Mark all" marks Off. Weekly off is paid for '
-            'monthly workers, unpaid for daily workers.',
+          SectionTitle(tr('Weekly off')),
+          Text(
+            tr('On this day "Mark all" marks Off. Weekly off is paid for monthly workers, unpaid for daily workers.'),
             style: TextStyle(color: AppColors.slate600),
           ),
           const SizedBox(height: 8),
@@ -69,7 +68,7 @@ class RulesScreen extends ConsumerWidget {
             runSpacing: AppSizes.gap,
             children: [
               ChoiceChip(
-                label: const Text('None'),
+                label: Text(tr('None')),
                 selected: settings.weeklyOffDay == null,
                 onSelected: (_) =>
                     save(settings.copyWith(weeklyOffDay: () => null)),

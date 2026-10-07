@@ -7,6 +7,8 @@ import '../../../core/backup/backup_providers.dart';
 import '../../../core/config.dart';
 import '../../../core/db/enums.dart';
 import '../../../core/db/providers.dart';
+import '../../../core/i18n/i18n.dart';
+import '../../../core/widgets/language_picker.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -27,33 +29,34 @@ class SettingsScreen extends ConsumerWidget {
         );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: Text(tr('Settings'))),
       body: ListView(
         children: [
-          tile(Icons.store, 'Business profile', profile?.name,
+          const LanguageTile(),
+          tile(Icons.store, tr('Business profile'), profile?.name,
               Routes.businessProfile),
-          tile(Icons.handyman, 'Trades', trades.map((t) => t.label).join(', '),
+          tile(Icons.handyman, tr('Trades'), trades.map((t) => t.label).join(', '),
               Routes.trades),
-          tile(Icons.rule, 'Work rules', 'Monthly salary, weekly off',
+          tile(Icons.rule, tr('Work rules'), tr('Monthly salary, weekly off'),
               Routes.rules),
           tile(
             Icons.cloud_upload,
-            'Backup & restore',
+            tr('Backup & restore'),
             backup == null || !backup.configured
-                ? 'Not set up'
-                : 'Google Drive · ${backup.email ?? ''}',
+                ? tr('Not set up')
+                : tr('Google Drive · {email}', {'email': backup.email ?? ''}),
             Routes.backup,
           ),
-          tile(Icons.workspace_premium, 'Thekedaar Pro',
-              '₹99/month subscription', Routes.subscription),
-          tile(Icons.lock, 'App lock', 'PIN and fingerprint', Routes.appLock),
-          tile(Icons.notifications, 'Reminders',
-              'Backup, overdue bills, month end', Routes.reminders),
+          tile(Icons.workspace_premium, tr('Thekedaar Pro'),
+              tr('₹99/month subscription'), Routes.subscription),
+          tile(Icons.lock, tr('App lock'), tr('PIN and fingerprint'), Routes.appLock),
+          tile(Icons.notifications, tr('Reminders'),
+              tr('Backup, overdue bills, month end'), Routes.reminders),
           const Divider(),
-          const ListTile(
+          ListTile(
             leading: Icon(Icons.info_outline),
-            title: Text('Thekedaar'),
-            subtitle: Text('Version ${AppConfig.appVersion}'),
+            title: Text(tr('Thekedaar')),
+            subtitle: Text(tr('Version {appVersion}', {'appVersion': AppConfig.appVersion})),
           ),
         ],
       ),

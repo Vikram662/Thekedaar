@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/db/enums.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/widgets/pickers.dart';
 import '../data/jobs_repository.dart';
 
@@ -30,7 +31,7 @@ class JobPickerField extends ConsumerWidget {
     final selected = all.where((j) => j.job.id == jobId).firstOrNull;
 
     return PickerField(
-      label: 'Job / site (optional)',
+      label: tr('Job / site (optional)'),
       icon: Icons.location_city,
       value: selected == null
           ? null
@@ -39,10 +40,10 @@ class JobPickerField extends ConsumerWidget {
         const none = '__none__';
         final picked = await showPickerSheet<String>(
           context,
-          title: jobs.isEmpty ? 'No open jobs yet' : 'Choose job / site',
+          title: jobs.isEmpty ? tr('No open jobs yet') : tr('Choose job / site'),
           options: [none, for (final j in jobs) j.job.id],
           label: (id) {
-            if (id == none) return 'No job';
+            if (id == none) return tr('No job');
             final j = jobs.firstWhere((j) => j.job.id == id);
             return '${j.job.title} · ${j.clientName}';
           },

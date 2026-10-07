@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app/app_drawer.dart';
 import '../../../app/theme.dart';
+import '../../../core/i18n/i18n.dart';
 import 'daily_attendance_screen.dart';
 import 'month_register_view.dart';
 
@@ -31,7 +32,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: const AppDrawer(),
-      appBar: AppBar(title: const Text('Attendance')),
+      appBar: AppBar(title: Text(tr('Attendance'))),
       body: Column(
         children: [
           Padding(
@@ -44,16 +45,16 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   selectedBackgroundColor: AppColors.amber500,
                   selectedForegroundColor: AppColors.slate900,
                 ),
-                segments: const [
+                segments: [
                   ButtonSegment(
                     value: false,
                     icon: Icon(Icons.edit_calendar),
-                    label: Text('Mark today'),
+                    label: Text(tr('Mark today')),
                   ),
                   ButtonSegment(
                     value: true,
                     icon: Icon(Icons.calendar_month),
-                    label: Text('Month register'),
+                    label: Text(tr('Month register')),
                   ),
                 ],
                 selected: {_month},

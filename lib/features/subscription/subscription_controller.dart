@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/config.dart';
 import '../../core/db/database.dart';
 import '../../core/db/providers.dart';
+import '../../core/i18n/i18n.dart';
 import '../../core/security/secure_store.dart';
 import 'data/subscription_service.dart';
 
@@ -47,8 +48,8 @@ class SubscriptionController
 
   Future<void> refresh() async {
     if (!AppConfig.subscriptionConfigured) {
-      state = const AsyncData(SubscriptionAccess(AccessKind.setupRequired,
-          message: 'Subscription service is not configured.'));
+      state = AsyncData(SubscriptionAccess(AccessKind.setupRequired,
+          message: tr('Subscription service is not configured.')));
       return;
     }
     state = const AsyncLoading();
@@ -81,7 +82,7 @@ class SubscriptionController
         state = AsyncData(SubscriptionAccess(AccessKind.offlineGrace,
             status: 'active',
             subscriptionId: cached['subscriptionId'],
-            message: 'Offline access — connect within 7 days.'));
+            message: tr('Offline access — connect within 7 days.')));
       } else {
         state = AsyncError(error, stack);
       }

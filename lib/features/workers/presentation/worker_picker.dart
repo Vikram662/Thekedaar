@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/i18n.dart';
 import '../../../core/widgets/pickers.dart';
 import '../data/workers_repository.dart';
 
@@ -21,13 +22,13 @@ class WorkerPickerField extends ConsumerWidget {
     final selected =
         workers.where((w) => w.worker.id == workerId).firstOrNull;
     return PickerField(
-      label: 'Worker',
+      label: tr('Worker'),
       icon: Icons.person,
       value: selected?.worker.name,
       onTap: () async {
         final picked = await showPickerSheet<WorkerListItem>(
           context,
-          title: 'Choose worker',
+          title: tr('Choose worker'),
           options: workers,
           label: (w) => w.worker.name,
           subtitle: (w) => [

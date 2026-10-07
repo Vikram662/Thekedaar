@@ -7,6 +7,7 @@ import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/db/enums.dart';
 import '../../../core/db/providers.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/pdf/pdf_common.dart';
 import '../../../core/utils/money.dart';
 import '../../../core/utils/upi.dart';
@@ -76,11 +77,11 @@ class DuesScreen extends ConsumerWidget {
       initialIndex: initialTab,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Lena / Dena'),
+          title: Text(tr('Lena / Dena')),
           actions: [
             if (report.hasValue)
               IconButton(
-                tooltip: 'Share PDF',
+                tooltip: tr('Share PDF'),
                 icon: const Icon(Icons.picture_as_pdf),
                 onPressed: () => _sharePdf(context, ref, report.requireValue),
               ),
@@ -89,13 +90,13 @@ class DuesScreen extends ConsumerWidget {
             tabs: [
               Tab(
                 text: report.hasValue
-                    ? 'Lena ${formatPaise(report.requireValue.lenaTotal)}'
-                    : 'Lena',
+                    ? tr('Lena {amount}', {'amount': formatPaise(report.requireValue.lenaTotal)})
+                    : tr('Lena'),
               ),
               Tab(
                 text: report.hasValue
-                    ? 'Dena ${formatPaise(report.requireValue.denaTotal)}'
-                    : 'Dena',
+                    ? tr('Dena {amount}', {'amount': formatPaise(report.requireValue.denaTotal)})
+                    : tr('Dena'),
               ),
             ],
           ),
@@ -109,7 +110,7 @@ class DuesScreen extends ConsumerWidget {
                 items: r.lena,
                 receive: true,
                 header: r.overdueTotal > 0
-                    ? 'Overdue (due date passed): ${formatPaise(r.overdueTotal)}'
+                    ? tr('Overdue (due date passed): {amount}', {'amount': formatPaise(r.overdueTotal)})
                     : null,
               ),
               _DueList(items: r.dena, receive: false),
@@ -132,14 +133,13 @@ class _DueList extends ConsumerWidget {
     final profile = await ref.read(businessProfileProvider.future);
     final business = profile?.name ?? '';
     final upi = profile?.upiId?.trim();
-    var text = 'Hello ${item.name}, payment of ${formatPaise(item.amountPaise)} '
-        'is pending with $business. Please pay at the earliest. Thank you.';
+    var text = tr('Hello {name}, payment of {amount} is pending with {business}. Please pay at the earliest. Thank you.', {'name': item.name, 'amount': formatPaise(item.amountPaise), 'business': business});
     if (upi != null && isValidUpiId(upi)) {
       final link = upiPayUri(
         upiId: upi,
         payeeName: business,
         amountPaise: item.amountPaise,
-        note: 'Payment to $business',
+        note: tr('Payment to {business}', {'business': business}),
       );
       text += '\n\nUPI ID: $upi\nPay now: $link';
     }
@@ -157,10 +157,10 @@ class _DueList extends ConsumerWidget {
     if (items.isEmpty) {
       return EmptyState(
         icon: receive ? Icons.call_received : Icons.call_made,
-        title: receive ? 'Nothing to receive' : 'Nothing to pay',
+        title: receive ? tr('Nothing to receive') : tr('Nothing to pay'),
         message: receive
-            ? 'No client or worker owes you money right now.'
-            : 'All workers and suppliers are paid up.',
+            ? tr('No client or worker owes you money right now.')
+            : tr('All workers and suppliers are paid up.'),
       );
     }
     final color = receive ? AppColors.warningText : AppColors.successText;
@@ -192,9 +192,9 @@ class _DueList extends ConsumerWidget {
             subtitle: Text([
               dueParty(item.party).label,
               if (item.overduePaise > 0)
-                'Overdue ${formatPaise(item.overduePaise)}',
+                tr('Overdue {amount}', {'amount': formatPaise(item.overduePaise)}),
               if (!receive && item.party == DueParty.client)
-                'Advance received',
+                tr('Advance received'),
             ].join(' · ')),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
@@ -209,7 +209,7 @@ class _DueList extends ConsumerWidget {
                 ),
                 if (receive && item.party == DueParty.client)
                   IconButton(
-                    tooltip: 'Send reminder',
+                    tooltip: tr('Send reminder'),
                     icon: const Icon(Icons.send),
                     onPressed: () => _remind(context, ref, item),
                   ),
@@ -229,9 +229,9 @@ class _DueList extends ConsumerWidget {
 }
 
 ({String label, IconData icon}) dueParty(DueParty party) => switch (party) {
-      DueParty.client => (label: 'Client', icon: Icons.person_outline),
-      DueParty.worker => (label: 'Worker', icon: Icons.engineering),
-      DueParty.supplier => (label: 'Supplier', icon: Icons.store),
+      DueParty.client => (label: tr('Client'), icon: Icons.person_outline),
+      DueParty.worker => (label: tr('Worker'), icon: Icons.engineering),
+      DueParty.supplier => (label: tr('Supplier'), icon: Icons.store),
     };
 
 /// Lena / Dena summary card for the dashboard.
@@ -287,18 +287,18 @@ class DuesSummaryCard extends ConsumerWidget {
     return Row(
       children: [
         half(
-          label: 'Lena (to receive)',
+          label: tr('Lena (to receive)'),
           paise: report?.lenaTotal ?? 0,
           color: AppColors.warningText,
           icon: Icons.call_received,
           tab: 0,
           note: (report?.overdueTotal ?? 0) > 0
-              ? 'Overdue ${formatPaise(report!.overdueTotal)}'
+              ? tr('Overdue {amount}', {'amount': formatPaise(report!.overdueTotal)})
               : null,
         ),
         const SizedBox(width: AppSizes.gap),
         half(
-          label: 'Dena (to pay)',
+          label: tr('Dena (to pay)'),
           paise: report?.denaTotal ?? 0,
           color: AppColors.successText,
           icon: Icons.call_made,

@@ -3,6 +3,7 @@ import 'package:drift/drift.dart' show Variable;
 import '../backup/clock_check.dart';
 import '../db/database.dart';
 import '../db/meta_store.dart';
+import '../i18n/i18n.dart';
 import '../settings/app_settings.dart';
 import '../utils/dates.dart';
 import '../utils/money.dart';
@@ -50,50 +51,48 @@ List<Reminder> computeReminders(
   if (settings.backup && f.backupConfigured) {
     final since = f.dirtySince;
     if (since != null && now.difference(since) > const Duration(hours: 24)) {
-      out.add(const Reminder(
+      out.add(Reminder(
         NotificationKind.backupPending,
-        'Backup pending',
-        'Your latest entries are not on Google Drive yet. '
-            'Connect to the internet and open the app.',
+        tr('Backup pending'),
+        tr('Your latest entries are not on Google Drive yet. Connect to the internet and open the app.'),
       ));
     }
     final skew = f.clockSkewSeconds;
     if (skew != null) {
       out.add(Reminder(
         NotificationKind.clockWrong,
-        'Phone time is wrong',
-        'Your phone clock is '
-            '${describeClockSkew(Duration(seconds: skew))}. '
-            'Turn on automatic date & time so entries get the right date.',
+        tr('Phone time is wrong'),
+        tr('Your phone clock is {skew}. Turn on automatic date & time so entries get the right date.',
+            {'skew': describeClockSkew(Duration(seconds: skew))}),
       ));
     }
   }
   if (settings.overdueBills && f.overdueBills > 0) {
     out.add(Reminder(
       NotificationKind.overdueBills,
-      'Payment overdue',
-      f.overdueBills == 1
-          ? '1 bill is past its due date: ${formatPaise(f.overduePaise)} '
-              'to collect. Send a reminder from Lena / Dena.'
-          : '${f.overdueBills} bills are past their due date: '
-              '${formatPaise(f.overduePaise)} to collect. '
-              'Send reminders from Lena / Dena.',
+      tr('Payment overdue'),
+      trPlural(
+        f.overdueBills,
+        '1 bill is past its due date: {amount} to collect. Send a reminder from Lena / Dena.',
+        '{count} bills are past their due date: {amount} to collect. Send reminders from Lena / Dena.',
+        {'amount': formatPaise(f.overduePaise)},
+      ),
     ));
   }
   final lastDay = DateTime(now.year, now.month + 1, 0).day;
   if (settings.monthEnd && f.activeWorkers > 0 && now.day == lastDay) {
-    out.add(const Reminder(
+    out.add(Reminder(
       NotificationKind.monthEnd,
-      'Month end',
-      'Check attendance and settle workers\' khata for this month.',
+      tr('Month end'),
+      tr('Check attendance and settle workers\' khata for this month.'),
     ));
   }
   final holiday = f.holidayTomorrow;
   if (settings.holidays && holiday != null) {
     out.add(Reminder(
       NotificationKind.holiday,
-      'Holiday tomorrow',
-      '$holiday. Tell your workers.',
+      tr('Holiday tomorrow'),
+      tr('{holiday}. Tell your workers.', {'holiday': holiday}),
     ));
   }
   return out;
@@ -187,9 +186,10 @@ class ReminderService {
     await showOncePerDay(
       Reminder(
         NotificationKind.backupFailed,
-        'Backup failed',
-        'Google Drive backup failed $count times. '
-            '${error == null ? '' : '$error '}Open the app to fix it.',
+        tr('Backup failed'),
+        tr('Google Drive backup failed {count} times. ', {'count': count}) +
+            (error == null ? '' : '$error ') +
+            tr('Open the app to fix it.'),
       ),
       DateTime.now(),
     );

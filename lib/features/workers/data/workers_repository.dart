@@ -5,6 +5,7 @@ import '../../../core/db/audit.dart';
 import '../../../core/db/database.dart';
 import '../../../core/db/enums.dart';
 import '../../../core/db/providers.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/utils/dates.dart';
 import '../../../core/utils/ids.dart';
 import '../../../core/utils/money.dart';
@@ -70,11 +71,12 @@ class NewWorker {
 
 /// `₹600/day`, `₹18,000/month`, `Piece-rate`.
 String wageLabel(WageHistory? wage) {
-  if (wage == null) return 'No wage set';
+  if (wage == null) return tr('No wage set');
   return switch (wage.model) {
-    WageModel.daily => '${formatPaise(wage.ratePaise)}/day',
-    WageModel.monthly => '${formatPaise(wage.ratePaise)}/month',
-    WageModel.piece => 'Piece-rate',
+    WageModel.daily => tr('{amount}/day', {'amount': formatPaise(wage.ratePaise)}),
+    WageModel.monthly =>
+        tr('{amount}/month', {'amount': formatPaise(wage.ratePaise)}),
+    WageModel.piece => tr('Piece-rate'),
   };
 }
 

@@ -6,6 +6,7 @@ import '../../../app/app_drawer.dart';
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/db/enums.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/utils/dates.dart';
 import '../../../core/utils/money.dart';
 import '../../../core/utils/phone.dart';
@@ -51,23 +52,23 @@ class _BillingScreenState extends ConsumerState<BillingScreen>
         0 => FloatingActionButton.extended(
             onPressed: () => context.push(Routes.newDocument(DocumentKind.invoice)),
             icon: const Icon(Icons.add),
-            label: const Text('New Bill'),
+            label: Text(tr('New Bill')),
           ),
         1 => FloatingActionButton.extended(
             onPressed: () =>
                 context.push(Routes.newDocument(DocumentKind.quotation)),
             icon: const Icon(Icons.add),
-            label: const Text('New Quotation'),
+            label: Text(tr('New Quotation')),
           ),
         2 => FloatingActionButton.extended(
             onPressed: () => context.push(Routes.addClient),
             icon: const Icon(Icons.person_add),
-            label: const Text('New Client'),
+            label: Text(tr('New Client')),
           ),
         _ => FloatingActionButton.extended(
             onPressed: () => context.push(Routes.payment()),
             icon: const Icon(Icons.payments),
-            label: const Text('Payment received'),
+            label: Text(tr('Payment received')),
           ),
       };
 
@@ -76,16 +77,16 @@ class _BillingScreenState extends ConsumerState<BillingScreen>
     return Scaffold(
       drawer: const AppDrawer(),
       appBar: AppBar(
-        title: const Text('Billing'),
+        title: Text(tr('Billing')),
         bottom: TabBar(
           controller: _tabs,
           isScrollable: true,
           tabAlignment: TabAlignment.start,
-          tabs: const [
-            Tab(text: 'Bills'),
-            Tab(text: 'Quotations'),
-            Tab(text: 'Clients'),
-            Tab(text: 'Payments'),
+          tabs: [
+            Tab(text: tr('Bills')),
+            Tab(text: tr('Quotations')),
+            Tab(text: tr('Clients')),
+            Tab(text: tr('Payments')),
           ],
         ),
       ),
@@ -118,11 +119,11 @@ class _DocumentsTab extends ConsumerWidget {
       data: (list) => list.isEmpty
           ? EmptyState(
               icon: isInvoice ? Icons.receipt_long : Icons.request_quote,
-              title: isInvoice ? 'No bills yet' : 'No quotations yet',
+              title: isInvoice ? tr('No bills yet') : tr('No quotations yet'),
               message: isInvoice
-                  ? 'Make a bill and share the PDF on WhatsApp.'
-                  : 'Make a quotation; convert it to a bill in one tap.',
-              actionLabel: isInvoice ? 'New Bill' : 'New Quotation',
+                  ? tr('Make a bill and share the PDF on WhatsApp.')
+                  : tr('Make a quotation; convert it to a bill in one tap.'),
+              actionLabel: isInvoice ? tr('New Bill') : tr('New Quotation'),
               onAction: () => context.push(Routes.newDocument(kind)),
             )
           : ListView.separated(
@@ -147,9 +148,9 @@ class _ClientsTab extends ConsumerWidget {
       data: (list) => list.isEmpty
           ? EmptyState(
               icon: Icons.people_outline,
-              title: 'No clients yet',
-              message: 'Add the people you work for.',
-              actionLabel: 'New Client',
+              title: tr('No clients yet'),
+              message: tr('Add the people you work for.'),
+              actionLabel: tr('New Client'),
               onAction: () => context.push(Routes.addClient),
             )
           : ListView.separated(
@@ -181,7 +182,7 @@ class _ClientsTab extends ConsumerWidget {
                                 color: AppColors.warningText,
                               ),
                             ),
-                            const Text('pending',
+                            Text(tr('pending'),
                                 style: TextStyle(
                                     fontSize: 12, color: AppColors.slate600)),
                           ],
@@ -205,10 +206,10 @@ class _PaymentsTab extends ConsumerWidget {
       loading: () => const ListSkeleton(),
       error: (e, _) => Center(child: Text('$e')),
       data: (list) => list.isEmpty
-          ? const EmptyState(
+          ? EmptyState(
               icon: Icons.payments_outlined,
-              title: 'No payments yet',
-              message: 'Money received from clients shows here.',
+              title: tr('No payments yet'),
+              message: tr('Money received from clients shows here.'),
             )
           : ListView.separated(
               padding: const EdgeInsets.only(bottom: 96),

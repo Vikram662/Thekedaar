@@ -1,3 +1,5 @@
+import '../i18n/i18n.dart';
+
 /// PRD I-M12: entries are saved with the phone's time. At backup time the
 /// phone clock is compared with Google Drive's server time, and a gap of
 /// more than [clockSkewLimit] is shown as a warning.
@@ -22,13 +24,14 @@ String describeClockSkew(Duration offset) {
   final abs = offset.abs();
   final String amount;
   if (abs.inDays >= 1) {
-    amount = '${abs.inDays} day${abs.inDays == 1 ? '' : 's'}';
+    amount = trPlural(abs.inDays, '1 day', '{count} days');
   } else if (abs.inHours >= 1) {
     final minutes = abs.inMinutes % 60;
-    amount = '${abs.inHours} hour${abs.inHours == 1 ? '' : 's'}'
-        '${minutes == 0 ? '' : ' $minutes min'}';
+    amount = trPlural(abs.inHours, '1 hour', '{count} hours') +
+        (minutes == 0 ? '' : tr(' {count} min', {'count': minutes}));
   } else {
-    amount = '${abs.inMinutes} min';
+    amount = tr('{count} min', {'count': abs.inMinutes});
   }
-  return '$amount ${offset.isNegative ? 'ahead' : 'behind'}';
+  return tr(offset.isNegative ? '{amount} ahead' : '{amount} behind',
+      {'amount': amount});
 }

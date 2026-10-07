@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/db/enums.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/utils/dates.dart';
 import '../../../core/utils/money.dart';
 import '../../../core/utils/phone.dart';
@@ -15,17 +16,17 @@ import '../data/billing_repository.dart';
 /// Status pill with icon + label (PRD BL-15, I-D3).
 StatusChip documentStatusChip(DocumentStatus status, DocumentKind kind) {
   final (label, color, icon) = switch (status) {
-    DocumentStatus.draft => ('Draft', AppColors.slate600, Icons.edit_note),
+    DocumentStatus.draft => (tr('Draft'), AppColors.slate600, Icons.edit_note),
     DocumentStatus.sent => (
-        kind == DocumentKind.invoice ? 'Unpaid' : 'Sent',
+        kind == DocumentKind.invoice ? tr('Unpaid') : tr('Sent'),
         AppColors.warningText,
         Icons.send,
       ),
     DocumentStatus.partiallyPaid =>
-      ('Part paid', AppColors.blue700, Icons.timelapse),
-    DocumentStatus.paid => ('Paid', AppColors.successText, Icons.check_circle),
+      (tr('Part paid'), AppColors.blue700, Icons.timelapse),
+    DocumentStatus.paid => (tr('Paid'), AppColors.successText, Icons.check_circle),
     DocumentStatus.cancelled =>
-      ('Cancelled', AppColors.dangerText, Icons.block),
+      (tr('Cancelled'), AppColors.dangerText, Icons.block),
   };
   return StatusChip(label: label, color: color, icon: icon);
 }
@@ -70,7 +71,7 @@ class DocumentTile extends StatelessWidget {
           ),
           if (showBalance)
             Text(
-              'Due ${formatPaise(item.balancePaise)}',
+              tr('Due {amount}', {'amount': formatPaise(item.balancePaise)}),
               style: const TextStyle(fontSize: 12, color: AppColors.warningText),
             ),
         ],
@@ -97,7 +98,7 @@ class ClientPickerField extends ConsumerWidget {
     final created = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('New client'),
+        title: Text(tr('New client')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -105,14 +106,14 @@ class ClientPickerField extends ConsumerWidget {
               controller: name,
               autofocus: true,
               textCapitalization: TextCapitalization.words,
-              decoration: const InputDecoration(labelText: 'Name'),
+              decoration: InputDecoration(labelText: tr('Name')),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: phone,
               keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
-                labelText: 'Mobile (optional)',
+              decoration: InputDecoration(
+                labelText: tr('Mobile (optional)'),
                 prefixText: '+91 ',
               ),
             ),
@@ -121,11 +122,11 @@ class ClientPickerField extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(tr('Cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Add'),
+            child: Text(tr('Add')),
           ),
         ],
       ),
@@ -147,17 +148,17 @@ class ClientPickerField extends ConsumerWidget {
     final clients = ref.watch(clientsProvider).valueOrNull ?? const [];
     final selected = clients.where((c) => c.client.id == clientId).firstOrNull;
     return PickerField(
-      label: 'Client',
+      label: tr('Client'),
       icon: Icons.person_outline,
       value: selected?.client.name,
       onTap: () async {
         const newClient = '__new__';
         final picked = await showPickerSheet<String>(
           context,
-          title: 'Choose client',
+          title: tr('Choose client'),
           options: [newClient, for (final c in clients) c.client.id],
           label: (id) => id == newClient
-              ? '+ New client'
+              ? tr('+ New client')
               : clients.firstWhere((c) => c.client.id == id).client.name,
           selected: clientId,
         );

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/theme.dart';
 import '../../../core/db/enums.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/utils/dates.dart';
 import '../../../core/utils/money.dart';
 import '../../../core/utils/photos.dart';
@@ -54,7 +55,7 @@ class _ExpenseEntryScreenState extends ConsumerState<ExpenseEntryScreen> {
       await deletePhoto(_photoName); // replace the previous one
       setState(() => _photoName = name);
     } catch (e) {
-      if (mounted) showMessage(context, 'Could not take photo: $e');
+      if (mounted) showMessage(context, tr('Could not take photo: {e}', {'e': e}));
     } finally {
       lock.suspendRelock = false;
     }
@@ -65,21 +66,21 @@ class _ExpenseEntryScreenState extends ConsumerState<ExpenseEntryScreen> {
     final name = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('New category'),
+        title: Text(tr('New category')),
         content: TextField(
           controller: controller,
           autofocus: true,
           textCapitalization: TextCapitalization.words,
-          decoration: const InputDecoration(labelText: 'Category name'),
+          decoration: InputDecoration(labelText: tr('Category name')),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(tr('Cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(controller.text.trim()),
-            child: const Text('Add'),
+            child: Text(tr('Add')),
           ),
         ],
       ),
@@ -93,11 +94,11 @@ class _ExpenseEntryScreenState extends ConsumerState<ExpenseEntryScreen> {
   Future<void> _save() async {
     final paise = parseRupeesToPaise(_amount);
     if (paise == null || paise <= 0) {
-      showMessage(context, 'Enter the amount');
+      showMessage(context, tr('Enter the amount'));
       return;
     }
     if (_categoryId == null) {
-      showMessage(context, 'Choose a category');
+      showMessage(context, tr('Choose a category'));
       return;
     }
     setState(() => _saving = true);
@@ -114,12 +115,12 @@ class _ExpenseEntryScreenState extends ConsumerState<ExpenseEntryScreen> {
       _saved = true;
       if (!mounted) return;
       HapticFeedback.mediumImpact();
-      showMessage(context, '✓ Expense ${formatPaise(paise)} saved');
+      showMessage(context, tr('✓ Expense {amount} saved', {'amount': formatPaise(paise)}));
       context.pop();
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
-      showMessage(context, 'Could not save: $e');
+      showMessage(context, tr('Could not save: {e}', {'e': e}));
     }
   }
 
@@ -127,7 +128,7 @@ class _ExpenseEntryScreenState extends ConsumerState<ExpenseEntryScreen> {
   Widget build(BuildContext context) {
     final categories = ref.watch(expenseCategoriesProvider).valueOrNull ?? const [];
     return Scaffold(
-      appBar: AppBar(title: const Text('New expense')),
+      appBar: AppBar(title: Text(tr('New expense'))),
       body: ListView(
         padding: const EdgeInsets.all(AppSizes.gutter),
         children: [
@@ -137,11 +138,11 @@ class _ExpenseEntryScreenState extends ConsumerState<ExpenseEntryScreen> {
             onChanged: (v) => setState(() => _amount = v),
           ),
           SectionTitle(
-            'Category',
+            tr('Category'),
             trailing: TextButton.icon(
               onPressed: _newCategory,
               icon: const Icon(Icons.add),
-              label: const Text('New'),
+              label: Text(tr('New')),
             ),
           ),
           Wrap(
@@ -156,7 +157,7 @@ class _ExpenseEntryScreenState extends ConsumerState<ExpenseEntryScreen> {
                 ),
             ],
           ),
-          const SectionTitle('Paid by'),
+          SectionTitle(tr('Paid by')),
           PaymentModeChips(
             value: _mode,
             onChanged: (m) => setState(() => _mode = m),
@@ -169,9 +170,9 @@ class _ExpenseEntryScreenState extends ConsumerState<ExpenseEntryScreen> {
           const SizedBox(height: 12),
           TextField(
             controller: _note,
-            decoration: const InputDecoration(labelText: 'Note (optional)'),
+            decoration: InputDecoration(labelText: tr('Note (optional)')),
           ),
-          const SectionTitle('Bill photo (optional)'),
+          SectionTitle(tr('Bill photo (optional)')),
           Row(
             children: [
               if (_photoName != null) ...[
@@ -189,16 +190,16 @@ class _ExpenseEntryScreenState extends ConsumerState<ExpenseEntryScreen> {
                     OutlinedButton.icon(
                       onPressed: () => _takePhoto(true),
                       icon: const Icon(Icons.photo_camera),
-                      label: Text(_photoName == null ? 'Camera' : 'Retake'),
+                      label: Text(_photoName == null ? tr('Camera') : tr('Retake')),
                     ),
                     OutlinedButton.icon(
                       onPressed: () => _takePhoto(false),
                       icon: const Icon(Icons.photo_library),
-                      label: const Text('Gallery'),
+                      label: Text(tr('Gallery')),
                     ),
                     if (_photoName != null)
                       IconButton(
-                        tooltip: 'Remove photo',
+                        tooltip: tr('Remove photo'),
                         icon: const Icon(Icons.delete_outline),
                         onPressed: () async {
                           await deletePhoto(_photoName);
@@ -214,7 +215,7 @@ class _ExpenseEntryScreenState extends ConsumerState<ExpenseEntryScreen> {
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.event),
             title: Text(dayFormat.format(_date)),
-            trailing: const Text('Change'),
+            trailing: Text(tr('Change')),
             onTap: () async {
               final picked =
                   await pickDate(context, initial: _date, last: DateTime.now());
@@ -224,7 +225,7 @@ class _ExpenseEntryScreenState extends ConsumerState<ExpenseEntryScreen> {
         ],
       ),
       bottomNavigationBar:
-          BottomActionBar(label: 'Save', busy: _saving, onPressed: _save),
+          BottomActionBar(label: tr('Save'), busy: _saving, onPressed: _save),
     );
   }
 }

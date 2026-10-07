@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../app/theme.dart';
+import '../i18n/i18n.dart';
 import '../utils/money.dart';
 
 /// Big on-screen numpad for rupee amounts (PRD E2 Advance Entry: 28px keys).
@@ -99,7 +100,7 @@ class _PadKey extends StatelessWidget {
           height: 60,
           child: Center(
             child: isBackspace
-                ? const Icon(Icons.backspace_outlined, semanticLabel: 'Delete')
+                ? Icon(Icons.backspace_outlined, semanticLabel: tr('Delete'))
                 : Text(
                     label,
                     style: TextStyle(

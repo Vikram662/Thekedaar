@@ -8,6 +8,7 @@ import '../../../app/theme.dart';
 import '../../../core/db/audit.dart';
 import '../../../core/db/database.dart';
 import '../../../core/db/enums.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/utils/dates.dart';
 import '../../../core/widgets/common.dart';
 import '../../subscription/presentation/subscription_screen.dart';
@@ -25,17 +26,17 @@ class StatusStyle {
 
 StatusStyle statusStyle(AttendanceStatus status) => switch (status) {
       AttendanceStatus.present =>
-        const StatusStyle('P', 'Present', Icons.check, AppColors.successText),
-      AttendanceStatus.half => const StatusStyle(
-          '½', 'Half day', Icons.timelapse, AppColors.warningText),
+        StatusStyle('P', tr('Present'), Icons.check, AppColors.successText),
+      AttendanceStatus.half => StatusStyle(
+          '½', tr('Half day'), Icons.timelapse, AppColors.warningText),
       AttendanceStatus.absent =>
-        const StatusStyle('A', 'Absent', Icons.close, AppColors.dangerText),
-      AttendanceStatus.leavePaid => const StatusStyle(
-          'PL', 'Paid leave', Icons.beach_access, AppColors.blue700),
-      AttendanceStatus.leaveUnpaid => const StatusStyle(
-          'UL', 'Unpaid leave', Icons.event_busy, AppColors.slate600),
-      AttendanceStatus.off => const StatusStyle(
-          'Off', 'Weekly off', Icons.weekend, AppColors.slate600),
+        StatusStyle('A', tr('Absent'), Icons.close, AppColors.dangerText),
+      AttendanceStatus.leavePaid => StatusStyle(
+          'PL', tr('Paid leave'), Icons.beach_access, AppColors.blue700),
+      AttendanceStatus.leaveUnpaid => StatusStyle(
+          'UL', tr('Unpaid leave'), Icons.event_busy, AppColors.slate600),
+      AttendanceStatus.off => StatusStyle(
+          'Off', tr('Weekly off'), Icons.weekend, AppColors.slate600),
     };
 
 /// Sets one worker's status for one day, showing lock errors as a message.
@@ -96,7 +97,7 @@ Future<void> showStatusSheet(
           if (current != null)
             ListTile(
               leading: const Icon(Icons.remove_circle_outline),
-              title: const Text('Clear mark'),
+              title: Text(tr('Clear mark')),
               onTap: () => Navigator.of(context).pop('clear'),
             ),
         ],
@@ -161,7 +162,7 @@ class _AttendanceCalendarState extends ConsumerState<AttendanceCalendar> {
           Row(
             children: [
               IconButton(
-                tooltip: 'Previous month',
+                tooltip: tr('Previous month'),
                 onPressed: () => _shift(-1),
                 icon: const Icon(Icons.chevron_left),
               ),
@@ -173,7 +174,7 @@ class _AttendanceCalendarState extends ConsumerState<AttendanceCalendar> {
                 ),
               ),
               IconButton(
-                tooltip: 'Next month',
+                tooltip: tr('Next month'),
                 onPressed: isCurrentMonth ? null : () => _shift(1),
                 icon: const Icon(Icons.chevron_right),
               ),
@@ -181,7 +182,7 @@ class _AttendanceCalendarState extends ConsumerState<AttendanceCalendar> {
           ),
           Row(
             children: [
-              for (final d in const ['M', 'T', 'W', 'T', 'F', 'S', 'S'])
+              for (final d in weekdayLetters)
                 Expanded(
                   child: Center(
                     child: Text(d,
@@ -239,7 +240,7 @@ class _MonthTotals extends StatelessWidget {
       counts.update(m.status, (v) => v + 1, ifAbsent: () => 1);
     }
     if (counts.isEmpty) {
-      return const Text('Nothing marked this month',
+      return Text(tr('Nothing marked this month'),
           style: TextStyle(color: AppColors.slate600));
     }
     return Wrap(
@@ -297,13 +298,13 @@ Future<void> showWorkerAttendanceSheet(
                     Navigator.of(context).pop();
                     router.push(Routes.worker(worker.id));
                   },
-                  child: const Text('Open worker'),
+                  child: Text(tr('Open worker')),
                 ),
               ],
             ),
             const SizedBox(height: 4),
-            const Text(
-              'Tap a day to change it.',
+            Text(
+              tr('Tap a day to change it.'),
               style: TextStyle(color: AppColors.slate600),
             ),
             const SizedBox(height: 12),

@@ -7,7 +7,7 @@
 > **Server:** Business data ke liye koi server nahi; saara data admin ke phone ki **SQLite** file mein rehta hai. Razorpay secrets aur subscription verification ke liye sirf ek minimal **Cloudflare Worker** payment gateway hai.
 > **Subscription & Monetization:** ✅ Razorpay ₹99/month recurring UPI Autopay. Free explore mode (view-only) + Paywall on data entry (sites, attendance, kharcha). Zero backend / direct Razorpay customer & subscription sync.
 > **Backup:** ✅ Ek baar Google Drive permission lene ke baad **din mein 4 baar automatic** encrypted backup, aur naye phone par restore.
-> **UI Language:** English only (simple words, bade icons)
+> **UI Language:** English (default) + Hindi — Settings / side menu / onboarding se switch (simple words, bade icons). PDFs (bill, quotation, pay slip) English mein hi rehte hain.
 
 ### Version history
 | Ver | Change |

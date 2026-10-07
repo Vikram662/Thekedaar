@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../app/theme.dart';
 import '../../../core/db/database.dart';
 import '../../../core/db/enums.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/widgets/common.dart';
 import '../../jobs/data/jobs_repository.dart';
 import '../data/tasks_repository.dart';
@@ -38,12 +39,12 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
   final List<int?> _intervalOptions = [null, 15, 30, 60, 120, 1440];
 
   String _intervalLabel(int? mins) {
-    if (mins == null) return 'At task time';
-    if (mins < 60) return '$mins min repeat';
-    if (mins == 60) return 'Every 1 hour';
-    if (mins == 120) return 'Every 2 hours';
-    if (mins == 1440) return 'Daily';
-    return '$mins min repeat';
+    if (mins == null) return tr('At task time');
+    if (mins < 60) return tr('{mins} min repeat', {'mins': mins});
+    if (mins == 60) return tr('Every 1 hour');
+    if (mins == 120) return tr('Every 2 hours');
+    if (mins == 1440) return tr('Daily');
+    return tr('{mins} min repeat', {'mins': mins});
   }
 
   @override
@@ -131,7 +132,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save task: $e')),
+          SnackBar(content: Text(tr('Failed to save task: {e}', {'e': e}))),
         );
       }
     } finally {
@@ -150,8 +151,8 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
         data: (t) {
           if (t == null) {
             return Scaffold(
-              appBar: AppBar(title: const Text('Task not found')),
-              body: const Center(child: Text('This task does not exist.')),
+              appBar: AppBar(title: Text(tr('Task not found'))),
+              body: Center(child: Text(tr('This task does not exist.'))),
             );
           }
           _loadExisting(t);
@@ -161,8 +162,8 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
           body: Center(child: CircularProgressIndicator()),
         ),
         error: (e, _) => Scaffold(
-          appBar: AppBar(title: const Text('Error')),
-          body: Center(child: Text('Error loading task: $e')),
+          appBar: AppBar(title: Text(tr('Error'))),
+          body: Center(child: Text(tr('Error loading task: {e}', {'e': e}))),
         ),
       );
     }
@@ -172,33 +173,33 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
 
   Widget _buildForm(AsyncValue<List<JobListItem>> jobsAsync, bool isEdit) {
     final jobItems = jobsAsync.valueOrNull ?? [];
-    final df = DateFormat('EEE, dd MMM yyyy');
+    final df = DateFormat('EEE, dd MMM yyyy', uiDateLocale);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEdit ? 'Edit Task / Reminder' : 'Add Task / Reminder'),
+        title: Text(isEdit ? tr('Edit Task / Reminder') : tr('Add Task / Reminder')),
         actions: [
           if (isEdit)
             IconButton(
-              tooltip: 'Delete task',
+              tooltip: tr('Delete task'),
               icon: const Icon(Icons.delete_outline, color: AppColors.dangerFill),
               onPressed: () async {
                 final confirm = await showDialog<bool>(
                   context: context,
                   builder: (ctx) => AlertDialog(
-                    title: const Text('Delete Task?'),
-                    content: const Text(
-                        'Are you sure you want to delete this task reminder?'),
+                    title: Text(tr('Delete Task?')),
+                    content: Text(
+                        tr('Are you sure you want to delete this task reminder?')),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(ctx, false),
-                        child: const Text('Cancel'),
+                        child: Text(tr('Cancel')),
                       ),
                       FilledButton(
                         style: FilledButton.styleFrom(
                             backgroundColor: AppColors.dangerFill),
                         onPressed: () => Navigator.pop(ctx, true),
-                        child: const Text('Delete'),
+                        child: Text(tr('Delete')),
                       ),
                     ],
                   ),
@@ -219,8 +220,8 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
           padding: const EdgeInsets.all(16),
           children: [
             // Task Type selector
-            const Text(
-              'Task Category',
+            Text(
+              tr('Task Category'),
               style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
             ),
             const SizedBox(height: 8),
@@ -244,14 +245,14 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
             // Title
             TextFormField(
               controller: _titleController,
-              decoration: const InputDecoration(
-                labelText: 'Task Title *',
-                hintText: 'e.g. Inspect plaster work, Call client for cheque',
+              decoration: InputDecoration(
+                labelText: tr('Task Title *'),
+                hintText: tr('e.g. Inspect plaster work, Call client for cheque'),
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.title),
               ),
               validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? 'Enter a title' : null,
+                  (v == null || v.trim().isEmpty) ? tr('Enter a title') : null,
             ),
             const SizedBox(height: 16),
 
@@ -259,15 +260,15 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
             DropdownButtonFormField<String?>(
               initialValue: _selectedJobId,
               isExpanded: true,
-              decoration: const InputDecoration(
-                labelText: 'Linked Site / Job (Optional)',
+              decoration: InputDecoration(
+                labelText: tr('Linked Site / Job (Optional)'),
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.location_city_outlined),
               ),
               items: [
-                const DropdownMenuItem<String?>(
+                DropdownMenuItem<String?>(
                   value: null,
-                  child: Text('No site linked'),
+                  child: Text(tr('No site linked')),
                 ),
                 ...jobItems.map((item) => DropdownMenuItem<String?>(
                       value: item.job.id,
@@ -286,8 +287,8 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                     onTap: _pickDate,
                     borderRadius: BorderRadius.circular(8),
                     child: InputDecorator(
-                      decoration: const InputDecoration(
-                        labelText: 'Date',
+                      decoration: InputDecoration(
+                        labelText: tr('Date'),
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.calendar_today_outlined),
                       ),
@@ -304,8 +305,8 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                     onTap: _pickTime,
                     borderRadius: BorderRadius.circular(8),
                     child: InputDecorator(
-                      decoration: const InputDecoration(
-                        labelText: 'Time',
+                      decoration: InputDecoration(
+                        labelText: tr('Time'),
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.access_time_outlined),
                       ),
@@ -334,12 +335,12 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                   children: [
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: const Text(
-                        'Push Notification Reminder',
+                      title: Text(
+                        tr('Push Notification Reminder'),
                         style: TextStyle(fontWeight: FontWeight.w600),
                       ),
-                      subtitle: const Text(
-                        'Ring / notify at scheduled time',
+                      subtitle: Text(
+                        tr('Ring / notify at scheduled time'),
                         style: TextStyle(fontSize: 12),
                       ),
                       value: _isAlertActive,
@@ -352,7 +353,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                         children: [
                           const Icon(Icons.alarm, size: 20, color: AppColors.slate600),
                           const SizedBox(width: 8),
-                          const Text('Repeat:'),
+                          Text(tr('Repeat:')),
                           const Spacer(),
                           DropdownButton<int?>(
                             value: _intervalMinutes,
@@ -382,9 +383,9 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                 Expanded(
                   child: TextFormField(
                     controller: _personNameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Contact Person',
-                      hintText: 'e.g. Ramesh Bhai',
+                    decoration: InputDecoration(
+                      labelText: tr('Contact Person'),
+                      hintText: tr('e.g. Ramesh Bhai'),
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.person_outline),
                     ),
@@ -395,8 +396,8 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                   child: TextFormField(
                     controller: _phoneController,
                     keyboardType: TextInputType.phone,
-                    decoration: const InputDecoration(
-                      labelText: 'Phone Number',
+                    decoration: InputDecoration(
+                      labelText: tr('Phone Number'),
                       hintText: '9876543210',
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.phone_outlined),
@@ -411,9 +412,9 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
             TextFormField(
               controller: _notesController,
               maxLines: 3,
-              decoration: const InputDecoration(
-                labelText: 'Notes / Remarks',
-                hintText: 'Enter any additional details or instructions...',
+              decoration: InputDecoration(
+                labelText: tr('Notes / Remarks'),
+                hintText: tr('Enter any additional details or instructions...'),
                 border: OutlineInputBorder(),
                 alignLabelWithHint: true,
               ),
@@ -439,7 +440,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                     )
                   : const Icon(Icons.check_circle_outline),
               label: Text(
-                _saving ? 'Saving...' : (isEdit ? 'Update Task' : 'Save Task'),
+                _saving ? tr('Saving...') : (isEdit ? tr('Update Task') : tr('Save Task')),
                 style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
               ),
             ),

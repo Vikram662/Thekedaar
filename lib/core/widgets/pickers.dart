@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme.dart';
 import '../db/enums.dart';
+import '../i18n/i18n.dart';
 
 /// Bottom sheet list picker. Returns the chosen value or null.
 Future<T?> showPickerSheet<T>(
@@ -86,11 +87,11 @@ class PickerField extends StatelessWidget {
 }
 
 String paymentModeLabel(PaymentMode mode) => switch (mode) {
-      PaymentMode.cash => 'Cash',
-      PaymentMode.phonePe => 'PhonePe',
-      PaymentMode.paytm => 'Paytm',
-      PaymentMode.gPay => 'GPay',
-      PaymentMode.bank => 'Bank',
+      PaymentMode.cash => tr('Cash'),
+      PaymentMode.phonePe => tr('PhonePe'),
+      PaymentMode.paytm => tr('Paytm'),
+      PaymentMode.gPay => tr('GPay'),
+      PaymentMode.bank => tr('Bank'),
     };
 
 /// Payment mode chips (PRD KH-01).

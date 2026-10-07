@@ -7,7 +7,9 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/db/enums.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/utils/phone.dart';
+import '../../../core/widgets/language_picker.dart';
 import '../../subscription/subscription_controller.dart';
 import '../data/onboarding_repository.dart';
 import 'trade_icons.dart';
@@ -67,7 +69,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       if (!mounted) return;
       setState(() => _saving = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not save. Please try again. ($error)')),
+        SnackBar(content: Text(tr('Could not save. Please try again. ({error})', {'error': error}))),
       );
     }
   }
@@ -76,39 +78,44 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('Set up your business')),
+      appBar: AppBar(title: Text(tr('Set up your business'))),
       body: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(AppSizes.gutter),
           children: [
+            const Align(
+              alignment: Alignment.centerRight,
+              child: LanguageToggle(),
+            ),
+            const SizedBox(height: 12),
             TextFormField(
               controller: _name,
               textCapitalization: TextCapitalization.words,
-              decoration: const InputDecoration(labelText: 'Business name'),
+              decoration: InputDecoration(labelText: tr('Business name')),
               validator: (value) => (value == null || value.trim().isEmpty)
-                  ? 'Enter business name'
+                  ? tr('Enter business name')
                   : null,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _phone,
               keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
-                labelText: 'Mobile number (optional)',
+              decoration: InputDecoration(
+                labelText: tr('Mobile number (optional)'),
                 prefixText: '+91 ',
               ),
               validator: (value) => (value == null ||
                       value.trim().isEmpty ||
                       normalizeIndianPhone(value) != null)
                   ? null
-                  : 'Enter a valid 10-digit mobile number',
+                  : tr('Enter a valid 10-digit mobile number'),
             ),
             const SizedBox(height: 24),
-            Text('What work do you do?', style: textTheme.titleLarge),
+            Text(tr('What work do you do?'), style: textTheme.titleLarge),
             const SizedBox(height: 4),
             Text(
-              'Choose one or more. You can change this later.',
+              tr('Choose one or more. You can change this later.'),
               style: textTheme.bodyMedium?.copyWith(color: AppColors.slate600),
             ),
             const SizedBox(height: 12),
@@ -133,9 +140,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.restore),
-              title: const Text('Already using Thekedaar?'),
-              subtitle: const Text(
-                  'Restore your data from Google Drive or a backup file'),
+              title: Text(tr('Already using Thekedaar?')),
+              subtitle: Text(
+                  tr('Restore your data from Google Drive or a backup file')),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => context.push(Routes.restore),
             ),
@@ -152,7 +159,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     dimension: 24,
                     child: CircularProgressIndicator(strokeWidth: 3),
                   )
-                : const Text('Continue'),
+                : Text(tr('Continue')),
           ),
         ),
       ),

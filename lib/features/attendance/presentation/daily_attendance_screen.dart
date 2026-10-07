@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme.dart';
 import '../../../core/db/enums.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/settings/settings_providers.dart';
 import '../../../core/utils/dates.dart';
 import '../../../core/utils/qty.dart';
@@ -54,7 +55,7 @@ class _DailyAttendanceViewState extends ConsumerState<DailyAttendanceView> {
     if (mounted) {
       showMessage(
         context,
-        count == 0 ? 'Everyone is already marked' : 'Marked $count workers',
+        count == 0 ? tr('Everyone is already marked') : tr('Marked {count} workers', {'count': count}),
       );
     }
   }
@@ -68,7 +69,7 @@ class _DailyAttendanceViewState extends ConsumerState<DailyAttendanceView> {
     if (mounted) {
       showMessage(
         context,
-        count == 0 ? 'Nothing to copy' : 'Copied $count from previous day',
+        count == 0 ? tr('Nothing to copy') : tr('Copied {count} from previous day', {'count': count}),
       );
     }
   }
@@ -86,7 +87,7 @@ class _DailyAttendanceViewState extends ConsumerState<DailyAttendanceView> {
           child: Row(
             children: [
               IconButton(
-                tooltip: 'Previous day',
+                tooltip: tr('Previous day'),
                 icon: const Icon(Icons.chevron_left),
                 onPressed: () => _shift(-1),
               ),
@@ -107,11 +108,11 @@ class _DailyAttendanceViewState extends ConsumerState<DailyAttendanceView> {
                     child: Column(
                       children: [
                         Text(
-                          _isToday ? 'Today' : dayFormat.format(_date),
+                          _isToday ? tr('Today') : dayFormat.format(_date),
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         if (isWeeklyOff)
-                          const Text('Weekly off',
+                          Text(tr('Weekly off'),
                               style: TextStyle(color: AppColors.slate600)),
                       ],
                     ),
@@ -119,7 +120,7 @@ class _DailyAttendanceViewState extends ConsumerState<DailyAttendanceView> {
                 ),
               ),
               IconButton(
-                tooltip: 'Next day',
+                tooltip: tr('Next day'),
                 icon: const Icon(Icons.chevron_right),
                 onPressed: _isToday ? null : () => _shift(1),
               ),
@@ -142,14 +143,14 @@ class _DailyAttendanceViewState extends ConsumerState<DailyAttendanceView> {
                       : AttendanceStatus.present),
                   icon: const Icon(Icons.done_all),
                   label:
-                      Text(isWeeklyOff ? 'Mark all Off' : 'Mark all present'),
+                      Text(isWeeklyOff ? tr('Mark all Off') : tr('Mark all present')),
                 ),
               ),
               const SizedBox(width: AppSizes.gap),
               OutlinedButton.icon(
                 onPressed: _copyYesterday,
                 icon: const Icon(Icons.content_copy),
-                label: const Text('Copy yesterday'),
+                label: Text(tr('Copy yesterday')),
               ),
             ],
           ),
@@ -160,17 +161,17 @@ class _DailyAttendanceViewState extends ConsumerState<DailyAttendanceView> {
             error: (e, _) => Center(child: Text('$e')),
             data: (list) {
               if (list.isEmpty) {
-                return const EmptyState(
+                return EmptyState(
                   icon: Icons.groups,
-                  title: 'No workers on this day',
-                  message: 'Add workers first, or pick a later date.',
+                  title: tr('No workers on this day'),
+                  message: tr('Add workers first, or pick a later date.'),
                 );
               }
               final marked = list.where((r) => r.attendance != null).length;
               return ListView(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
                 children: [
-                  Text('$marked of ${list.length} marked',
+                  Text(tr('{marked} of {count} marked', {'marked': marked, 'count': list.length}),
                       style: const TextStyle(color: AppColors.slate600)),
                   const SizedBox(height: 8),
                   for (final row in list)
@@ -239,7 +240,7 @@ class _AttendanceRowTile extends ConsumerWidget {
                             style: Theme.of(context).textTheme.titleMedium),
                         Text(
                           current == null
-                              ? (row.roleName ?? 'Not marked')
+                              ? (row.roleName ?? tr('Not marked'))
                               : statusStyle(current).label,
                           style: TextStyle(
                             color: current == null
@@ -269,10 +270,10 @@ class _AttendanceRowTile extends ConsumerWidget {
             if (working)
               Row(
                 children: [
-                  const Text('OT hours'),
+                  Text(tr('OT hours')),
                   const Spacer(),
                   IconButton(
-                    tooltip: 'Less OT',
+                    tooltip: tr('Less OT'),
                     onPressed: ot <= 0 ? null : () => setOt(ot - 500),
                     icon: const Icon(Icons.remove_circle_outline),
                   ),
@@ -286,7 +287,7 @@ class _AttendanceRowTile extends ConsumerWidget {
                     ),
                   ),
                   IconButton(
-                    tooltip: 'More OT',
+                    tooltip: tr('More OT'),
                     onPressed: () => setOt(ot + 500),
                     icon: const Icon(Icons.add_circle_outline),
                   ),

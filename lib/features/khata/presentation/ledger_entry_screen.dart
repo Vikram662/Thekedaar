@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../app/theme.dart';
 import '../../../core/db/audit.dart';
 import '../../../core/db/enums.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/utils/money.dart';
 import '../../../core/utils/upi.dart';
 import '../../../core/widgets/amount_pad.dart';
@@ -74,11 +75,11 @@ class _LedgerEntryScreenState extends ConsumerState<LedgerEntryScreen> {
   Future<void> _save() async {
     final paise = parseRupeesToPaise(_amount);
     if (_workerId == null) {
-      showMessage(context, 'Choose a worker');
+      showMessage(context, tr('Choose a worker'));
       return;
     }
     if (paise == null || paise <= 0) {
-      showMessage(context, 'Enter the amount');
+      showMessage(context, tr('Enter the amount'));
       return;
     }
     setState(() => _saving = true);
@@ -93,7 +94,7 @@ class _LedgerEntryScreenState extends ConsumerState<LedgerEntryScreen> {
           );
       if (!mounted) return;
       HapticFeedback.mediumImpact();
-      showMessage(context, '✓ ${ledgerTypeLabel(_type)} ${formatPaise(paise)} saved');
+      showMessage(context, tr('✓ {type} {amount} saved', {'type': ledgerTypeLabel(_type), 'amount': formatPaise(paise)}));
       context.pop();
     } on PeriodLockedException catch (e) {
       if (!mounted) return;
@@ -102,7 +103,7 @@ class _LedgerEntryScreenState extends ConsumerState<LedgerEntryScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
-      showMessage(context, 'Could not save: $e');
+      showMessage(context, tr('Could not save: {e}', {'e': e}));
     }
   }
 
@@ -111,7 +112,7 @@ class _LedgerEntryScreenState extends ConsumerState<LedgerEntryScreen> {
   Future<void> _payWithUpi(String upiId, String workerName) async {
     final paise = parseRupeesToPaise(_amount);
     if (paise == null || paise <= 0) {
-      showMessage(context, 'Enter the amount');
+      showMessage(context, tr('Enter the amount'));
       return;
     }
     final uri = Uri.parse(upiPayUri(
@@ -127,15 +128,14 @@ class _LedgerEntryScreenState extends ConsumerState<LedgerEntryScreen> {
       final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
       if (!mounted) return;
       if (!opened) {
-        showMessage(context, 'No UPI app found on this phone');
+        showMessage(context, tr('No UPI app found on this phone'));
         return;
       }
       final paid = await confirmDialog(
         context,
-        title: 'Payment done?',
-        message: 'Did ${formatPaise(paise)} reach $workerName in the UPI app? '
-            'Tap Yes only after the app shows success.',
-        confirmLabel: 'Yes, paid',
+        title: tr('Payment done?'),
+        message: tr('Did {amount} reach {workerName} in the UPI app? Tap Yes only after the app shows success.', {'amount': formatPaise(paise), 'workerName': workerName}),
+        confirmLabel: tr('Yes, paid'),
       );
       if (paid && mounted) await _save();
     } finally {
@@ -156,7 +156,7 @@ class _LedgerEntryScreenState extends ConsumerState<LedgerEntryScreen> {
         isValidUpiId(workerUpi);
     final isToday = DateUtils.isSameDay(_at, DateTime.now());
     return Scaffold(
-      appBar: AppBar(title: Text('New ${ledgerTypeLabel(_type).toLowerCase()}')),
+      appBar: AppBar(title: Text(tr('New {type}', {'type': ledgerTypeLabel(_type).toLowerCase()}))),
       body: ListView(
         padding: const EdgeInsets.all(AppSizes.gutter),
         children: [
@@ -191,28 +191,28 @@ class _LedgerEntryScreenState extends ConsumerState<LedgerEntryScreen> {
                     ? null
                     : () => _payWithUpi(workerUpi!, worker!.name),
                 icon: const Icon(Icons.qr_code_2),
-                label: Text('Pay with UPI app ($workerUpi)'),
+                label: Text(tr('Pay with UPI app ({workerUpi})', {'workerUpi': workerUpi})),
               ),
             ],
           ],
           const SizedBox(height: 12),
           TextField(
             controller: _note,
-            decoration: const InputDecoration(labelText: 'Note (optional)'),
+            decoration: InputDecoration(labelText: tr('Note (optional)')),
           ),
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.schedule),
             title: Text(isToday
-                ? 'Today, ${TimeOfDay.fromDateTime(_at).format(context)}'
+                ? tr('Today, {time}', {'time': TimeOfDay.fromDateTime(_at).format(context)})
                 : dayTimeFormat.format(_at)),
-            trailing: const Text('Change'),
+            trailing: Text(tr('Change')),
             onTap: _pickDateTime,
           ),
         ],
       ),
       bottomNavigationBar: BottomActionBar(
-        label: 'Save',
+        label: tr('Save'),
         busy: _saving,
         onPressed: _save,
       ),

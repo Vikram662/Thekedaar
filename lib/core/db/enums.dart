@@ -3,6 +3,8 @@
 
 import 'package:flutter/material.dart';
 
+import '../i18n/i18n.dart';
+
 /// Trades a contractor can work in (PRD C0). [seedFile] is the JSON file in
 /// `assets/seed/` holding that trade's default roles, items and templates.
 enum Trade {
@@ -17,10 +19,12 @@ enum Trade {
   labourSupply('Labour Supply', 'labour_supply'),
   other('Other', 'other');
 
-  const Trade(this.label, this.seedFile);
+  const Trade(this._label, this.seedFile);
 
-  final String label;
+  final String _label;
   final String seedFile;
+
+  String get label => tr(_label);
 
   /// Stored in `BusinessProfile.trades` as comma separated names.
   static String encode(Iterable<Trade> trades) {
@@ -83,8 +87,10 @@ enum TaskType {
   engineerReview('Engineer Review'),
   other('Other Task');
 
-  const TaskType(this.label);
-  final String label;
+  const TaskType(this._label);
+  final String _label;
+
+  String get label => tr(_label);
 
   IconData get icon => switch (this) {
         TaskType.siteVisit => Icons.location_on_outlined,

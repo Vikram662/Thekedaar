@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:local_auth/local_auth.dart';
 
+import '../../core/i18n/i18n.dart';
 import '../../core/security/pin.dart';
 import '../../core/security/random_bytes.dart';
 import '../../core/security/secure_store.dart';
@@ -119,14 +120,14 @@ class AppLockController extends ChangeNotifier with WidgetsBindingObserver {
 
   /// Fingerprint / face (PRD AU-01). Returns true on success.
   Future<bool> authenticateBiometric({
-    String reason = 'Unlock Thekedaar',
+    String? reason,
     bool unlock = true,
   }) async {
     if (!biometricEnabled || !biometricAvailable) return false;
     suspendRelock = true;
     try {
       final ok = await _localAuth.authenticate(
-        localizedReason: reason,
+        localizedReason: reason ?? tr('Unlock Thekedaar'),
         biometricOnly: true,
         persistAcrossBackgrounding: true,
       );

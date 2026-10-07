@@ -7,6 +7,7 @@ import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/db/database.dart';
 import '../../../core/db/enums.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/utils/dates.dart';
 import '../../../core/utils/money.dart';
 import '../../../core/utils/qty.dart';
@@ -139,7 +140,7 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
     final templates = ref.read(templatesProvider).valueOrNull ?? const [];
     final picked = await showPickerSheet<BillTemplate>(
       context,
-      title: 'Start from template',
+      title: tr('Start from template'),
       options: templates,
       label: (t) => t.name,
     );
@@ -148,22 +149,22 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
         await ref.read(billingRepositoryProvider).linesFromTemplate(picked);
     setState(() => _lines.addAll(lines));
     if (mounted && lines.any((l) => l.qtyMilli == 0)) {
-      showMessage(context, 'Template added. Tap each line to enter quantity.');
+      showMessage(context, tr('Template added. Tap each line to enter quantity.'));
     }
   }
 
   Future<void> _save() async {
     if (_clientId == null) {
-      showMessage(context, 'Choose a client');
+      showMessage(context, tr('Choose a client'));
       return;
     }
     if (_lines.isEmpty) {
-      showMessage(context, 'Add at least one line');
+      showMessage(context, tr('Add at least one line'));
       return;
     }
     final blank = _lines.indexWhere((l) => l.qtyMilli <= 0 || l.ratePaise <= 0);
     if (blank >= 0) {
-      showMessage(context, 'Line ${blank + 1}: enter quantity and rate');
+      showMessage(context, tr('Line {blank}: enter quantity and rate', {'blank': blank + 1}));
       return;
     }
     setState(() => _saving = true);
@@ -179,7 +180,7 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
-      showMessage(context, 'Could not save: $e');
+      showMessage(context, tr('Could not save: {e}', {'e': e}));
     }
   }
 
@@ -187,8 +188,8 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
   Widget build(BuildContext context) {
     final isInvoice = _kind == DocumentKind.invoice;
     final title = widget.documentId == null
-        ? (isInvoice ? 'New Bill' : 'New Quotation')
-        : 'Edit ${_number ?? ''}';
+        ? (isInvoice ? tr('New Bill') : tr('New Quotation'))
+        : tr('Edit {number}', {'number': _number ?? ''});
     if (_loading) {
       return Scaffold(
         appBar: AppBar(title: Text(title)),
@@ -222,7 +223,7 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
             children: [
               Expanded(
                 child: PickerField(
-                  label: 'Date',
+                  label: tr('Date'),
                   icon: Icons.event,
                   value: dayFormat.format(_date),
                   onTap: () async {
@@ -235,7 +236,7 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
                 const SizedBox(width: AppSizes.gap),
                 Expanded(
                   child: PickerField(
-                    label: 'Due date',
+                    label: tr('Due date'),
                     value: _dueDate == null ? null : dayFormat.format(_dueDate!),
                     onTap: () async {
                       final picked =
@@ -250,19 +251,19 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
             ],
           ),
           SectionTitle(
-            'Items & work',
+            tr('Items & work'),
             trailing: _lines.isEmpty
                 ? TextButton.icon(
                     onPressed: _useTemplate,
                     icon: const Icon(Icons.auto_awesome_motion),
-                    label: const Text('Template'),
+                    label: Text(tr('Template')),
                   )
                 : null,
           ),
           if (_lines.isEmpty)
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(bottom: 8),
-              child: Text('No lines yet.',
+              child: Text(tr('No lines yet.'),
                   style: TextStyle(color: AppColors.slate600)),
             ),
           for (var i = 0; i < _lines.length; i++)
@@ -277,9 +278,9 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
           OutlinedButton.icon(
             onPressed: _addLine,
             icon: const Icon(Icons.add),
-            label: const Text('Add line'),
+            label: Text(tr('Add line')),
           ),
-          const SectionTitle('Discount & total'),
+          SectionTitle(tr('Discount & total')),
           Row(
             children: [
               SegmentedButton<bool>(
@@ -299,7 +300,7 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
                   decoration: InputDecoration(
-                    labelText: _percentDiscount ? 'Discount %' : 'Discount ₹',
+                    labelText: _percentDiscount ? tr('Discount %') : tr('Discount ₹'),
                   ),
                 ),
               ),
@@ -307,46 +308,46 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
           ),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
-            title: const Text('Round off to nearest rupee'),
+            title: Text(tr('Round off to nearest rupee')),
             value: _roundOff,
             onChanged: (v) => setState(() => _roundOff = v),
           ),
           Panel(
             child: Column(
               children: [
-                AmountRow(label: 'Subtotal', paise: totals.subtotalPaise),
+                AmountRow(label: tr('Subtotal'), paise: totals.subtotalPaise),
                 if (totals.discountPaise != 0)
                   AmountRow(
-                    label: 'Discount',
+                    label: tr('Discount'),
                     paise: totals.discountPaise,
                     prefix: '− ',
                   ),
                 if (totals.roundOffPaise != 0)
-                  AmountRow(label: 'Round off', paise: totals.roundOffPaise),
+                  AmountRow(label: tr('Round off'), paise: totals.roundOffPaise),
                 const Divider(),
-                AmountRow(label: 'Total', paise: totals.totalPaise, bold: true),
+                AmountRow(label: tr('Total'), paise: totals.totalPaise, bold: true),
               ],
             ),
           ),
-          const SectionTitle('Notes & terms'),
+          SectionTitle(tr('Notes & terms')),
           TextField(
             controller: _notes,
             maxLines: 2,
-            decoration: const InputDecoration(labelText: 'Notes (optional)'),
+            decoration: InputDecoration(labelText: tr('Notes (optional)')),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _terms,
             maxLines: 5,
-            decoration: const InputDecoration(
-              labelText: 'Terms & conditions (one per line)',
+            decoration: InputDecoration(
+              labelText: tr('Terms & conditions (one per line)'),
             ),
           ),
           const SizedBox(height: 32),
         ],
       ),
       bottomNavigationBar: BottomActionBar(
-        label: 'Save ${formatPaise(totals.totalPaise)}',
+        label: tr('Save {amount}', {'amount': formatPaise(totals.totalPaise)}),
         busy: _saving,
         onPressed: _save,
       ),
@@ -369,7 +370,7 @@ class _LineCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final incomplete = line.qtyMilli <= 0 || line.ratePaise <= 0;
     final detail = line.lineType == LineType.lumpSum
-        ? 'Lump-sum'
+        ? tr('Lump-sum')
         : '${formatMilli(line.qtyMilli)} ${line.unitCode ?? ''} × '
             '${formatPaise(line.ratePaise)}';
     return Material(
@@ -384,7 +385,7 @@ class _LineCard extends StatelessWidget {
         onTap: onTap,
         leading: CircleAvatar(radius: 14, child: Text('$index')),
         title: Text(line.name),
-        subtitle: Text(incomplete ? 'Tap to enter quantity and rate' : detail),
+        subtitle: Text(incomplete ? tr('Tap to enter quantity and rate') : detail),
         trailing: Text(
           formatPaise(line.amountPaise),
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),

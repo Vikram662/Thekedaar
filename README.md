@@ -54,6 +54,7 @@ lib/
   core/
     backup/   engine, Drive store, keyring + .tkbak format, scheduler, restore
     db/       drift tables (PRD Part F), audit log, app_meta store
+    i18n/     English / Hindi switch, tr(), Hindi string table
     pdf/      shared PDF helpers + share
     security/ PIN hashing, secure storage
     seed/     trade-wise default data (PRD C0, Part J)
@@ -76,6 +77,7 @@ test/
 - Schema badle to `AppDatabase.currentSchemaVersion` badhayein aur migration step jodein.
 - Secrets (PIN hash, backup key, device id) secure storage mein, DB mein nahi.
 - Generated files (`*.g.dart`) commit nahi hoti, CI banata hai.
+- Screen par dikhne wala har text `tr('English text')` se likhein (`lib/core/i18n/i18n.dart`). Badalne wala hissa placeholder se: `tr('{name} added', {'name': name})`. Hindi `lib/core/i18n/strings_hi.dart` mein usi English key se jodein; key na mile to English dikhta hai. PDFs English mein rehte hain (PDF font Hindi matra theek se nahi jodta).
 
 ## Razorpay subscription + Cloudflare Worker (PRD C9)
 

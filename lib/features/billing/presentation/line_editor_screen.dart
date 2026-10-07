@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/theme.dart';
 import '../../../core/db/database.dart';
 import '../../../core/db/enums.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/utils/measurement.dart';
 import '../../../core/utils/money.dart';
 import '../../../core/utils/qty.dart';
@@ -24,10 +25,10 @@ class LineEditResult {
 }
 
 String lineTypeLabel(LineType type) => switch (type) {
-      LineType.material => 'Material',
-      LineType.labour => 'Labour',
-      LineType.workRate => 'Work-rate',
-      LineType.lumpSum => 'Lump-sum',
+      LineType.material => tr('Material'),
+      LineType.labour => tr('Labour'),
+      LineType.workRate => tr('Work-rate'),
+      LineType.lumpSum => tr('Lump-sum'),
     };
 
 Future<LineEditResult?> editLine(BuildContext context, {DraftLine? initial}) =>
@@ -104,13 +105,13 @@ class _LineEditorScreenState extends ConsumerState<_LineEditorScreen> {
         .toList();
     final picked = await showPickerSheet<ItemWithUnit>(
       context,
-      title: 'Choose ${lineTypeLabel(_type).toLowerCase()} item',
+      title: tr('Choose {type} item', {'type': lineTypeLabel(_type).toLowerCase()}),
       options: items,
       label: (i) => i.item.name,
       subtitle: (i) => [
         'per ${i.unit.name}',
         if (i.item.defaultRatePaise != null)
-          'last rate ${formatPaise(i.item.defaultRatePaise!)}',
+          tr('last rate {amount}', {'amount': formatPaise(i.item.defaultRatePaise!)}),
       ].join(' · '),
     );
     if (picked == null) return;
@@ -129,7 +130,7 @@ class _LineEditorScreenState extends ConsumerState<_LineEditorScreen> {
     final units = ref.read(unitsProvider).valueOrNull ?? const <Unit>[];
     final picked = await showPickerSheet<Unit>(
       context,
-      title: 'Unit',
+      title: tr('Unit'),
       options: units,
       label: (u) => u.name,
       selected: units.where((u) => u.id == _unitId).firstOrNull,
@@ -154,15 +155,15 @@ class _LineEditorScreenState extends ConsumerState<_LineEditorScreen> {
   void _save() {
     final name = _name.text.trim();
     if (name.isEmpty) {
-      showMessage(context, 'Enter the item or work name');
+      showMessage(context, tr('Enter the item or work name'));
       return;
     }
     if (!_isLumpSum && _qtyMilli <= 0) {
-      showMessage(context, 'Enter quantity');
+      showMessage(context, tr('Enter quantity'));
       return;
     }
     if (_ratePaise <= 0) {
-      showMessage(context, _isLumpSum ? 'Enter amount' : 'Enter rate');
+      showMessage(context, _isLumpSum ? tr('Enter amount') : tr('Enter rate'));
       return;
     }
     Navigator.of(context).pop(LineEditResult.save(DraftLine(
@@ -184,11 +185,11 @@ class _LineEditorScreenState extends ConsumerState<_LineEditorScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.initial == null ? 'Add line' : 'Edit line'),
+        title: Text(widget.initial == null ? tr('Add line') : tr('Edit line')),
         actions: [
           if (widget.initial != null)
             IconButton(
-              tooltip: 'Delete line',
+              tooltip: tr('Delete line'),
               icon: const Icon(Icons.delete_outline),
               onPressed: () =>
                   Navigator.of(context).pop(const LineEditResult.delete()),
@@ -215,11 +216,11 @@ class _LineEditorScreenState extends ConsumerState<_LineEditorScreen> {
             controller: _name,
             textCapitalization: TextCapitalization.sentences,
             decoration: InputDecoration(
-              labelText: _isLumpSum ? 'Description' : 'Item / work',
+              labelText: _isLumpSum ? tr('Description') : tr('Item / work'),
               suffixIcon: _isLumpSum
                   ? null
                   : IconButton(
-                      tooltip: 'Choose from rate list',
+                      tooltip: tr('Choose from rate list'),
                       icon: const Icon(Icons.list),
                       onPressed: _pickItem,
                     ),
@@ -237,9 +238,9 @@ class _LineEditorScreenState extends ConsumerState<_LineEditorScreen> {
                         const TextInputType.numberWithOptions(decimal: true),
                     style: const TextStyle(fontSize: 20),
                     decoration: InputDecoration(
-                      labelText: 'Quantity',
+                      labelText: tr('Quantity'),
                       suffixIcon: IconButton(
-                        tooltip: 'Measure (L × W × H)',
+                        tooltip: tr('Measure (L × W × H)'),
                         icon: const Icon(Icons.straighten),
                         onPressed: _measure,
                       ),
@@ -249,7 +250,7 @@ class _LineEditorScreenState extends ConsumerState<_LineEditorScreen> {
                 const SizedBox(width: AppSizes.gap),
                 Expanded(
                   child: PickerField(
-                    label: 'Unit',
+                    label: tr('Unit'),
                     value: unitName,
                     onTap: _pickUnit,
                   ),
@@ -260,7 +261,7 @@ class _LineEditorScreenState extends ConsumerState<_LineEditorScreen> {
               Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
-                  'From measurement: ${_measurement.length} rows',
+                  tr('From measurement: {count} rows', {'count': _measurement.length}),
                   style: const TextStyle(color: AppColors.slate600),
                 ),
               ),
@@ -272,22 +273,24 @@ class _LineEditorScreenState extends ConsumerState<_LineEditorScreen> {
             style: const TextStyle(fontSize: 20),
             decoration: InputDecoration(
               labelText: _isLumpSum
-                  ? 'Amount'
-                  : 'Rate${unitName == null ? '' : ' per $unitName'}',
+                  ? tr('Amount')
+                  : unitName == null
+                      ? tr('Rate')
+                      : tr('Rate per {unit}', {'unit': unitName}),
               prefixText: '₹ ',
             ),
           ),
           const SizedBox(height: 16),
           Panel(
             child: AmountRow(
-              label: 'Line amount',
+              label: tr('Line amount'),
               paise: lineAmountPaise(_qtyMilli, _ratePaise),
               bold: true,
             ),
           ),
         ],
       ),
-      bottomNavigationBar: BottomActionBar(label: 'Done', onPressed: _save),
+      bottomNavigationBar: BottomActionBar(label: tr('Done'), onPressed: _save),
     );
   }
 }

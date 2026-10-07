@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/db/enums.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/utils/dates.dart';
 import '../../../core/utils/money.dart';
 import '../../../core/utils/phone.dart';
@@ -23,11 +24,11 @@ class SuppliersScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final suppliers = ref.watch(suppliersProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Suppliers')),
+      appBar: AppBar(title: Text(tr('Suppliers'))),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push(Routes.addSupplier),
         icon: const Icon(Icons.add_business),
-        label: const Text('Supplier'),
+        label: Text(tr('Supplier')),
       ),
       body: suppliers.when(
         loading: () => const ListSkeleton(),
@@ -36,9 +37,9 @@ class SuppliersScreen extends ConsumerWidget {
           if (list.isEmpty) {
             return EmptyState(
               icon: Icons.store,
-              title: 'No suppliers yet',
-              message: 'Add the shops you buy material from on credit.',
-              actionLabel: 'Add supplier',
+              title: tr('No suppliers yet'),
+              message: tr('Add the shops you buy material from on credit.'),
+              actionLabel: tr('Add supplier'),
               onAction: () => context.push(Routes.addSupplier),
             );
           }
@@ -53,7 +54,7 @@ class SuppliersScreen extends ConsumerWidget {
                 padding: const EdgeInsets.all(AppSizes.gutter),
                 child: Panel(
                   child: AmountRow(
-                    label: 'Total to pay suppliers',
+                    label: tr('Total to pay suppliers'),
                     paise: totalDue,
                     bold: true,
                     color: AppColors.successText,
@@ -74,10 +75,10 @@ class SuppliersScreen extends ConsumerWidget {
                       : Text(formatIndianPhone(s.supplier.phone!)),
                   trailing: Text(
                     s.duePaise == 0
-                        ? 'Settled'
+                        ? tr('Settled')
                         : s.duePaise > 0
                             ? formatPaise(s.duePaise)
-                            : 'Advance ${formatPaise(-s.duePaise)}',
+                            : tr('Advance {amount}', {'amount': formatPaise(-s.duePaise)}),
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
                       color: s.duePaise > 0
@@ -133,7 +134,7 @@ class _SupplierFormScreenState extends ConsumerState<SupplierFormScreen> {
           address: address.isEmpty ? null : address,
         );
     if (!mounted) return;
-    showMessage(context, 'Supplier saved');
+    showMessage(context, tr('Supplier saved'));
     context.pop();
   }
 
@@ -152,7 +153,7 @@ class _SupplierFormScreenState extends ConsumerState<SupplierFormScreen> {
     }
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.supplierId == null ? 'New supplier' : 'Edit supplier'),
+        title: Text(widget.supplierId == null ? tr('New supplier') : tr('Edit supplier')),
       ),
       body: Form(
         key: _formKey,
@@ -162,34 +163,34 @@ class _SupplierFormScreenState extends ConsumerState<SupplierFormScreen> {
             TextFormField(
               controller: _name,
               textCapitalization: TextCapitalization.words,
-              decoration: const InputDecoration(labelText: 'Shop / supplier name'),
+              decoration: InputDecoration(labelText: tr('Shop / supplier name')),
               validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? 'Enter name' : null,
+                  (v == null || v.trim().isEmpty) ? tr('Enter name') : null,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _phone,
               keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
-                labelText: 'Mobile number (optional)',
+              decoration: InputDecoration(
+                labelText: tr('Mobile number (optional)'),
                 prefixText: '+91 ',
               ),
               validator: (v) =>
                   (v == null || v.trim().isEmpty || normalizeIndianPhone(v) != null)
                       ? null
-                      : 'Enter a valid 10-digit mobile number',
+                      : tr('Enter a valid 10-digit mobile number'),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _address,
               maxLines: 2,
-              decoration: const InputDecoration(labelText: 'Address (optional)'),
+              decoration: InputDecoration(labelText: tr('Address (optional)')),
             ),
           ],
         ),
       ),
       bottomNavigationBar:
-          BottomActionBar(label: 'Save', busy: _saving, onPressed: _save),
+          BottomActionBar(label: tr('Save'), busy: _saving, onPressed: _save),
     );
   }
 }
@@ -221,7 +222,7 @@ class SupplierDetailScreen extends ConsumerWidget {
         title: Text(balance.supplier.name),
         actions: [
           IconButton(
-            tooltip: 'Edit',
+            tooltip: tr('Edit'),
             icon: const Icon(Icons.edit),
             onPressed: () => context.push(Routes.editSupplier(supplierId)),
           ),
@@ -236,11 +237,11 @@ class SupplierDetailScreen extends ConsumerWidget {
           Panel(
             child: Column(
               children: [
-                AmountRow(label: 'Purchased', paise: balance.purchasedPaise),
-                AmountRow(label: 'Paid', paise: balance.paidPaise),
+                AmountRow(label: tr('Purchased'), paise: balance.purchasedPaise),
+                AmountRow(label: tr('Paid'), paise: balance.paidPaise),
                 const Divider(),
                 AmountRow(
-                  label: due >= 0 ? 'Due to supplier' : 'Advance with supplier',
+                  label: due >= 0 ? tr('Due to supplier') : tr('Advance with supplier'),
                   paise: due.abs(),
                   bold: true,
                   color: due > 0 ? AppColors.successText : AppColors.slate600,
@@ -256,7 +257,7 @@ class SupplierDetailScreen extends ConsumerWidget {
                   onPressed: () => context.push(Routes.supplierEntry(
                       supplierId, SupplierEntryType.purchase)),
                   icon: const Icon(Icons.shopping_cart),
-                  label: const Text('Purchase'),
+                  label: Text(tr('Purchase')),
                 ),
               ),
               const SizedBox(width: AppSizes.gap),
@@ -268,14 +269,14 @@ class SupplierDetailScreen extends ConsumerWidget {
                   onPressed: () => context.push(Routes.supplierEntry(
                       supplierId, SupplierEntryType.payment)),
                   icon: const Icon(Icons.payments),
-                  label: const Text('Payment'),
+                  label: Text(tr('Payment')),
                 ),
               ),
             ],
           ),
-          const SectionTitle('Entries'),
+          SectionTitle(tr('Entries')),
           if (entries.isEmpty)
-            const Text('No entries yet.',
+            Text(tr('No entries yet.'),
                 style: TextStyle(color: AppColors.slate600))
           else
             Panel(
@@ -290,8 +291,10 @@ class SupplierDetailScreen extends ConsumerWidget {
                             : Icons.payments,
                       ),
                       title: Text(e.entryType == SupplierEntryType.purchase
-                          ? 'Purchase${e.billNo == null ? '' : ' · Bill ${e.billNo}'}'
-                          : 'Payment'),
+                          ? (e.billNo == null
+                              ? tr('Purchase')
+                              : tr('Purchase · Bill {billNo}', {'billNo': e.billNo}))
+                          : tr('Payment')),
                       subtitle: Text([
                         dayFormat.format(parseIsoDate(e.date)),
                         if (e.mode != null) paymentModeLabel(e.mode!),
@@ -306,9 +309,9 @@ class SupplierDetailScreen extends ConsumerWidget {
                       onLongPress: () async {
                         final ok = await confirmDialog(
                           context,
-                          title: 'Delete this entry?',
+                          title: tr('Delete this entry?'),
                           message: formatPaise(e.amountPaise),
-                          confirmLabel: 'Delete',
+                          confirmLabel: tr('Delete'),
                           destructive: true,
                         );
                         if (ok) {
@@ -363,7 +366,7 @@ class _SupplierEntryScreenState extends ConsumerState<SupplierEntryScreen> {
   Future<void> _save() async {
     final paise = parseRupeesToPaise(_amount);
     if (paise == null || paise <= 0) {
-      showMessage(context, 'Enter the amount');
+      showMessage(context, tr('Enter the amount'));
       return;
     }
     setState(() => _saving = true);
@@ -381,7 +384,8 @@ class _SupplierEntryScreenState extends ConsumerState<SupplierEntryScreen> {
         );
     if (!mounted) return;
     HapticFeedback.mediumImpact();
-    showMessage(context, '✓ ${isPayment ? 'Payment' : 'Purchase'} saved');
+    showMessage(
+        context, isPayment ? tr('✓ Payment saved') : tr('✓ Purchase saved'));
     context.pop();
   }
 
@@ -391,19 +395,19 @@ class _SupplierEntryScreenState extends ConsumerState<SupplierEntryScreen> {
         ref.watch(supplierProvider(widget.supplierId)).valueOrNull?.supplier;
     final isPayment = _type == SupplierEntryType.payment;
     return Scaffold(
-      appBar: AppBar(title: Text(supplier?.name ?? 'Supplier')),
+      appBar: AppBar(title: Text(supplier?.name ?? tr('Supplier'))),
       body: ListView(
         padding: const EdgeInsets.all(AppSizes.gutter),
         children: [
           SegmentedButton<SupplierEntryType>(
-            segments: const [
+            segments: [
               ButtonSegment(
                 value: SupplierEntryType.purchase,
-                label: Text('Purchase (udhaar)'),
+                label: Text(tr('Purchase (udhaar)')),
               ),
               ButtonSegment(
                 value: SupplierEntryType.payment,
-                label: Text('Payment'),
+                label: Text(tr('Payment')),
               ),
             ],
             selected: {_type},
@@ -423,21 +427,21 @@ class _SupplierEntryScreenState extends ConsumerState<SupplierEntryScreen> {
             TextField(
               controller: _billNo,
               decoration:
-                  const InputDecoration(labelText: 'Supplier bill no. (optional)'),
+                  InputDecoration(labelText: tr('Supplier bill no. (optional)')),
             ),
           const SizedBox(height: 12),
           TextField(
             controller: _note,
-            decoration: const InputDecoration(
-              labelText: 'Note (optional)',
-              hintText: 'e.g. 20 bags cement',
+            decoration: InputDecoration(
+              labelText: tr('Note (optional)'),
+              hintText: tr('e.g. 20 bags cement'),
             ),
           ),
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.event),
             title: Text(dayFormat.format(_date)),
-            trailing: const Text('Change'),
+            trailing: Text(tr('Change')),
             onTap: () async {
               final picked =
                   await pickDate(context, initial: _date, last: DateTime.now());
@@ -447,7 +451,7 @@ class _SupplierEntryScreenState extends ConsumerState<SupplierEntryScreen> {
         ],
       ),
       bottomNavigationBar:
-          BottomActionBar(label: 'Save', busy: _saving, onPressed: _save),
+          BottomActionBar(label: tr('Save'), busy: _saving, onPressed: _save),
     );
   }
 }

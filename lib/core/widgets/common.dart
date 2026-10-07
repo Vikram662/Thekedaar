@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../app/theme.dart';
+import '../i18n/i18n.dart';
 import '../utils/money.dart';
 
 export 'shimmer.dart';
 
-final dayFormat = DateFormat('d MMM yyyy');
-final dayTimeFormat = DateFormat('d MMM, h:mm a');
-final monthFormat = DateFormat('MMMM yyyy');
+// Getters, so dates follow the current UI language.
+DateFormat get dayFormat => DateFormat('d MMM yyyy', uiDateLocale);
+DateFormat get dayTimeFormat => DateFormat('d MMM, h:mm a', uiDateLocale);
+DateFormat get monthFormat => DateFormat('MMMM yyyy', uiDateLocale);
 
 void showMessage(BuildContext context, String message) {
   ScaffoldMessenger.of(context)
@@ -20,7 +22,7 @@ Future<bool> confirmDialog(
   BuildContext context, {
   required String title,
   required String message,
-  String confirmLabel = 'Yes',
+  String? confirmLabel,
   bool destructive = false,
 }) async {
   final result = await showDialog<bool>(
@@ -31,14 +33,14 @@ Future<bool> confirmDialog(
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Cancel'),
+          child: Text(tr('Cancel')),
         ),
         TextButton(
           onPressed: () => Navigator.of(context).pop(true),
           style: destructive
               ? TextButton.styleFrom(foregroundColor: AppColors.dangerText)
               : null,
-          child: Text(confirmLabel),
+          child: Text(confirmLabel ?? tr('Yes')),
         ),
       ],
     ),

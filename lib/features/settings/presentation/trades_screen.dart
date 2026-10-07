@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme.dart';
 import '../../../core/db/enums.dart';
 import '../../../core/db/providers.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/settings/settings_providers.dart';
 import '../../../core/widgets/common.dart';
 import '../../onboarding/data/onboarding_repository.dart';
@@ -26,7 +27,7 @@ class _TradesScreenState extends ConsumerState<TradesScreen> {
   Future<void> _save() async {
     final selected = _selected!;
     if (selected.isEmpty) {
-      showMessage(context, 'Choose at least one trade');
+      showMessage(context, tr('Choose at least one trade'));
       return;
     }
     setState(() => _saving = true);
@@ -35,7 +36,7 @@ class _TradesScreenState extends ConsumerState<TradesScreen> {
         .read(settingsRepositoryProvider)
         .saveTrades(Trade.encode(selected));
     if (!mounted) return;
-    showMessage(context, 'Trades saved');
+    showMessage(context, tr('Trades saved'));
     context.pop();
   }
 
@@ -48,13 +49,12 @@ class _TradesScreenState extends ConsumerState<TradesScreen> {
     final selected = _selected ??= Trade.decode(profile.trades);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Trades')),
+      appBar: AppBar(title: Text(tr('Trades'))),
       body: ListView(
         padding: const EdgeInsets.all(AppSizes.gutter),
         children: [
-          const Text(
-            'Adding a trade adds its roles, items and templates. '
-            'Removing one keeps all your data.',
+          Text(
+            tr('Adding a trade adds its roles, items and templates. Removing one keeps all your data.'),
             style: TextStyle(color: AppColors.slate600),
           ),
           const SizedBox(height: 12),
@@ -79,7 +79,7 @@ class _TradesScreenState extends ConsumerState<TradesScreen> {
         ],
       ),
       bottomNavigationBar:
-          BottomActionBar(label: 'Save', busy: _saving, onPressed: _save),
+          BottomActionBar(label: tr('Save'), busy: _saving, onPressed: _save),
     );
   }
 }

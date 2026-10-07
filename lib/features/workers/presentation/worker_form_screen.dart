@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/theme.dart';
 import '../../../core/db/enums.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/settings/settings_providers.dart';
 import '../../../core/utils/dates.dart';
 import '../../../core/utils/money.dart';
@@ -61,10 +62,10 @@ class _WorkerFormScreenState extends ConsumerState<WorkerFormScreen> {
 
   String? _validateAmount(String? value, {required bool isRequired}) {
     final text = value?.trim() ?? '';
-    if (text.isEmpty) return isRequired ? 'Enter amount' : null;
+    if (text.isEmpty) return isRequired ? tr('Enter amount') : null;
     final paise = parseRupeesToPaise(text);
-    if (paise == null || paise < 0) return 'Enter a valid amount';
-    if (isRequired && paise == 0) return 'Enter amount';
+    if (paise == null || paise < 0) return tr('Enter a valid amount');
+    if (isRequired && paise == 0) return tr('Enter amount');
     return null;
   }
 
@@ -73,21 +74,21 @@ class _WorkerFormScreenState extends ConsumerState<WorkerFormScreen> {
     final name = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('New role'),
+        title: Text(tr('New role')),
         content: TextField(
           controller: controller,
           autofocus: true,
           textCapitalization: TextCapitalization.words,
-          decoration: const InputDecoration(labelText: 'Role name'),
+          decoration: InputDecoration(labelText: tr('Role name')),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(tr('Cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(controller.text.trim()),
-            child: const Text('Add'),
+            child: Text(tr('Add')),
           ),
         ],
       ),
@@ -130,12 +131,12 @@ class _WorkerFormScreenState extends ConsumerState<WorkerFormScreen> {
       }
       if (!mounted) return;
       HapticFeedback.mediumImpact();
-      showMessage(context, _isEdit ? 'Saved' : '$name added');
+      showMessage(context, _isEdit ? tr('Saved') : tr('{name} added', {'name': name}));
       context.pop();
     } catch (error) {
       if (!mounted) return;
       setState(() => _saving = false);
-      showMessage(context, 'Could not save. Please try again. ($error)');
+      showMessage(context, tr('Could not save. Please try again. ({error})', {'error': error}));
     }
   }
 
@@ -151,7 +152,7 @@ class _WorkerFormScreenState extends ConsumerState<WorkerFormScreen> {
     final roles = ref.watch(rolesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(_isEdit ? 'Edit Worker' : 'Add Worker')),
+      appBar: AppBar(title: Text(_isEdit ? tr('Edit Worker') : tr('Add Worker'))),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -160,47 +161,47 @@ class _WorkerFormScreenState extends ConsumerState<WorkerFormScreen> {
             TextFormField(
               controller: _name,
               textCapitalization: TextCapitalization.words,
-              decoration: const InputDecoration(labelText: 'Name'),
+              decoration: InputDecoration(labelText: tr('Name')),
               validator: (value) =>
-                  (value == null || value.trim().isEmpty) ? 'Enter name' : null,
+                  (value == null || value.trim().isEmpty) ? tr('Enter name') : null,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _phone,
               keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
-                labelText: 'Mobile number (optional)',
+              decoration: InputDecoration(
+                labelText: tr('Mobile number (optional)'),
                 prefixText: '+91 ',
               ),
               validator: (value) => (value == null ||
                       value.trim().isEmpty ||
                       normalizeIndianPhone(value) != null)
                   ? null
-                  : 'Enter a valid 10-digit mobile number',
+                  : tr('Enter a valid 10-digit mobile number'),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _upi,
-              decoration: const InputDecoration(
-                labelText: 'UPI ID (optional)',
+              decoration: InputDecoration(
+                labelText: tr('UPI ID (optional)'),
                 hintText: 'name@bank',
               ),
               validator: (v) =>
                   (v == null || v.trim().isEmpty || isValidUpiId(v))
                       ? null
-                      : 'Enter a UPI ID like name@okaxis',
+                      : tr('Enter a UPI ID like name@okaxis'),
             ),
             SectionTitle(
-              'Role',
+              tr('Role'),
               trailing: TextButton.icon(
                 onPressed: _addRole,
                 icon: const Icon(Icons.add),
-                label: const Text('New role'),
+                label: Text(tr('New role')),
               ),
             ),
             roles.when(
               loading: () => const LinearProgressIndicator(),
-              error: (error, _) => Text('Could not load roles: $error'),
+              error: (error, _) => Text(tr('Could not load roles: {error}', {'error': error})),
               data: (list) => Wrap(
                 spacing: AppSizes.gap,
                 runSpacing: AppSizes.gap,
@@ -216,14 +217,14 @@ class _WorkerFormScreenState extends ConsumerState<WorkerFormScreen> {
               ),
             ),
             if (!_isEdit) ...[
-              const SectionTitle('Wage'),
+              SectionTitle(tr('Wage')),
               SegmentedButton<WageModel>(
-                segments: const [
-                  ButtonSegment(value: WageModel.daily, label: Text('Daily')),
+                segments: [
+                  ButtonSegment(value: WageModel.daily, label: Text(tr('Daily'))),
                   ButtonSegment(
-                      value: WageModel.monthly, label: Text('Monthly')),
+                      value: WageModel.monthly, label: Text(tr('Monthly'))),
                   ButtonSegment(
-                      value: WageModel.piece, label: Text('Piece-rate')),
+                      value: WageModel.piece, label: Text(tr('Piece-rate'))),
                 ],
                 selected: {_model},
                 onSelectionChanged: (selection) =>
@@ -232,7 +233,7 @@ class _WorkerFormScreenState extends ConsumerState<WorkerFormScreen> {
               const SizedBox(height: 12),
               if (_model == WageModel.piece)
                 Text(
-                  'Rate is entered with each piece-work entry (e.g. per sq.ft).',
+                  tr('Rate is entered with each piece-work entry (e.g. per sq.ft).'),
                   style: Theme.of(context)
                       .textTheme
                       .bodyMedium
@@ -246,8 +247,8 @@ class _WorkerFormScreenState extends ConsumerState<WorkerFormScreen> {
                   style: const TextStyle(fontSize: 20),
                   decoration: InputDecoration(
                     labelText: _model == WageModel.daily
-                        ? 'Rate per day'
-                        : 'Salary per month',
+                        ? tr('Rate per day')
+                        : tr('Salary per month'),
                     prefixText: '₹ ',
                   ),
                   validator: (v) => _validateAmount(v, isRequired: true),
@@ -257,8 +258,8 @@ class _WorkerFormScreenState extends ConsumerState<WorkerFormScreen> {
                 controller: _otRate,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  labelText: 'OT rate per hour (optional)',
+                decoration: InputDecoration(
+                  labelText: tr('OT rate per hour (optional)'),
                   prefixText: '₹ ',
                 ),
                 validator: (v) => _validateAmount(v, isRequired: false),
@@ -267,7 +268,7 @@ class _WorkerFormScreenState extends ConsumerState<WorkerFormScreen> {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.event),
-                title: const Text('Joining date'),
+                title: Text(tr('Joining date')),
                 subtitle: Text(dayFormat.format(_joinDate)),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () async {
@@ -286,7 +287,7 @@ class _WorkerFormScreenState extends ConsumerState<WorkerFormScreen> {
         ),
       ),
       bottomNavigationBar: BottomActionBar(
-        label: 'Save',
+        label: tr('Save'),
         busy: _saving,
         onPressed: _save,
       ),

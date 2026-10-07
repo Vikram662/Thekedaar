@@ -7,7 +7,7 @@ import '../../../core/db/database.dart';
 import '../../../core/pdf/pdf_common.dart';
 import '../../../core/utils/dates.dart';
 
-final _pdfDate = DateFormat('d MMM yyyy');
+final _pdfDate = DateFormat('d MMM yyyy', 'en');
 
 /// Pay-slip for one settlement (PRD KH-09).
 Future<Uint8List> buildPayslipPdf({

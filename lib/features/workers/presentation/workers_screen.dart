@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/app_drawer.dart';
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/utils/phone.dart';
 import '../../../core/widgets/common.dart';
 import '../../../core/widgets/empty_state.dart';
@@ -29,10 +30,10 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
     return Scaffold(
       drawer: const AppDrawer(),
       appBar: AppBar(
-        title: Text(_showInactive ? 'Inactive workers' : 'Workers'),
+        title: Text(_showInactive ? tr('Inactive workers') : tr('Workers')),
         actions: [
           IconButton(
-            tooltip: 'Today\'s attendance',
+            tooltip: tr('Today\'s attendance'),
             icon: const Icon(Icons.fact_check),
             onPressed: () => context.go(Routes.attendance()),
           ),
@@ -42,7 +43,7 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
               CheckedPopupMenuItem(
                 value: !_showInactive,
                 checked: _showInactive,
-                child: const Text('Show inactive'),
+                child: Text(tr('Show inactive')),
               ),
             ],
           ),
@@ -53,25 +54,25 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
           : FloatingActionButton.extended(
               onPressed: () => context.push(Routes.addWorker),
               icon: const Icon(Icons.person_add),
-              label: const Text('Add Worker'),
+              label: Text(tr('Add Worker')),
             ),
       body: workers.when(
         loading: () => const ListSkeleton(),
-        error: (error, _) => Center(child: Text('Could not load workers: $error')),
+        error: (error, _) => Center(child: Text(tr('Could not load workers: {error}', {'error': error}))),
         data: (items) {
           if (items.isEmpty) {
             return _showInactive
-                ? const EmptyState(
+                ? EmptyState(
                     icon: Icons.person_off,
-                    title: 'No inactive workers',
-                    message: 'Workers you mark as left will show here.',
+                    title: tr('No inactive workers'),
+                    message: tr('Workers you mark as left will show here.'),
                   )
                 : EmptyState(
                     icon: Icons.groups,
-                    title: 'No workers yet',
+                    title: tr('No workers yet'),
                     message:
-                        'Add your workers to mark attendance and keep khata.',
-                    actionLabel: 'Add first worker',
+                        tr('Add your workers to mark attendance and keep khata.'),
+                    actionLabel: tr('Add first worker'),
                     onAction: () => context.push(Routes.addWorker),
                   );
           }

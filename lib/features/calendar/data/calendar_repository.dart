@@ -6,6 +6,7 @@ import '../../../core/db/database.dart';
 import '../../../core/db/enums.dart';
 import '../../../core/db/providers.dart';
 import '../../../core/db/watch.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/utils/dates.dart';
 
 /// What happened on a day, for the business calendar.
@@ -167,7 +168,7 @@ class CalendarRepository {
       events.add(CalendarEvent(
         kind: CalendarEventKind.paymentIn,
         date: r.read<String>('date'),
-        title: 'Payment received',
+        title: tr('Payment received'),
         subtitle: '${r.read<String>('client')} · ${_mode(r.read<String>('mode'))}',
         amountPaise: r.read<int>('amount_paise'),
         flow: MoneyFlow.incoming,
@@ -213,7 +214,7 @@ class CalendarRepository {
       events.add(CalendarEvent(
         kind: CalendarEventKind.pieceWork,
         date: r.read<String>('date'),
-        title: 'Piece work · ${r.read<String>('worker')}',
+        title: tr('Piece work · {name}', {'name': r.read<String>('worker')}),
         subtitle: r.read<String>('description'),
         amountPaise: r.read<int>('amount_paise'),
         route: Routes.worker(r.read<String>('worker_id')),
@@ -233,9 +234,12 @@ class CalendarRepository {
       events.add(CalendarEvent(
         kind: CalendarEventKind.settlement,
         date: isoDate(at),
-        title: 'Settlement · ${r.read<String>('worker')}',
-        subtitle: '${r.read<String>('period_from')} to '
-            '${r.read<String>('period_to')}${reversed ? ' · Reversed' : ''}',
+        title: tr('Settlement · {name}', {'name': r.read<String>('worker')}),
+        subtitle: tr('{from} to {to}', {
+              'from': r.read<String>('period_from'),
+              'to': r.read<String>('period_to'),
+            }) +
+            (reversed ? tr(' · Reversed') : ''),
         amountPaise: r.read<int>('paid_paise'),
         flow: reversed ? MoneyFlow.none : MoneyFlow.outgoing,
         route: Routes.worker(r.read<String>('worker_id')),
@@ -255,7 +259,7 @@ class CalendarRepository {
       events.add(CalendarEvent(
         kind: CalendarEventKind.expense,
         date: r.read<String>('date'),
-        title: 'Expense · ${r.read<String>('category')}',
+        title: tr('Expense · {category}', {'category': r.read<String>('category')}),
         subtitle: [
           _mode(r.read<String>('mode')),
           if (remarks != null && remarks.isNotEmpty) remarks,
@@ -282,9 +286,11 @@ class CalendarRepository {
             ? CalendarEventKind.supplierPaid
             : CalendarEventKind.purchase,
         date: r.read<String>('date'),
-        title: '${payment ? 'Paid supplier' : 'Purchase'} · '
-            '${r.read<String>('supplier')}',
-        subtitle: billNo == null || billNo.isEmpty ? null : 'Bill $billNo',
+        title: tr(payment ? 'Paid supplier · {name}' : 'Purchase · {name}',
+            {'name': r.read<String>('supplier')}),
+        subtitle: billNo == null || billNo.isEmpty
+            ? null
+            : tr('Bill {billNo}', {'billNo': billNo}),
         amountPaise: r.read<int>('amount_paise'),
         flow: payment ? MoneyFlow.outgoing : MoneyFlow.none,
         route: Routes.supplier(r.read<String>('supplier_id')),
@@ -298,7 +304,7 @@ class CalendarRepository {
       events.add(CalendarEvent(
         kind: CalendarEventKind.holiday,
         date: r.read<String>('date'),
-        title: 'Holiday · ${r.read<String>('name')}',
+        title: tr('Holiday · {name}', {'name': r.read<String>('name')}),
         sortKey: 1 << 52, // top of the day
       ));
     }
@@ -337,21 +343,21 @@ class CalendarRepository {
 String _mode(Object? name) {
   final mode = PaymentMode.values.where((m) => m.name == name).firstOrNull;
   return switch (mode) {
-    PaymentMode.cash => 'Cash',
+    PaymentMode.cash => tr('Cash'),
     PaymentMode.phonePe => 'PhonePe',
     PaymentMode.paytm => 'Paytm',
     PaymentMode.gPay => 'GPay',
-    PaymentMode.bank => 'Bank',
+    PaymentMode.bank => tr('Bank'),
     null => '-',
   };
 }
 
 String _ledgerLabel(LedgerType type) => switch (type) {
-      LedgerType.advance => 'Advance',
-      LedgerType.payment => 'Payment',
-      LedgerType.bonus => 'Bonus',
-      LedgerType.deduction => 'Deduction',
-      LedgerType.emi => 'Loan EMI',
-      LedgerType.reversal => 'Reversal',
-      LedgerType.carryForward => 'Carry forward',
+      LedgerType.advance => tr('Advance'),
+      LedgerType.payment => tr('Payment'),
+      LedgerType.bonus => tr('Bonus'),
+      LedgerType.deduction => tr('Deduction'),
+      LedgerType.emi => tr('Loan EMI'),
+      LedgerType.reversal => tr('Reversal'),
+      LedgerType.carryForward => tr('Carry forward'),
     };

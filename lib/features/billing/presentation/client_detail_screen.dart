@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/db/enums.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/utils/phone.dart';
 import '../../../core/widgets/common.dart';
 import '../../jobs/data/jobs_repository.dart';
@@ -42,7 +43,7 @@ class ClientDetailScreen extends ConsumerWidget {
         title: Text(client.name),
         actions: [
           IconButton(
-            tooltip: 'Edit',
+            tooltip: tr('Edit'),
             icon: const Icon(Icons.edit),
             onPressed: () => context.push(Routes.editClient(clientId)),
           ),
@@ -57,15 +58,15 @@ class ClientDetailScreen extends ConsumerWidget {
           Panel(
             child: Column(
               children: [
-                AmountRow(label: 'Billed', paise: balance.billedPaise),
+                AmountRow(label: tr('Billed'), paise: balance.billedPaise),
                 AmountRow(
-                  label: 'Received',
+                  label: tr('Received'),
                   paise: balance.receivedPaise,
                   color: AppColors.successText,
                 ),
                 const Divider(),
                 AmountRow(
-                  label: balance.outstandingPaise >= 0 ? 'Pending' : 'Advance with you',
+                  label: balance.outstandingPaise >= 0 ? tr('Pending') : tr('Advance with you'),
                   paise: balance.outstandingPaise.abs(),
                   bold: true,
                   color: balance.outstandingPaise > 0
@@ -83,7 +84,7 @@ class ClientDetailScreen extends ConsumerWidget {
                   onPressed: () => context.push(
                       Routes.newDocument(DocumentKind.invoice, clientId: clientId)),
                   icon: const Icon(Icons.receipt_long),
-                  label: const Text('New bill'),
+                  label: Text(tr('New bill')),
                 ),
               ),
               const SizedBox(width: AppSizes.gap),
@@ -92,21 +93,21 @@ class ClientDetailScreen extends ConsumerWidget {
                   onPressed: () =>
                       context.push(Routes.payment(clientId: clientId)),
                   icon: const Icon(Icons.payments),
-                  label: const Text('Payment'),
+                  label: Text(tr('Payment')),
                 ),
               ),
             ],
           ),
           SectionTitle(
-            'Jobs / sites',
+            tr('Jobs / sites'),
             trailing: TextButton.icon(
               onPressed: () => context.push(Routes.addJob(clientId: clientId)),
               icon: const Icon(Icons.add),
-              label: const Text('New job'),
+              label: Text(tr('New job')),
             ),
           ),
           if (jobs.isEmpty)
-            const Text('No jobs yet.', style: TextStyle(color: AppColors.slate600))
+            Text(tr('No jobs yet.'), style: TextStyle(color: AppColors.slate600))
           else
             Panel(
               padding: EdgeInsets.zero,
@@ -122,9 +123,9 @@ class ClientDetailScreen extends ConsumerWidget {
                 ],
               ),
             ),
-          const SectionTitle('Bills'),
+          SectionTitle(tr('Bills')),
           if (bills.isEmpty)
-            const Text('No bills yet.', style: TextStyle(color: AppColors.slate600))
+            Text(tr('No bills yet.'), style: TextStyle(color: AppColors.slate600))
           else
             Panel(
               padding: EdgeInsets.zero,
@@ -132,9 +133,9 @@ class ClientDetailScreen extends ConsumerWidget {
                 children: [for (final b in bills) DocumentTile(item: b)],
               ),
             ),
-          const SectionTitle('Payments'),
+          SectionTitle(tr('Payments')),
           if (payments.isEmpty)
-            const Text('No payments yet.',
+            Text(tr('No payments yet.'),
                 style: TextStyle(color: AppColors.slate600))
           else
             Panel(

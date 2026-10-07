@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
 import '../config.dart';
+import '../i18n/i18n.dart';
 
 class AppUpdateChecker {
   const AppUpdateChecker();
@@ -25,7 +26,7 @@ class AppUpdateChecker {
       await _show(
         context,
         url: url,
-        message: data['message'] as String? ?? 'Naya version available hai.',
+        message: data['message'] as String? ?? tr('A new version is available.'),
         required: AppConfig.appBuildNumber < minimum,
       );
     } catch (_) {
@@ -44,13 +45,13 @@ class AppUpdateChecker {
         canPop: !required,
         child: AlertDialog(
           icon: const Icon(Icons.system_update, size: 42),
-          title: Text(required ? 'Update required' : 'Update available'),
+          title: Text(required ? tr('Update required') : tr('Update available')),
           content: Text(message),
           actions: [
             if (!required)
               TextButton(
                 onPressed: () => Navigator.pop(dialogContext),
-                child: const Text('Baad mein'),
+                child: Text(tr('Later')),
               ),
             FilledButton.icon(
               onPressed: () async {
@@ -60,7 +61,7 @@ class AppUpdateChecker {
                 }
               },
               icon: const Icon(Icons.download),
-              label: const Text('Update karein'),
+              label: Text(tr('Update now')),
             ),
           ],
         ),

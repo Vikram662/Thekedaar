@@ -10,6 +10,7 @@ import '../config.dart';
 import '../db/database.dart';
 import '../db/enums.dart';
 import '../db/meta_store.dart';
+import '../i18n/i18n.dart';
 import '../notify/reminders.dart';
 import '../security/secure_store.dart';
 import '../utils/ids.dart';
@@ -127,7 +128,7 @@ class BackupEngine {
 
     http.Client? client;
     try {
-      _report('Connecting to Google Drive', 0.02);
+      _report(tr('Connecting to Google Drive'), 0.02);
       client = await auth.client();
       if (client == null) {
         return await _finish(
@@ -157,13 +158,13 @@ class BackupEngine {
         );
       }
 
-      _report('Preparing your data', 0.08);
+      _report(tr('Preparing your data'), 0.08);
       final snapshot = await _latestOrNewSnapshot(trigger);
       final totalBytes = snapshot.bytes.length;
-      _report('Uploading backup', 0.12, _sizeText(0, totalBytes));
+      _report(tr('Uploading backup'), 0.12, _sizeText(0, totalBytes));
       final fileId = await _withRetry(() => store.upload(
             onProgress: (sent, total) => _report(
-              'Uploading backup',
+              tr('Uploading backup'),
               0.12 + 0.68 * sent / total,
               _sizeText(sent, total),
             ),
@@ -179,7 +180,7 @@ class BackupEngine {
           ));
 
       final serverNow = await _checkClock(store.lastServerTime);
-      _report('Saving backup details', 0.84);
+      _report(tr('Saving backup details'), 0.84);
 
       await _ensureKeysUploaded(store, rootId);
       await store.writeJson(rootId, DriveStore.deviceFileName, {
@@ -209,14 +210,14 @@ class BackupEngine {
         await meta.setInt(MetaKeys.pendingChanges, 0);
       }
 
-      _report('Removing old backups', 0.88);
+      _report(tr('Removing old backups'), 0.88);
       await _applyRetention(store, dbFolderId, serverNow);
       try {
         await _uploadPhotos(store, rootId);
       } catch (_) {
         // Photos are incremental: anything missed goes up on the next run.
       }
-      _report('Backup complete', 1);
+      _report(tr('Backup complete'), 1);
       return await _finish(logId, const BackupResult(BackupOutcome.success));
     } on SocketException catch (e) {
       return await _finish(
@@ -403,9 +404,9 @@ class BackupEngine {
       final name = missing[i];
       final remoteName = '$name.enc';
       _report(
-        'Uploading photos',
+        tr('Uploading photos'),
         0.9 + 0.1 * i / missing.length,
-        '${i + 1} of ${missing.length}',
+        tr('{current} of {total}', {'current': i + 1, 'total': missing.length}),
       );
       final bytes = await (await photoFile(name)).readAsBytes();
       final encrypted = await encryptBlob(bytes, masterKey);

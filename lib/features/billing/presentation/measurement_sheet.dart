@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/theme.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/utils/measurement.dart';
 import '../../../core/utils/qty.dart';
 import '../../../core/widgets/common.dart';
@@ -123,13 +124,12 @@ class _MeasurementPageState extends State<_MeasurementPage> {
   Widget build(BuildContext context) {
     final total = measurementTotalMilli(_entries);
     return Scaffold(
-      appBar: AppBar(title: const Text('Measurement')),
+      appBar: AppBar(title: Text(tr('Measurement'))),
       body: ListView(
         padding: const EdgeInsets.all(AppSizes.gutter),
         children: [
-          const Text(
-            'Enter length, and width or height as needed. '
-            'Use the same unit (ft or m) for all rows.',
+          Text(
+            tr('Enter length, and width or height as needed. Use the same unit (ft or m) for all rows.'),
             style: TextStyle(color: AppColors.slate600),
           ),
           const SizedBox(height: 12),
@@ -140,19 +140,19 @@ class _MeasurementPageState extends State<_MeasurementPage> {
               OutlinedButton.icon(
                 onPressed: _add,
                 icon: const Icon(Icons.add),
-                label: const Text('Add row'),
+                label: Text(tr('Add row')),
               ),
               OutlinedButton.icon(
                 onPressed: () => _add(deduction: true),
                 icon: const Icon(Icons.remove),
-                label: const Text('Add deduction'),
+                label: Text(tr('Add deduction')),
               ),
             ],
           ),
         ],
       ),
       bottomNavigationBar: BottomActionBar(
-        label: 'Use total ${formatMilli(total)}',
+        label: tr('Use total {total}', {'total': formatMilli(total)}),
         onPressed: total <= 0
             ? null
             : () => Navigator.of(context).pop(MeasurementResult(_entries)),
@@ -185,12 +185,12 @@ class _MeasurementPageState extends State<_MeasurementPage> {
                   child: TextField(
                     controller: row.label,
                     decoration: dec(row.isDeduction
-                        ? 'Deduction (e.g. Door)'
-                        : 'Label (e.g. Hall wall)'),
+                        ? tr('Deduction (e.g. Door)')
+                        : tr('Label (e.g. Hall wall)')),
                   ),
                 ),
                 IconButton(
-                  tooltip: 'Remove row',
+                  tooltip: tr('Remove row'),
                   onPressed: _rows.length == 1
                       ? null
                       : () {
@@ -207,7 +207,7 @@ class _MeasurementPageState extends State<_MeasurementPage> {
             const SizedBox(height: 8),
             Row(
               children: [
-                SizedBox(width: 56, child: number(row.nos, 'Nos')),
+                SizedBox(width: 56, child: number(row.nos, tr('Nos'))),
                 const SizedBox(width: 6),
                 Expanded(child: number(row.length, 'L')),
                 const SizedBox(width: 6),

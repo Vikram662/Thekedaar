@@ -6,6 +6,7 @@ import 'package:workmanager/workmanager.dart';
 import '../db/database.dart';
 import '../db/enums.dart';
 import '../db/meta_store.dart';
+import '../i18n/i18n.dart';
 import '../notify/notifications.dart';
 import '../notify/reminders.dart';
 import '../settings/app_settings.dart';
@@ -22,6 +23,7 @@ void backupCallbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     WidgetsFlutterBinding.ensureInitialized();
     DartPluginRegistrant.ensureInitialized();
+    await loadAppLanguage();
     final db = AppDatabase();
     // Notification updates are chained so the last one finishes before the
     // progress notification is removed.

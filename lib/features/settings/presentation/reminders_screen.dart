@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/notify/notifications.dart';
 import '../../../core/settings/app_settings.dart';
 import '../../../core/settings/settings_providers.dart';
@@ -43,7 +44,7 @@ class RemindersScreen extends ConsumerWidget {
         );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Reminders')),
+      appBar: AppBar(title: Text(tr('Reminders'))),
       body: ListView(
         children: [
           if (enabled == false)
@@ -53,24 +54,22 @@ class RemindersScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(
+                    Row(
                       children: [
                         Icon(Icons.notifications_off,
                             color: AppColors.warningText),
                         SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Notifications are off for this app',
+                            tr('Notifications are off for this app'),
                             style: TextStyle(fontWeight: FontWeight.w700),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Turn them on to get the reminders below. If nothing '
-                      'happens, allow notifications in phone Settings → Apps '
-                      '→ Thekedaar.',
+                    Text(
+                      tr('Turn them on to get the reminders below. If nothing happens, allow notifications in phone Settings → Apps → Thekedaar.'),
                       style: TextStyle(color: AppColors.slate600),
                     ),
                     const SizedBox(height: 12),
@@ -80,60 +79,60 @@ class RemindersScreen extends ConsumerWidget {
                         ref.invalidate(_notificationsEnabledProvider);
                       },
                       icon: const Icon(Icons.notifications_active),
-                      label: const Text('Turn on notifications'),
+                      label: Text(tr('Turn on notifications')),
                     ),
                   ],
                 ),
               ),
             ),
-          const Padding(
+          Padding(
             padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Text(
-              'Reminders come at most once a day, between 9 am and 9 pm.',
+              tr('Reminders come at most once a day, between 9 am and 9 pm.'),
               style: TextStyle(color: AppColors.slate600),
             ),
           ),
           toggle(
             Icons.cloud_off,
-            'Backup problems',
-            'Backup failed twice, not done for 24 hours, or phone time wrong',
+            tr('Backup problems'),
+            tr('Backup failed twice, not done for 24 hours, or phone time wrong'),
             r.backup,
             (v) => r.copyWith(backup: v),
           ),
           toggle(
             Icons.request_quote,
-            'Overdue bills',
-            'Bills past their due date that are not fully paid',
+            tr('Overdue bills'),
+            tr('Bills past their due date that are not fully paid'),
             r.overdueBills,
             (v) => r.copyWith(overdueBills: v),
           ),
           toggle(
             Icons.event_available,
-            'Month-end settlement',
-            'Last day of the month: settle workers\' khata',
+            tr('Month-end settlement'),
+            tr('Last day of the month: settle workers\' khata'),
             r.monthEnd,
             (v) => r.copyWith(monthEnd: v),
           ),
           toggle(
             Icons.celebration,
-            'Holidays',
-            'The day before a holiday you added',
+            tr('Holidays'),
+            tr('The day before a holiday you added'),
             r.holidays,
             (v) => r.copyWith(holidays: v),
           ),
           const Divider(),
           ListTile(
             leading: const Icon(Icons.notifications),
-            title: const Text('Send a test notification'),
+            title: Text(tr('Send a test notification')),
             onTap: () async {
               await AppNotifications.instance.requestPermission();
               await AppNotifications.instance.show(
                 NotificationKind.monthEnd,
-                'Thekedaar',
-                'Reminders are working.',
+                tr('Thekedaar'),
+                tr('Reminders are working.'),
               );
               ref.invalidate(_notificationsEnabledProvider);
-              if (context.mounted) showMessage(context, 'Test sent');
+              if (context.mounted) showMessage(context, tr('Test sent'));
             },
           ),
         ],

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/db/enums.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/utils/dates.dart';
 import '../../../core/utils/money.dart';
 import '../../../core/utils/phone.dart';
@@ -30,12 +31,11 @@ class WorkerDetailScreen extends ConsumerWidget {
     final active = item.worker.isActive;
     final ok = await confirmDialog(
       context,
-      title: active ? 'Mark as left?' : 'Make active again?',
+      title: active ? tr('Mark as left?') : tr('Make active again?'),
       message: active
-          ? '${item.worker.name} will move to inactive workers. '
-              'All records and the pending balance stay.'
-          : '${item.worker.name} will show in attendance again.',
-      confirmLabel: active ? 'Mark as left' : 'Make active',
+          ? tr('{name} will move to inactive workers. All records and the pending balance stay.', {'name': item.worker.name})
+          : tr('{name} will show in attendance again.', {'name': item.worker.name}),
+      confirmLabel: active ? tr('Mark as left') : tr('Make active'),
     );
     if (!ok) return;
     await ref.read(workersRepositoryProvider).setActive(workerId, !active);
@@ -48,17 +48,16 @@ class WorkerDetailScreen extends ConsumerWidget {
   ) async {
     final ok = await confirmDialog(
       context,
-      title: 'Reverse settlement?',
-      message: 'The period will be unlocked so it can be corrected. '
-          'Money already paid stays recorded as a payment.',
-      confirmLabel: 'Reverse',
+      title: tr('Reverse settlement?'),
+      message: tr('The period will be unlocked so it can be corrected. Money already paid stays recorded as a payment.'),
+      confirmLabel: tr('Reverse'),
       destructive: true,
     );
     if (!ok || !context.mounted) return;
-    if (!await confirmIdentity(context, reason: 'Confirm to reverse')) return;
+    if (!await confirmIdentity(context, reason: tr('Confirm to reverse'))) return;
     try {
       await ref.read(khataRepositoryProvider).reverseSettlement(settlementId);
-      if (context.mounted) showMessage(context, 'Settlement reversed');
+      if (context.mounted) showMessage(context, tr('Settlement reversed'));
     } catch (e) {
       if (context.mounted) showMessage(context, '$e');
     }
@@ -91,7 +90,7 @@ class WorkerDetailScreen extends ConsumerWidget {
         title: Text(worker.name),
         actions: [
           IconButton(
-            tooltip: 'Edit',
+            tooltip: tr('Edit'),
             icon: const Icon(Icons.edit),
             onPressed: () => context.push(Routes.editWorker(workerId)),
           ),
@@ -105,10 +104,10 @@ class WorkerDetailScreen extends ConsumerWidget {
               }
             },
             itemBuilder: (context) => [
-              const PopupMenuItem(value: 'wage', child: Text('Change wage')),
+              PopupMenuItem(value: 'wage', child: Text(tr('Change wage'))),
               PopupMenuItem(
                 value: 'active',
-                child: Text(worker.isActive ? 'Mark as left' : 'Make active'),
+                child: Text(worker.isActive ? tr('Mark as left') : tr('Make active')),
               ),
             ],
           ),
@@ -141,7 +140,7 @@ class WorkerDetailScreen extends ConsumerWidget {
                     if (worker.phone != null)
                       Text(formatIndianPhone(worker.phone!)),
                     if (!worker.isActive)
-                      const Text('Inactive (left)',
+                      Text(tr('Inactive (left)'),
                           style: TextStyle(color: AppColors.dangerText)),
                   ],
                 ),
@@ -151,7 +150,7 @@ class WorkerDetailScreen extends ConsumerWidget {
           const SizedBox(height: AppSizes.gutter),
           summary.when(
             loading: () => const LinearProgressIndicator(),
-            error: (e, _) => Text('Could not calculate: $e'),
+            error: (e, _) => Text(tr('Could not calculate: {e}', {'e': e})),
             data: (s) => WorkerSummaryCard(summary: s),
           ),
           const SizedBox(height: AppSizes.gap),
@@ -162,7 +161,7 @@ class WorkerDetailScreen extends ConsumerWidget {
                   onPressed: () => context.push(Routes.ledgerEntry(
                       workerId: workerId, type: LedgerType.advance)),
                   icon: const Icon(Icons.add),
-                  label: const Text('Advance'),
+                  label: Text(tr('Advance')),
                 ),
               ),
               const SizedBox(width: AppSizes.gap),
@@ -173,7 +172,7 @@ class WorkerDetailScreen extends ConsumerWidget {
                   ),
                   onPressed: () => context.push(Routes.settle(workerId)),
                   icon: const Icon(Icons.task_alt),
-                  label: const Text('Settle'),
+                  label: Text(tr('Settle')),
                 ),
               ),
             ],
@@ -184,28 +183,28 @@ class WorkerDetailScreen extends ConsumerWidget {
             children: [
               ActionChip(
                 avatar: const Icon(Icons.square_foot, size: 18),
-                label: const Text('Piece work'),
+                label: Text(tr('Piece work')),
                 onPressed: () => context.push(Routes.pieceWork(workerId)),
               ),
               ActionChip(
                 avatar: const Icon(Icons.card_giftcard, size: 18),
-                label: const Text('Bonus'),
+                label: Text(tr('Bonus')),
                 onPressed: () => context.push(Routes.ledgerEntry(
                     workerId: workerId, type: LedgerType.bonus)),
               ),
               ActionChip(
                 avatar: const Icon(Icons.remove_circle_outline, size: 18),
-                label: const Text('Deduction'),
+                label: Text(tr('Deduction')),
                 onPressed: () => context.push(Routes.ledgerEntry(
                     workerId: workerId, type: LedgerType.deduction)),
               ),
             ],
           ),
-          const SectionTitle('Attendance'),
+          SectionTitle(tr('Attendance')),
           AttendanceCalendar(worker: worker),
-          const SectionTitle('Khata entries'),
+          SectionTitle(tr('Khata entries')),
           if (ledger.isEmpty)
-            const Text('No entries yet.',
+            Text(tr('No entries yet.'),
                 style: TextStyle(color: AppColors.slate600))
           else
             Panel(
@@ -217,7 +216,7 @@ class WorkerDetailScreen extends ConsumerWidget {
               ),
             ),
           if (pieces.isNotEmpty) ...[
-            const SectionTitle('Piece work'),
+            SectionTitle(tr('Piece work')),
             Panel(
               padding: EdgeInsets.zero,
               child: Column(
@@ -238,14 +237,14 @@ class WorkerDetailScreen extends ConsumerWidget {
                               style: const TextStyle(fontWeight: FontWeight.w700)),
                           if (p.work.settlementId == null)
                             IconButton(
-                              tooltip: 'Delete',
+                              tooltip: tr('Delete'),
                               icon: const Icon(Icons.delete_outline),
                               onPressed: () async {
                                 final ok = await confirmDialog(
                                   context,
-                                  title: 'Delete this piece work?',
+                                  title: tr('Delete this piece work?'),
                                   message: p.work.description,
-                                  confirmLabel: 'Delete',
+                                  confirmLabel: tr('Delete'),
                                   destructive: true,
                                 );
                                 if (ok) {
@@ -263,7 +262,7 @@ class WorkerDetailScreen extends ConsumerWidget {
             ),
           ],
           if (settlements.isNotEmpty) ...[
-            const SectionTitle('Settlements'),
+            SectionTitle(tr('Settlements')),
             Panel(
               padding: EdgeInsets.zero,
               child: Column(
@@ -279,16 +278,20 @@ class WorkerDetailScreen extends ConsumerWidget {
                             : null,
                       ),
                       subtitle: Text(
-                        'Paid ${formatPaise(s.paidPaise)} · '
-                        'Carry forward ${formatPaise(s.carryForwardPaise)}'
-                        '${s.status == SettlementStatus.reversed ? ' · Reversed' : ''}',
+                        tr('Paid {amount} · Carry forward {amount2}', {
+                              'amount': formatPaise(s.paidPaise),
+                              'amount2': formatPaise(s.carryForwardPaise),
+                            }) +
+                            (s.status == SettlementStatus.reversed
+                                ? tr(' · Reversed')
+                                : ''),
                       ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           if (s.status == SettlementStatus.locked)
                             IconButton(
-                              tooltip: 'Share pay slip',
+                              tooltip: tr('Share pay slip'),
                               icon: const Icon(Icons.share),
                               onPressed: () => sharePayslip(
                                 context,
@@ -300,7 +303,7 @@ class WorkerDetailScreen extends ConsumerWidget {
                             ),
                           if (s.id == latestLocked?.id)
                             IconButton(
-                              tooltip: 'Reverse settlement',
+                              tooltip: tr('Reverse settlement'),
                               icon: const Icon(Icons.undo),
                               onPressed: () =>
                                   _reverseSettlement(context, ref, s.id),

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../i18n/i18n.dart';
 import 'ids.dart';
 import 'photo_store.dart';
 
@@ -49,9 +50,9 @@ Future<void> showPhoto(BuildContext context, String name) async {
             child: InteractiveViewer(
               child: file.existsSync()
                   ? Image.file(file, fit: BoxFit.contain)
-                  : const Center(
+                  : Center(
                       child: Text(
-                        'Photo not found on this phone',
+                        tr('Photo not found on this phone'),
                         style: TextStyle(color: Colors.white),
                       ),
                     ),
@@ -59,7 +60,7 @@ Future<void> showPhoto(BuildContext context, String name) async {
           ),
           SafeArea(
             child: IconButton(
-              tooltip: 'Close',
+              tooltip: tr('Close'),
               color: Colors.white,
               icon: const Icon(Icons.close),
               onPressed: () => Navigator.of(context).pop(),

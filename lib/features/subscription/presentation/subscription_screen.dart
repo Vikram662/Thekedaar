@@ -8,6 +8,7 @@ import 'package:razorpay_flutter/razorpay_flutter.dart';
 import '../../../app/theme.dart';
 import '../../../core/config.dart';
 import '../../../core/db/providers.dart';
+import '../../../core/i18n/i18n.dart';
 import '../subscription_controller.dart';
 
 Future<bool> requirePro(BuildContext context, WidgetRef ref) async {
@@ -34,13 +35,13 @@ class _PaywallSheet extends StatelessWidget {
             const Icon(Icons.workspace_premium,
                 size: 52, color: AppColors.amber500),
             const SizedBox(height: 12),
-            Text('Thekedaar Pro',
+            Text(tr('Thekedaar Pro'),
                 style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 8),
             Text(
               trialEligible
-                  ? '5 din free try karein. Mandate aaj set hoga, lekin ₹99 ka pehla payment 5 din baad hoga. Trial ke andar kabhi bhi cancel kar sakte hain.'
-                  : '₹99/month mein sites, attendance, expenses aur bills record karein. Subscription kabhi bhi cancel kar sakte hain.',
+                  ? tr('Try it free for 5 days. The mandate is set up today, but the first ₹99 payment is only after 5 days. You can cancel any time during the trial.')
+                  : tr('Record sites, attendance, expenses and bills for ₹99/month. You can cancel the subscription any time.'),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
@@ -52,13 +53,13 @@ class _PaywallSheet extends StatelessWidget {
                   context.push('/settings/subscription');
                 },
                 child: Text(trialEligible
-                    ? 'Start 5-day free trial'
-                    : 'Subscribe for ₹99/month'),
+                    ? tr('Start 5-day free trial')
+                    : tr('Subscribe for ₹99/month')),
               ),
             ),
             TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Not now')),
+                child: Text(tr('Not now'))),
           ]),
         ),
       );
@@ -77,7 +78,7 @@ class ProRouteGate extends ConsumerWidget {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     return Scaffold(
-      appBar: AppBar(title: const Text('Thekedaar Pro required')),
+      appBar: AppBar(title: Text(tr('Thekedaar Pro required'))),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -85,22 +86,22 @@ class ProRouteGate extends ConsumerWidget {
             const Icon(Icons.workspace_premium,
                 size: 64, color: AppColors.amber500),
             const SizedBox(height: 16),
-            Text('Record data with Pro',
+            Text(tr('Record data with Pro'),
                 style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 8),
             Text(
               access?.trialEligible != false
-                  ? '5-day free trial start karke records add ya change karein. Payment mandate abhi set hoga aur ₹99 pehli baar 5 din baad katega.'
-                  : '₹99/month subscription se records add ya change karein. All view screens remain free.',
+                  ? tr('Start the 5-day free trial to add or change records. The payment mandate is set up now and the first ₹99 is charged after 5 days.')
+                  : tr('Add or change records with the ₹99/month subscription. All view screens remain free.'),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
             FilledButton(
               onPressed: () => context.push('/settings/subscription'),
-              child: const Text('View subscription'),
+              child: Text(tr('View subscription')),
             ),
             TextButton(
-                onPressed: () => context.pop(), child: const Text('Back')),
+                onPressed: () => context.pop(), child: Text(tr('Back'))),
           ]),
         ),
       ),
@@ -136,13 +137,13 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
 
   Future<void> _subscribe() async {
     if (!AppConfig.subscriptionConfigured) {
-      _say('This build is missing SUBSCRIPTION_API_URL.');
+      _say(tr('This build is missing SUBSCRIPTION_API_URL.'));
       return;
     }
     setState(() => _opening = true);
     try {
       final profile = await ref.read(businessProfileProvider.future);
-      if (profile == null) throw Exception('Complete business setup first.');
+      if (profile == null) throw Exception(tr('Complete business setup first.'));
       final controller = ref.read(subscriptionControllerProvider.notifier);
       try {
         await controller.refresh();
@@ -176,32 +177,32 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
   }
 
   Future<void> _success(PaymentSuccessResponse response) async {
-    _say('Mandate authorised. Activating your free trial…');
+    _say(tr('Mandate authorised. Activating your free trial…'));
     await Future<void>.delayed(const Duration(seconds: 2));
     await ref.read(subscriptionControllerProvider.notifier).refresh();
   }
 
   void _failure(PaymentFailureResponse response) =>
-      _say(response.message ?? 'Payment was not completed.');
+      _say(response.message ?? tr('Payment was not completed.'));
 
   Future<void> _restore() async {
     final field = TextEditingController();
     final id = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Restore subscription'),
+        title: Text(tr('Restore subscription')),
         content: TextField(
           controller: field,
-          decoration: const InputDecoration(
-              labelText: 'Subscription ID', hintText: 'sub_xxxxxxxxxx'),
+          decoration: InputDecoration(
+              labelText: tr('Subscription ID'), hintText: 'sub_xxxxxxxxxx'),
         ),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel')),
+              child: Text(tr('Cancel'))),
           FilledButton(
               onPressed: () => Navigator.pop(context, field.text),
-              child: const Text('Verify')),
+              child: Text(tr('Verify'))),
         ],
       ),
     );
@@ -209,7 +210,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
     if (id == null || id.trim().isEmpty) return;
     try {
       await ref.read(subscriptionControllerProvider.notifier).link(id);
-      _say('Subscription restored.');
+      _say(tr('Subscription restored.'));
     } catch (error) {
       _say('$error');
     }
@@ -219,16 +220,16 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
     final yes = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Cancel subscription?'),
-        content: const Text(
-            'Your recurring mandate will be cancelled immediately. If you are still in the 5-day trial, no monthly payment will be charged.'),
+        title: Text(tr('Cancel subscription?')),
+        content: Text(
+            tr('Your recurring mandate will be cancelled immediately. If you are still in the 5-day trial, no monthly payment will be charged.')),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Keep Pro')),
+              child: Text(tr('Keep Pro'))),
           FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Cancel subscription')),
+              child: Text(tr('Cancel subscription'))),
         ],
       ),
     );
@@ -237,8 +238,9 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
       final result =
           await ref.read(subscriptionControllerProvider.notifier).cancel();
       _say(result['refundStatus'] == null
-          ? 'Subscription cancelled.'
-          : 'Subscription cancelled. Refund: ${result['refundStatus']}');
+          ? tr('Subscription cancelled.')
+          : tr('Subscription cancelled. Refund: {status}',
+              {'status': result['refundStatus']}));
     } catch (error) {
       _say('$error');
     }
@@ -257,7 +259,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
     final access = value.valueOrNull;
     final active = access?.canWrite == true;
     return Scaffold(
-      appBar: AppBar(title: const Text('Thekedaar Pro')),
+      appBar: AppBar(title: Text(tr('Thekedaar Pro'))),
       body: RefreshIndicator(
         onRefresh: ref.read(subscriptionControllerProvider.notifier).refresh,
         child: ListView(
@@ -269,19 +271,22 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
             const SizedBox(height: 12),
             Text(
                 access?.isTrial == true
-                    ? '5-day free trial is active'
+                    ? tr('5-day free trial is active')
                     : active
-                        ? 'Pro is active'
-                        : 'Explore free',
+                        ? tr('Pro is active')
+                        : tr('Explore free'),
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 8),
             Text(
               access?.isTrial == true
-                  ? 'Your mandate is ready. ₹99 will be charged after the trial unless you cancel first.'
+                  ? tr('Your mandate is ready. ₹99 will be charged after the trial unless you cancel first.')
                   : active
-                      ? 'You can record all business data.${access?.kind == AccessKind.offlineGrace ? '\n${access?.message}' : ''}'
-                      : 'Browse the complete app free. Start your free trial when you want to add or change records.',
+                      ? tr('You can record all business data.') +
+                          (access?.kind == AccessKind.offlineGrace
+                              ? '\n${access?.message}'
+                              : '')
+                      : tr('Browse the complete app free. Start your free trial when you want to add or change records.'),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -292,48 +297,48 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                 onPressed: _opening ? null : _subscribe,
                 icon: const Icon(Icons.payment),
                 label: Text(access?.trialEligible == false
-                    ? 'Subscribe · ₹99/month'
-                    : 'Try 5 days free · then ₹99/month'),
+                    ? tr('Subscribe · ₹99/month')
+                    : tr('Try 5 days free · then ₹99/month')),
               ),
             if (active)
               OutlinedButton.icon(
                 onPressed: _cancel,
                 icon: const Icon(Icons.cancel_outlined),
-                label: const Text('Cancel subscription'),
+                label: Text(tr('Cancel subscription')),
               ),
             TextButton.icon(
               onPressed: _restore,
               icon: const Icon(Icons.restore),
-              label: const Text('Restore with Subscription ID'),
+              label: Text(tr('Restore with Subscription ID')),
             ),
             const Divider(height: 36),
-            const ListTile(
+            ListTile(
               leading: Icon(Icons.hourglass_top),
-              title: Text('5-day free trial'),
+              title: Text(tr('5-day free trial')),
               subtitle: Text(
-                  'Mandate is authorised on day 1. First ₹99 charge is after 5 days; cancel before then to avoid the charge.'),
+                  tr('Mandate is authorised on day 1. First ₹99 charge is after 5 days; cancel before then to avoid the charge.')),
             ),
-            const ListTile(
+            ListTile(
               leading: Icon(Icons.visibility_outlined),
-              title: Text('Free mode'),
-              subtitle: Text('View menus, screens and existing/demo records.'),
+              title: Text(tr('Free mode')),
+              subtitle: Text(tr('View menus, screens and existing/demo records.')),
             ),
-            const ListTile(
+            ListTile(
               leading: Icon(Icons.edit_note),
-              title: Text('Pro mode'),
+              title: Text(tr('Pro mode')),
               subtitle: Text(
-                  'Add sites, attendance, bills, expenses and daily records.'),
+                  tr('Add sites, attendance, bills, expenses and daily records.')),
             ),
-            const ListTile(
+            ListTile(
               leading: Icon(Icons.cloud_off_outlined),
-              title: Text('Offline grace'),
+              title: Text(tr('Offline grace')),
               subtitle:
-                  Text('Active members can work offline for up to 7 days.'),
+                  Text(tr('Active members can work offline for up to 7 days.')),
             ),
             if (access?.status != null)
               Padding(
                 padding: const EdgeInsets.only(top: 12),
-                child: Text('Status: ${access!.status}',
+                child: Text(tr('Status: {status}', {'status': access!.status}),
                     textAlign: TextAlign.center),
               ),
           ],

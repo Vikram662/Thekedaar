@@ -17,7 +17,7 @@ Future<Uint8List> buildDuesPdf(
     title: 'Lena Dena report',
     theme: await pdfTheme(),
   );
-  final date = DateFormat('d MMM yyyy, h:mm a').format(DateTime.now());
+  final date = DateFormat('d MMM yyyy, h:mm a', 'en').format(DateTime.now());
 
   pw.Widget table(String title, List<DueItem> items, int total,
       {bool showOverdue = false}) {

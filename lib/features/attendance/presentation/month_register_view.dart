@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/theme.dart';
 import '../../../core/db/database.dart';
 import '../../../core/db/enums.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/settings/settings_providers.dart';
 import '../../../core/utils/dates.dart';
 import '../../../core/widgets/common.dart';
@@ -70,7 +71,7 @@ class _MonthRegisterViewState extends ConsumerState<MonthRegisterView> {
           child: Row(
             children: [
               IconButton(
-                tooltip: 'Previous month',
+                tooltip: tr('Previous month'),
                 icon: const Icon(Icons.chevron_left),
                 onPressed: () => _shift(-1),
               ),
@@ -82,7 +83,7 @@ class _MonthRegisterViewState extends ConsumerState<MonthRegisterView> {
                 ),
               ),
               IconButton(
-                tooltip: 'Next month',
+                tooltip: tr('Next month'),
                 icon: const Icon(Icons.chevron_right),
                 onPressed: _isCurrentMonth ? null : () => _shift(1),
               ),
@@ -95,10 +96,10 @@ class _MonthRegisterViewState extends ConsumerState<MonthRegisterView> {
             loading: () => const ListSkeleton(),
             error: (e, _) => Center(child: Text('$e')),
             data: (r) => r.workers.isEmpty
-                ? const EmptyState(
+                ? EmptyState(
                     icon: Icons.groups,
-                    title: 'No workers this month',
-                    message: 'Add workers to see the attendance register.',
+                    title: tr('No workers this month'),
+                    message: tr('Add workers to see the attendance register.'),
                   )
                 : SingleChildScrollView(
                     padding: const EdgeInsets.only(bottom: 32),
@@ -169,13 +170,13 @@ class _NameColumn extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(
+          SizedBox(
             height: _rowHeight,
             child: Padding(
               padding: EdgeInsets.only(left: 12),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Text('Worker',
+                child: Text(tr('Worker'),
                     style: TextStyle(fontWeight: FontWeight.w700)),
               ),
             ),
@@ -224,7 +225,7 @@ class _Grid extends ConsumerWidget {
     final todayDay = month.year == today.year && month.month == today.month
         ? today.day
         : null;
-    const weekLetters = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    final weekLetters = weekdayLetters;
 
     Widget header(String top, String bottom, {bool highlight = false}) =>
         Container(
@@ -268,10 +269,10 @@ class _Grid extends ConsumerWidget {
                 weekLetters[DateTime(month.year, month.month, d).weekday - 1],
                 highlight: d == todayDay,
               ),
-            header('P', 'days'),
-            header('½', 'days'),
-            header('A', 'days'),
-            header('Paid', 'days'),
+            header('P', tr('days')),
+            header('½', tr('days')),
+            header('A', tr('days')),
+            header(tr('Paid'), tr('days')),
           ],
         ),
         for (final w in register.workers)

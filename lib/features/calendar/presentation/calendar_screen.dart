@@ -5,12 +5,13 @@ import 'package:intl/intl.dart';
 
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/utils/dates.dart';
 import '../../../core/utils/money.dart';
 import '../../../core/widgets/common.dart';
 import '../data/calendar_repository.dart';
 
-final _sheetDate = DateFormat('EEEE, d MMMM yyyy');
+DateFormat get _sheetDate => DateFormat('EEEE, d MMMM yyyy', uiDateLocale);
 
 /// Icon and colour for each kind of event.
 (IconData, Color) eventStyle(CalendarEventKind kind) => switch (kind) {
@@ -53,12 +54,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Calendar'),
+        title: Text(tr('Calendar')),
         actions: [
           TextButton(
             onPressed: () => setState(() =>
                 _month = DateTime(DateTime.now().year, DateTime.now().month)),
-            child: const Text('Today'),
+            child: Text(tr('Today')),
           ),
         ],
       ),
@@ -72,7 +73,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 Row(
                   children: [
                     IconButton(
-                      tooltip: 'Previous month',
+                      tooltip: tr('Previous month'),
                       onPressed: () => _shift(-1),
                       icon: const Icon(Icons.chevron_left),
                     ),
@@ -84,7 +85,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                       ),
                     ),
                     IconButton(
-                      tooltip: 'Next month',
+                      tooltip: tr('Next month'),
                       onPressed: () => _shift(1),
                       icon: const Icon(Icons.chevron_right),
                     ),
@@ -156,7 +157,7 @@ class _MonthGrid extends StatelessWidget {
       children: [
         Row(
           children: [
-            for (final d in const ['M', 'T', 'W', 'T', 'F', 'S', 'S'])
+            for (final d in weekdayLetters)
               Expanded(
                 child: Center(
                   child: Text(d,
@@ -248,7 +249,7 @@ class _DayCell extends StatelessWidget {
             ),
             if (attendance != null && attendance.present + attendance.half > 0)
               Text(
-                'P ${attendance.present + attendance.half}',
+                tr('P {count}', {'count': attendance.present + attendance.half}),
                 style: const TextStyle(
                   fontSize: 10,
                   color: AppColors.successText,
@@ -314,9 +315,9 @@ class _MonthTotals extends StatelessWidget {
     return Panel(
       child: Row(
         children: [
-          stat('Money in', formatPaise(inTotal), AppColors.successText),
-          stat('Money out', formatPaise(outTotal), AppColors.dangerText),
-          stat('Entries', '$entries', AppColors.slate900),
+          stat(tr('Money in'), formatPaise(inTotal), AppColors.successText),
+          stat(tr('Money out'), formatPaise(outTotal), AppColors.dangerText),
+          stat(tr('Entries'), '$entries', AppColors.slate900),
         ],
       ),
     );
@@ -344,13 +345,13 @@ class _Legend extends StatelessWidget {
       spacing: 14,
       runSpacing: 6,
       children: [
-        dot(AppColors.successText, 'Money in'),
-        dot(AppColors.dangerText, 'Money out'),
-        dot(AppColors.blue700, 'Bill'),
-        dot(AppColors.warningText, 'Khata / work'),
-        dot(AppColors.slate600, 'Quotation / purchase'),
-        dot(const Color(0xFF7C3AED), 'Holiday'),
-        const Text('P = workers present',
+        dot(AppColors.successText, tr('Money in')),
+        dot(AppColors.dangerText, tr('Money out')),
+        dot(AppColors.blue700, tr('Bill')),
+        dot(AppColors.warningText, tr('Khata / work')),
+        dot(AppColors.slate600, tr('Quotation / purchase')),
+        dot(const Color(0xFF7C3AED), tr('Holiday')),
+        Text(tr('P = workers present'),
             style: TextStyle(fontSize: 12, color: AppColors.slate600)),
       ],
     );
@@ -394,7 +395,7 @@ class _DaySheet extends StatelessWidget {
             children: [
               Expanded(
                 child: _MiniStat(
-                  label: 'In',
+                  label: tr('In'),
                   value: formatPaise(inPaise),
                   color: AppColors.successText,
                 ),
@@ -402,7 +403,7 @@ class _DaySheet extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: _MiniStat(
-                  label: 'Out',
+                  label: tr('Out'),
                   value: formatPaise(outPaise),
                   color: AppColors.dangerText,
                 ),
@@ -417,11 +418,10 @@ class _DaySheet extends StatelessWidget {
             child: ListTile(
               tileColor: Colors.transparent,
               leading: const Icon(Icons.fact_check, color: AppColors.successText),
-              title: const Text('Attendance'),
+              title: Text(tr('Attendance')),
               subtitle: Text(att == null || att.isEmpty
-                  ? 'Not marked'
-                  : 'Present ${att.present} · Half ${att.half} · '
-                      'Absent ${att.absent}'),
+                  ? tr('Not marked')
+                  : tr('Present {present} · Half {half} · Absent {absent}', {'present': att.present, 'half': att.half, 'absent': att.absent})),
               trailing: const Icon(Icons.chevron_right),
               // Future days can't be marked yet.
               onTap: date.isAfter(DateTime.now())
@@ -431,10 +431,10 @@ class _DaySheet extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           if (events.isEmpty)
-            const Padding(
+            Padding(
               padding: EdgeInsets.symmetric(vertical: 24),
               child: Center(
-                child: Text('No bills, payments or expenses on this day',
+                child: Text(tr('No bills, payments or expenses on this day'),
                     style: TextStyle(color: AppColors.slate600)),
               ),
             )

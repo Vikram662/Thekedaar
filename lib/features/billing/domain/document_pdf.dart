@@ -14,7 +14,7 @@ import '../../../core/utils/qty.dart';
 import '../../../core/utils/upi.dart';
 import '../data/billing_repository.dart';
 
-final _pdfDate = DateFormat('d MMM yyyy');
+final _pdfDate = DateFormat('d MMM yyyy', 'en');
 
 /// Non-tax quotation / bill PDF (PRD BL-02, BL-11, I-B1).
 Future<Uint8List> buildDocumentPdf(

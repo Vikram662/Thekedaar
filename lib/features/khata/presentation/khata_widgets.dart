@@ -5,6 +5,7 @@ import '../../../app/theme.dart';
 import '../../../core/db/database.dart';
 import '../../../core/db/enums.dart';
 import '../../../core/db/providers.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/pdf/pdf_common.dart';
 import '../../../core/utils/money.dart';
 import '../../../core/widgets/common.dart';
@@ -14,13 +15,13 @@ import '../data/khata_repository.dart';
 import '../domain/payslip_pdf.dart';
 
 String ledgerTypeLabel(LedgerType type) => switch (type) {
-      LedgerType.advance => 'Advance',
-      LedgerType.payment => 'Payment',
-      LedgerType.bonus => 'Bonus',
-      LedgerType.deduction => 'Deduction',
+      LedgerType.advance => tr('Advance'),
+      LedgerType.payment => tr('Payment'),
+      LedgerType.bonus => tr('Bonus'),
+      LedgerType.deduction => tr('Deduction'),
       LedgerType.emi => 'EMI',
-      LedgerType.reversal => 'Reversal',
-      LedgerType.carryForward => 'Carry forward',
+      LedgerType.reversal => tr('Reversal'),
+      LedgerType.carryForward => tr('Carry forward'),
     };
 
 /// PRD KH-03 worker summary card: days, earned, advance, balance.
@@ -39,14 +40,14 @@ class WorkerSummaryCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Since ${dayFormat.format(summary.periodFrom)}',
+            tr('Since {date}', {'date': dayFormat.format(summary.periodFrom)}),
             style: const TextStyle(color: AppColors.slate600),
           ),
           const SizedBox(height: 8),
           Row(
             children: [
               Expanded(
-                child: Text('Paid days', style: Theme.of(context).textTheme.bodyLarge),
+                child: Text(tr('Paid days'), style: Theme.of(context).textTheme.bodyLarge),
               ),
               Text(
                 _days(r.paidDays),
@@ -55,28 +56,34 @@ class WorkerSummaryCard extends StatelessWidget {
             ],
           ),
           Text(
-            'P ${counts.present} · ½ ${counts.half} · A ${counts.absent}'
-            '${counts.off > 0 ? ' · Off ${counts.off}' : ''}',
+            tr('P {present} · ½ {half} · A {absent}', {
+                  'present': counts.present,
+                  'half': counts.half,
+                  'absent': counts.absent,
+                }) +
+                (counts.off > 0
+                    ? tr(' · Off {count}', {'count': counts.off})
+                    : ''),
             style: const TextStyle(color: AppColors.slate600),
           ),
           const Divider(),
-          AmountRow(label: 'Earned', paise: r.earningPaise),
+          AmountRow(label: tr('Earned'), paise: r.earningPaise),
           if (r.piecePaise > 0)
-            AmountRow(label: '  incl. piece work', paise: r.piecePaise),
-          if (r.otPaise > 0) AmountRow(label: '  incl. OT', paise: r.otPaise),
+            AmountRow(label: tr('  incl. piece work'), paise: r.piecePaise),
+          if (r.otPaise > 0) AmountRow(label: tr('  incl. OT'), paise: r.otPaise),
           AmountRow(
-            label: 'Advance taken',
+            label: tr('Advance taken'),
             paise: r.advancePaise,
             color: AppColors.warningText,
           ),
           if (r.previousBalancePaise != 0)
             AmountRow(
-              label: 'Previous balance',
+              label: tr('Previous balance'),
               paise: r.previousBalancePaise,
             ),
           const Divider(),
           AmountRow(
-            label: balance >= 0 ? 'Balance to pay' : 'Worker owes',
+            label: balance >= 0 ? tr('Balance to pay') : tr('Worker owes'),
             paise: balance.abs(),
             bold: true,
             color: balance >= 0 ? AppColors.successText : AppColors.dangerText,
@@ -100,17 +107,16 @@ class LedgerTile extends ConsumerWidget {
   Future<void> _reverse(BuildContext context, WidgetRef ref) async {
     final ok = await confirmDialog(
       context,
-      title: 'Reverse this entry?',
+      title: tr('Reverse this entry?'),
       message:
-          '${ledgerTypeLabel(item.entry.entryType)} of ${formatPaise(item.entry.amountPaise)} '
-          'will be cancelled with a reversal entry. The original stays in the record.',
-      confirmLabel: 'Reverse',
+          tr('{entryType} of {amount} will be cancelled with a reversal entry. The original stays in the record.', {'entryType': ledgerTypeLabel(item.entry.entryType), 'amount': formatPaise(item.entry.amountPaise)}),
+      confirmLabel: tr('Reverse'),
       destructive: true,
     );
     if (!ok || !context.mounted) return;
     try {
       await ref.read(khataRepositoryProvider).reverseEntry(item.entry.id);
-      if (context.mounted) showMessage(context, 'Entry reversed');
+      if (context.mounted) showMessage(context, tr('Entry reversed'));
     } catch (e) {
       if (context.mounted) showMessage(context, '$e');
     }
@@ -140,7 +146,9 @@ class LedgerTile extends ConsumerWidget {
             ? const TextStyle(decoration: TextDecoration.lineThrough)
             : null,
       ),
-      subtitle: Text(item.reversed ? 'Reversed · $subtitle' : subtitle),
+      subtitle: Text(item.reversed
+          ? tr('Reversed · {details}', {'details': subtitle})
+          : subtitle),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -159,7 +167,7 @@ class LedgerTile extends ConsumerWidget {
           ),
           if (canReverse)
             IconButton(
-              tooltip: 'Reverse',
+              tooltip: tr('Reverse'),
               icon: const Icon(Icons.undo),
               onPressed: () => _reverse(context, ref),
             ),
@@ -191,7 +199,7 @@ Future<void> sharePayslip(
     await sharePdf(
       bytes,
       fileName: 'Payslip-${worker.name}-${settlement.periodTo}.pdf',
-      text: 'Pay slip for ${worker.name}',
+      text: tr('Pay slip for {name}', {'name': worker.name}),
     );
   } finally {
     lock.suspendRelock = false;

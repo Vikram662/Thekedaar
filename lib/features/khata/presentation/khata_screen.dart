@@ -6,6 +6,7 @@ import '../../../app/app_drawer.dart';
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/db/enums.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/utils/money.dart';
 import '../../../core/widgets/common.dart';
 import '../../../core/widgets/empty_state.dart';
@@ -50,16 +51,16 @@ class _KhataScreenState extends State<KhataScreen>
     return Scaffold(
       drawer: const AppDrawer(),
       appBar: AppBar(
-        title: const Text('Khata'),
+        title: Text(tr('Khata')),
         bottom: TabBar(
           controller: _tabs,
-          tabs: const [Tab(text: 'Balances'), Tab(text: 'Entries')],
+          tabs: [Tab(text: tr('Balances')), Tab(text: tr('Entries'))],
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push(Routes.ledgerEntry()),
         icon: const Icon(Icons.add),
-        label: const Text('Advance'),
+        label: Text(tr('Advance')),
       ),
       body: TabBarView(
         controller: _tabs,
@@ -78,10 +79,10 @@ class _BalancesTab extends ConsumerWidget {
     final inactive = ref.watch(inactiveWorkersProvider).valueOrNull ?? const [];
     final workers = [...active, ...inactive];
     if (workers.isEmpty) {
-      return const EmptyState(
+      return EmptyState(
         icon: Icons.account_balance_wallet,
-        title: 'No workers yet',
-        message: 'Add workers to keep their khata.',
+        title: tr('No workers yet'),
+        message: tr('Add workers to keep their khata.'),
       );
     }
     return ListView.separated(
@@ -108,9 +109,11 @@ class _BalanceTile extends ConsumerWidget {
       subtitle: Text(
         summary == null
             ? '…'
-            : 'Earned ${formatPaise(summary.result.earningPaise)} · '
-                'Advance ${formatPaise(summary.result.advancePaise)}'
-                '${item.worker.isActive ? '' : ' · Left'}',
+            : tr('Earned {earned} · Advance {advance}', {
+                  'earned': formatPaise(summary.result.earningPaise),
+                  'advance': formatPaise(summary.result.advancePaise),
+                }) +
+                (item.worker.isActive ? '' : tr(' · Left')),
       ),
       trailing: balance == null
           ? null
@@ -129,7 +132,7 @@ class _BalanceTile extends ConsumerWidget {
                   ),
                 ),
                 Text(
-                  balance >= 0 ? 'to pay' : 'owes you',
+                  balance >= 0 ? tr('to pay') : tr('owes you'),
                   style: const TextStyle(fontSize: 12, color: AppColors.slate600),
                 ),
               ],
@@ -151,9 +154,9 @@ class _EntriesTab extends ConsumerWidget {
       data: (list) => list.isEmpty
           ? EmptyState(
               icon: Icons.receipt,
-              title: 'No entries yet',
-              message: 'Advances, bonuses and payments show here.',
-              actionLabel: 'Add advance',
+              title: tr('No entries yet'),
+              message: tr('Advances, bonuses and payments show here.'),
+              actionLabel: tr('Add advance'),
               onAction: () => context.push(
                   Routes.ledgerEntry(type: LedgerType.advance)),
             )

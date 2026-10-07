@@ -2,6 +2,8 @@ import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+import '../i18n/i18n.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -139,7 +141,7 @@ class AppNotifications {
     try {
       await _p.show(
         kind.id,
-        'Backing up to Google Drive · $percent%',
+        tr('Backing up to Google Drive · {percent}%', {'percent': percent}),
         step,
         NotificationDetails(
           android: AndroidNotificationDetails(

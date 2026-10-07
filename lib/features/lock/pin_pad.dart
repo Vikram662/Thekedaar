@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../app/theme.dart';
+import '../../core/i18n/i18n.dart';
 import '../../core/security/pin.dart';
 
 /// 4 dots + large numpad (PRD AU-02). Calls [onCompleted] with the PIN.
@@ -57,7 +58,7 @@ class PinPadState extends State<PinPad> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Semantics(
-          label: '${_pin.length} of $pinLength digits entered',
+          label: tr('{count} of {pinLength} digits entered', {'count': _pin.length, 'pinLength': pinLength}),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -85,9 +86,9 @@ class PinPadState extends State<PinPad> {
         _row([
           widget.onBiometric == null
               ? const SizedBox(width: 72, height: 72)
-              : _iconKey(Icons.fingerprint, 'Use fingerprint', widget.onBiometric!),
+              : _iconKey(Icons.fingerprint, tr('Use fingerprint'), widget.onBiometric!),
           _digit('0'),
-          _iconKey(Icons.backspace_outlined, 'Delete', _backspace),
+          _iconKey(Icons.backspace_outlined, tr('Delete'), _backspace),
         ]),
       ],
     );

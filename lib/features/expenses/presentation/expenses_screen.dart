@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/utils/dates.dart';
 import '../../../core/utils/money.dart';
 import '../../../core/utils/photos.dart';
@@ -34,9 +35,9 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
   Future<void> _delete(ExpenseItem item) async {
     final ok = await confirmDialog(
       context,
-      title: 'Delete this expense?',
+      title: tr('Delete this expense?'),
       message: '${item.categoryName} · ${formatPaise(item.expense.amountPaise)}',
-      confirmLabel: 'Delete',
+      confirmLabel: tr('Delete'),
       destructive: true,
     );
     if (ok) {
@@ -52,10 +53,10 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Expenses'),
+        title: Text(tr('Expenses')),
         actions: [
           IconButton(
-            tooltip: 'Suppliers',
+            tooltip: tr('Suppliers'),
             icon: const Icon(Icons.store),
             onPressed: () => context.push(Routes.suppliers),
           ),
@@ -64,7 +65,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push(Routes.addExpense),
         icon: const Icon(Icons.add),
-        label: const Text('Expense'),
+        label: Text(tr('Expense')),
       ),
       body: Column(
         children: [
@@ -73,7 +74,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
             child: Row(
               children: [
                 IconButton(
-                  tooltip: 'Previous month',
+                  tooltip: tr('Previous month'),
                   icon: const Icon(Icons.chevron_left),
                   onPressed: () => _shift(-1),
                 ),
@@ -85,7 +86,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                   ),
                 ),
                 IconButton(
-                  tooltip: 'Next month',
+                  tooltip: tr('Next month'),
                   icon: const Icon(Icons.chevron_right),
                   onPressed: _isCurrentMonth ? null : () => _shift(1),
                 ),
@@ -100,9 +101,9 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                 if (list.isEmpty) {
                   return EmptyState(
                     icon: Icons.receipt,
-                    title: 'No expenses this month',
-                    message: 'Petrol, material, food, tools and rent go here.',
-                    actionLabel: 'Add expense',
+                    title: tr('No expenses this month'),
+                    message: tr('Petrol, material, food, tools and rent go here.'),
+                    actionLabel: tr('Add expense'),
                     onAction: () => context.push(Routes.addExpense),
                   );
                 }
@@ -114,14 +115,14 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                     Panel(
                       child: Column(
                         children: [
-                          AmountRow(label: 'Total', paise: total, bold: true),
+                          AmountRow(label: tr('Total'), paise: total, bold: true),
                           const Divider(),
                           for (final t in totalsByCategory(list))
                             AmountRow(label: t.category, paise: t.totalPaise),
                         ],
                       ),
                     ),
-                    const SectionTitle('Entries'),
+                    SectionTitle(tr('Entries')),
                     Panel(
                       padding: EdgeInsets.zero,
                       child: Column(
@@ -158,10 +159,10 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                         ],
                       ),
                     ),
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.only(top: 8),
                       child: Text(
-                        'Long-press an entry to delete it.',
+                        tr('Long-press an entry to delete it.'),
                         style: TextStyle(color: AppColors.slate600),
                       ),
                     ),

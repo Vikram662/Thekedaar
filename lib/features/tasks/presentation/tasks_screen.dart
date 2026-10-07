@@ -8,6 +8,7 @@ import '../../../app/app_drawer.dart';
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/db/enums.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/utils/phone.dart';
 import '../../../core/widgets/common.dart';
 import '../../../core/widgets/empty_state.dart';
@@ -48,13 +49,13 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tasks & Reminders'),
+        title: Text(tr('Tasks & Reminders')),
       ),
       drawer: const AppDrawer(),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push(Routes.addTask),
         icon: const Icon(Icons.add_alarm),
-        label: const Text('New task'),
+        label: Text(tr('New task')),
       ),
       body: Column(
         children: [
@@ -63,11 +64,11 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: Row(
               children: [
-                _filterChip('Upcoming', 0),
+                _filterChip(tr('Upcoming'), 0),
                 const SizedBox(width: 8),
-                _filterChip('All', 1),
+                _filterChip(tr('All'), 1),
                 const SizedBox(width: 8),
-                _filterChip('Completed', 2),
+                _filterChip(tr('Completed'), 2),
               ],
             ),
           ),
@@ -75,7 +76,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
           Expanded(
             child: tasksAsync.when(
               loading: () => const ListSkeleton(),
-              error: (e, _) => Center(child: Text('Error loading tasks: $e')),
+              error: (e, _) => Center(child: Text(tr('Error loading tasks: {e}', {'e': e}))),
               data: (list) {
                 final filtered = list.where((item) {
                   if (_filterIndex == 0) return !item.task.isCompleted;
@@ -87,11 +88,11 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
                   return EmptyState(
                     icon: Icons.notifications_none_outlined,
                     title: _filterIndex == 2
-                        ? 'No completed tasks'
-                        : 'No tasks scheduled',
+                        ? tr('No completed tasks')
+                        : tr('No tasks scheduled'),
                     message:
-                        'Schedule client meetings, site visits, or material follow-ups.',
-                    actionLabel: 'New task',
+                        tr('Schedule client meetings, site visits, or material follow-ups.'),
+                    actionLabel: tr('New task'),
                     onAction: () => context.push(Routes.addTask),
                   );
                 }
@@ -141,18 +142,18 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete task?'),
-        content: const Text('This will cancel all scheduled reminder alarms.'),
+        title: Text(tr('Delete task?')),
+        content: Text(tr('This will cancel all scheduled reminder alarms.')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(tr('Cancel')),
           ),
           FilledButton(
             style:
                 FilledButton.styleFrom(backgroundColor: AppColors.dangerFill),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete'),
+            child: Text(tr('Delete')),
           ),
         ],
       ),
@@ -246,7 +247,7 @@ class _TaskCard extends StatelessWidget {
                     size: 22,
                   ),
                   tooltip:
-                      task.isAlertActive ? 'Turn off alert' : 'Turn on alert',
+                      task.isAlertActive ? tr('Turn off alert') : tr('Turn on alert'),
                   onPressed: () => onToggleAlert(!task.isAlertActive),
                 ),
                 // Edit & Delete menu
@@ -256,10 +257,10 @@ class _TaskCard extends StatelessWidget {
                     if (val == 'delete') onDelete();
                   },
                   itemBuilder: (_) => [
-                    const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                    const PopupMenuItem(
+                    PopupMenuItem(value: 'edit', child: Text(tr('Edit'))),
+                    PopupMenuItem(
                       value: 'delete',
-                      child: Text('Delete',
+                      child: Text(tr('Delete'),
                           style: TextStyle(color: AppColors.dangerText)),
                     ),
                   ],
@@ -298,7 +299,7 @@ class _TaskCard extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.only(top: 2),
                           child: Text(
-                            'Site: ${item.jobTitle}',
+                            tr('Site: {jobTitle}', {'jobTitle': item.jobTitle}),
                             style: const TextStyle(
                               fontSize: 13,
                               color: AppColors.blue700,
@@ -325,7 +326,7 @@ class _TaskCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 5),
                   Text(
-                    DateFormat('d MMM yyyy, h:mm a').format(scheduledDate),
+                    DateFormat('d MMM yyyy, h:mm a', uiDateLocale).format(scheduledDate),
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: isOverdue ? FontWeight.w700 : FontWeight.w500,
@@ -337,7 +338,7 @@ class _TaskCard extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(left: 8),
                       child: Text(
-                        '• Repeat every ${task.intervalMinutes}m',
+                        tr('• Repeat every {intervalMinutes}m', {'intervalMinutes': task.intervalMinutes}),
                         style: const TextStyle(
                           fontSize: 12,
                           color: AppColors.slate600,
@@ -390,7 +391,7 @@ class _TaskCard extends StatelessWidget {
                         constraints: const BoxConstraints(),
                         icon: const Icon(Icons.chat_bubble_outline,
                             size: 16, color: Colors.green),
-                        tooltip: 'WhatsApp',
+                        tooltip: tr('WhatsApp'),
                         onPressed: () => launchUrl(
                           Uri.parse('https://wa.me/${task.phone}?text=Hello'),
                         ),

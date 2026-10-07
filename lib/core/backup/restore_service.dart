@@ -5,6 +5,7 @@ import 'package:drift/native.dart';
 
 import '../db/database.dart';
 import '../db/meta_store.dart';
+import '../i18n/i18n.dart';
 import '../security/secure_store.dart';
 import '../utils/photo_store.dart';
 import 'backup_engine.dart';
@@ -67,7 +68,7 @@ class RestoreService {
   Future<DriveStore> _store() async {
     final client = await auth.client(interactive: true);
     if (client == null) {
-      throw const RestoreException('Please sign in to Google Drive again');
+      throw RestoreException(tr('Please sign in to Google Drive again'));
     }
     return DriveStore(client);
   }
@@ -75,8 +76,8 @@ class RestoreService {
   Future<String> _rootFolder(DriveStore store) async {
     final id = await store.findFolder(DriveStore.rootFolderName);
     if (id == null) {
-      throw const RestoreException(
-        'No Thekedaar backups found in this Google account',
+      throw RestoreException(
+        tr('No Thekedaar backups found in this Google account'),
       );
     }
     return id;
@@ -138,8 +139,8 @@ class RestoreService {
   }) async {
     final header = readBackupHeader(file);
     if (header.manifest.schemaVersion > AppDatabase.currentSchemaVersion) {
-      throw const RestoreException(
-        'This backup is from a newer app version. Please update the app first.',
+      throw RestoreException(
+        tr('This backup is from a newer app version. Please update the app first.'),
       );
     }
     final ring = keyring ?? Keyring.fromJson(header.keyringJson);
@@ -149,7 +150,7 @@ class RestoreService {
     } else if (recoveryKey != null && recoveryKey.isNotEmpty) {
       masterKey = await _unlockWithRecoveryKey(ring, header, recoveryKey);
     } else {
-      throw const RestoreException('Enter the Backup Password or Recovery Key');
+      throw RestoreException(tr('Enter the Backup Password or Recovery Key'));
     }
     final dbBytes = await decodeBackup(file, masterKey);
     return PreparedRestore(
@@ -204,7 +205,8 @@ class RestoreService {
       final rows = await check.customSelect('PRAGMA integrity_check').get();
       final result = rows.isEmpty ? '' : '${rows.first.data.values.first}';
       if (result != 'ok') {
-        throw RestoreException('Backup database is damaged ($result)');
+        throw RestoreException(
+            tr('Backup database is damaged ({result})', {'result': result}));
       }
     } finally {
       await check.close();
@@ -256,7 +258,7 @@ class RestoreService {
     if (encodedKey == null) return 0;
     final masterKey = encodedKey.split(',').map(int.parse).toList();
     final client = await auth.client();
-    if (client == null) throw const RestoreException('Drive disconnected');
+    if (client == null) throw RestoreException(tr('Drive disconnected'));
     try {
       final store = DriveStore(client);
       final rootId = await store.findFolder(DriveStore.rootFolderName);

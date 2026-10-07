@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/theme.dart';
 import '../../../core/db/enums.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/utils/dates.dart';
 import '../../../core/utils/money.dart';
 import '../../../core/widgets/amount_pad.dart';
@@ -43,11 +44,11 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
   Future<void> _save() async {
     final paise = parseRupeesToPaise(_amount);
     if (_clientId == null) {
-      showMessage(context, 'Choose a client');
+      showMessage(context, tr('Choose a client'));
       return;
     }
     if (paise == null || paise <= 0) {
-      showMessage(context, 'Enter the amount');
+      showMessage(context, tr('Enter the amount'));
       return;
     }
     setState(() => _saving = true);
@@ -62,12 +63,12 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           );
       if (!mounted) return;
       HapticFeedback.mediumImpact();
-      showMessage(context, '✓ ${formatPaise(paise)} received');
+      showMessage(context, tr('✓ {amount} received', {'amount': formatPaise(paise)}));
       context.pop();
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
-      showMessage(context, 'Could not save: $e');
+      showMessage(context, tr('Could not save: {e}', {'e': e}));
     }
   }
 
@@ -89,7 +90,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Payment received')),
+      appBar: AppBar(title: Text(tr('Payment received'))),
       body: ListView(
         padding: const EdgeInsets.all(AppSizes.gutter),
         children: [
@@ -102,21 +103,21 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           ),
           const SizedBox(height: 12),
           PickerField(
-            label: 'Against bill (optional)',
+            label: tr('Against bill (optional)'),
             icon: Icons.receipt_long,
             value: selectedBill == null
                 ? null
-                : '${selectedBill.document.number} · due ${formatPaise(selectedBill.balancePaise)}',
+                : tr('{number} · due {amount}', {'number': selectedBill.document.number, 'amount': formatPaise(selectedBill.balancePaise)}),
             onTap: () async {
               const none = '__none__';
               final picked = await showPickerSheet<String>(
                 context,
-                title: 'Choose bill',
+                title: tr('Choose bill'),
                 options: [none, for (final b in bills) b.document.id],
                 label: (id) {
-                  if (id == none) return 'No specific bill';
+                  if (id == none) return tr('No specific bill');
                   final b = bills.firstWhere((b) => b.document.id == id);
-                  return '${b.document.number} · due ${formatPaise(b.balancePaise)}';
+                  return tr('{number} · due {amount}', {'number': b.document.number, 'amount': formatPaise(b.balancePaise)});
                 },
                 selected: _documentId ?? none,
               );
@@ -141,13 +142,13 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           const SizedBox(height: 12),
           TextField(
             controller: _remarks,
-            decoration: const InputDecoration(labelText: 'Note (optional)'),
+            decoration: InputDecoration(labelText: tr('Note (optional)')),
           ),
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.event),
             title: Text(dayFormat.format(_date)),
-            trailing: const Text('Change'),
+            trailing: Text(tr('Change')),
             onTap: () async {
               final picked =
                   await pickDate(context, initial: _date, last: DateTime.now());
@@ -157,7 +158,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
         ],
       ),
       bottomNavigationBar:
-          BottomActionBar(label: 'Save', busy: _saving, onPressed: _save),
+          BottomActionBar(label: tr('Save'), busy: _saving, onPressed: _save),
     );
   }
 }

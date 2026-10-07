@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/db/enums.dart';
+import '../../../core/i18n/i18n.dart';
 import '../../../core/utils/dates.dart';
 import '../../../core/utils/money.dart';
 import '../../../core/utils/photos.dart';
@@ -39,11 +40,11 @@ class JobsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final jobs = ref.watch(jobsProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Jobs / Sites')),
+      appBar: AppBar(title: Text(tr('Jobs / Sites'))),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push(Routes.addJob()),
         icon: const Icon(Icons.add_location_alt),
-        label: const Text('New job'),
+        label: Text(tr('New job')),
       ),
       body: jobs.when(
         loading: () => const ListSkeleton(),
@@ -51,9 +52,9 @@ class JobsScreen extends ConsumerWidget {
         data: (list) => list.isEmpty
             ? EmptyState(
                 icon: Icons.location_city,
-                title: 'No jobs yet',
-                message: 'Add a site to track its bills and expenses together.',
-                actionLabel: 'New job',
+                title: tr('No jobs yet'),
+                message: tr('Add a site to track its bills and expenses together.'),
+                actionLabel: tr('New job'),
                 onAction: () => context.push(Routes.addJob()),
               )
             : ListView.separated(
@@ -121,7 +122,7 @@ class _JobFormScreenState extends ConsumerState<JobFormScreen> {
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     if (_clientId == null) {
-      showMessage(context, 'Choose a client');
+      showMessage(context, tr('Choose a client'));
       return;
     }
     setState(() => _saving = true);
@@ -161,7 +162,7 @@ class _JobFormScreenState extends ConsumerState<JobFormScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(widget.jobId == null ? 'New job' : 'Edit job')),
+      appBar: AppBar(title: Text(widget.jobId == null ? tr('New job') : tr('Edit job'))),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -175,35 +176,35 @@ class _JobFormScreenState extends ConsumerState<JobFormScreen> {
             TextFormField(
               controller: _title,
               textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(
-                labelText: 'Job name',
-                hintText: 'e.g. Sharma ji 2BHK wiring',
+              decoration: InputDecoration(
+                labelText: tr('Job name'),
+                hintText: tr('e.g. Sharma ji 2BHK wiring'),
               ),
               validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? 'Enter job name' : null,
+                  (v == null || v.trim().isEmpty) ? tr('Enter job name') : null,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _site,
               maxLines: 2,
               decoration:
-                  const InputDecoration(labelText: 'Site address (optional)'),
+                  InputDecoration(labelText: tr('Site address (optional)')),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _contract,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
-                labelText: 'Contract value (optional)',
+              decoration: InputDecoration(
+                labelText: tr('Contract value (optional)'),
                 prefixText: '₹ ',
               ),
               validator: (v) => v == null ||
                       v.trim().isEmpty ||
                       parseRupeesToPaise(v) != null
                   ? null
-                  : 'Enter a valid amount',
+                  : tr('Enter a valid amount'),
             ),
-            const SectionTitle('Status'),
+            SectionTitle(tr('Status')),
             SegmentedButton<JobStatus>(
               segments: [
                 for (final s in JobStatus.values)
@@ -216,7 +217,7 @@ class _JobFormScreenState extends ConsumerState<JobFormScreen> {
         ),
       ),
       bottomNavigationBar:
-          BottomActionBar(label: 'Save', busy: _saving, onPressed: _save),
+          BottomActionBar(label: tr('Save'), busy: _saving, onPressed: _save),
     );
   }
 }
@@ -246,7 +247,7 @@ class JobDetailScreen extends ConsumerWidget {
         title: Text(job.title),
         actions: [
           IconButton(
-            tooltip: 'Edit',
+            tooltip: tr('Edit'),
             icon: const Icon(Icons.edit),
             onPressed: () => context.push(Routes.editJob(jobId)),
           ),
@@ -277,30 +278,30 @@ class JobDetailScreen extends ConsumerWidget {
             child: Column(
               children: [
                 if (job.contractValuePaise != null)
-                  AmountRow(label: 'Contract value', paise: job.contractValuePaise!),
-                AmountRow(label: 'Billed', paise: d.billedPaise),
+                  AmountRow(label: tr('Contract value'), paise: job.contractValuePaise!),
+                AmountRow(label: tr('Billed'), paise: d.billedPaise),
                 AmountRow(
-                  label: 'Received',
+                  label: tr('Received'),
                   paise: d.receivedPaise,
                   color: AppColors.successText,
                 ),
                 const Divider(),
-                AmountRow(label: 'Expenses', paise: d.expensesPaise, prefix: '− '),
+                AmountRow(label: tr('Expenses'), paise: d.expensesPaise, prefix: '− '),
                 if (d.piecePaise > 0)
-                  AmountRow(label: 'Piece work', paise: d.piecePaise, prefix: '− '),
+                  AmountRow(label: tr('Piece work'), paise: d.piecePaise, prefix: '− '),
                 const Divider(),
                 AmountRow(
-                  label: d.profitPaise >= 0 ? 'Profit' : 'Loss',
+                  label: d.profitPaise >= 0 ? tr('Profit') : tr('Loss'),
                   paise: d.profitPaise.abs(),
                   bold: true,
                   color: d.profitPaise >= 0
                       ? AppColors.successText
                       : AppColors.dangerText,
                 ),
-                const Align(
+                Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    'Daily-wage labour is not counted here yet.',
+                    tr('Daily-wage labour is not counted here yet.'),
                     style: TextStyle(fontSize: 12, color: AppColors.slate600),
                   ),
                 ),
@@ -318,7 +319,7 @@ class JobDetailScreen extends ConsumerWidget {
                     jobId: jobId,
                   )),
                   icon: const Icon(Icons.receipt_long),
-                  label: const Text('New bill'),
+                  label: Text(tr('New bill')),
                 ),
               ),
               const SizedBox(width: AppSizes.gap),
@@ -326,14 +327,14 @@ class JobDetailScreen extends ConsumerWidget {
                 child: OutlinedButton.icon(
                   onPressed: () => context.push(Routes.expenseForJob(jobId)),
                   icon: const Icon(Icons.receipt),
-                  label: const Text('Expense'),
+                  label: Text(tr('Expense')),
                 ),
               ),
             ],
           ),
-          const SectionTitle('Bills'),
+          SectionTitle(tr('Bills')),
           if (d.bills.isEmpty)
-            const Text('No bills linked to this job.',
+            Text(tr('No bills linked to this job.'),
                 style: TextStyle(color: AppColors.slate600))
           else
             Panel(
@@ -357,9 +358,9 @@ class JobDetailScreen extends ConsumerWidget {
                 ],
               ),
             ),
-          const SectionTitle('Expenses'),
+          SectionTitle(tr('Expenses')),
           if (d.expenses.isEmpty)
-            const Text('No expenses linked to this job.',
+            Text(tr('No expenses linked to this job.'),
                 style: TextStyle(color: AppColors.slate600))
           else
             Panel(
@@ -376,7 +377,7 @@ class JobDetailScreen extends ConsumerWidget {
                             ),
                       title: Text(e.remarks?.isNotEmpty == true
                           ? e.remarks!
-                          : 'Expense'),
+                          : tr('Expense')),
                       subtitle: Text(dayFormat.format(parseIsoDate(e.date))),
                       trailing: Text(formatPaise(e.amountPaise),
                           style: const TextStyle(fontWeight: FontWeight.w700)),

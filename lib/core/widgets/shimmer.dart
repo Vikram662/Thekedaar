@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme.dart';
+import '../i18n/i18n.dart';
 
 /// Moving light band over grey placeholder shapes while data loads.
 class Shimmer extends StatefulWidget {
@@ -219,8 +220,8 @@ class BrandSplash extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Thekedaar',
+            Text(
+              tr('Thekedaar'),
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 26,
@@ -229,8 +230,8 @@ class BrandSplash extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-            const Text(
-              'Hisaab-kitaab, ek jagah',
+            Text(
+              tr('Hisaab-kitaab, ek jagah'),
               style: TextStyle(color: Color(0xFF94A3B8)),
             ),
             const SizedBox(height: 28),

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/backup/backup_providers.dart';
 import '../core/db/providers.dart';
+import '../core/i18n/i18n.dart';
 import '../core/notify/notifications.dart';
 import '../core/update/app_update.dart';
 import '../features/lock/lock_screens.dart';
@@ -38,9 +40,16 @@ class _ThekedaarAppState extends ConsumerState<ThekedaarApp> {
       ref.read(subscriptionServiceProvider).startFcmTokenSync();
       const AppUpdateChecker().check(context);
     });
+    appLanguage.addListener(_onLanguageChanged);
     final notifications = AppNotifications.instance;
     notifications.tapped.addListener(_onNotificationTapped);
     notifications.initForApp().then((_) => _openTappedNotification());
+  }
+
+  /// Redraws every screen in the new language, keeping the open pages.
+  void _onLanguageChanged() {
+    setState(() {});
+    rebuildAllWidgets(context);
   }
 
   /// Opens the screen a notification is about. Behind the lock screen the
@@ -78,6 +87,7 @@ class _ThekedaarAppState extends ConsumerState<ThekedaarApp> {
 
   @override
   void dispose() {
+    appLanguage.removeListener(_onLanguageChanged);
     AppNotifications.instance.tapped.removeListener(_onNotificationTapped);
     _router.dispose();
     super.dispose();
@@ -86,9 +96,12 @@ class _ThekedaarAppState extends ConsumerState<ThekedaarApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Thekedaar',
+      title: tr('Thekedaar'),
       debugShowCheckedModeBanner: false,
       theme: buildLightTheme(),
+      locale: appLanguage.value.locale,
+      supportedLocales: [for (final l in AppLanguage.values) l.locale],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       routerConfig: _router,
       builder: (context, child) => LockGate(
         // Pull down on any screen's list to refresh it (all screens re-read

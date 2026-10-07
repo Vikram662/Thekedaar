@@ -7,6 +7,7 @@ import 'app/app.dart';
 import 'core/backup/backup_scheduler.dart';
 import 'core/db/database.dart';
 import 'core/db/providers.dart';
+import 'core/i18n/i18n.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -14,6 +15,7 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await loadAppLanguage();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   try {
     await BackupScheduler().initialize();
