@@ -136,8 +136,7 @@ class LedgerTile extends ConsumerWidget {
     final subtitle = [
       dayTimeFormat.format(item.at),
       if (entry.mode != null) paymentModeLabel(entry.mode!),
-      if (entry.remarks != null && entry.remarks!.isNotEmpty)
-        tr(entry.remarks!),
+      if (entry.remarks != null && entry.remarks!.isNotEmpty) entry.remarks!,
     ].join(' · ');
 
     return ListTile(

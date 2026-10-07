@@ -1020,8 +1020,6 @@ const hindiStrings = <String, String>{
       'दिया',
   'Paid amount cannot be negative':
       'दी गई रकम माइनस में नहीं हो सकती',
-  'Paid at reversed settlement':
-      'उलटे गए हिसाब में दिया गया',
   'Paid by':
       'किससे दिया',
   'Paid days':
@@ -1244,8 +1242,6 @@ const hindiStrings = <String, String>{
       'हिसाब उलटें?',
   'Reverse this entry?':
       'यह एंट्री उलटें?',
-  'Reversed':
-      'उलटा गया',
   'Reversed · {details}':
       'उलटा गया · {details}',
   'Ring / notify at scheduled time':
@@ -1310,8 +1306,6 @@ const hindiStrings = <String, String>{
       '{name} का हिसाब',
   'Settled':
       'चुकता',
-  'Settlement':
-      'हिसाब',
   'Settlement reversed':
       'हिसाब उलट दिया गया',
   'Settlement · {name}':

@@ -524,7 +524,7 @@ class _BackupDashboard extends ConsumerWidget {
     final (statusText, statusColor) = state.blocked
         ? (tr('Stopped: data moved to another phone'), AppColors.dangerText)
         : state.health == BackupHealth.failed
-            ? (tr(state.lastError ?? 'No backup in 24 hours'), AppColors.dangerText)
+            ? (state.lastError ?? tr('No backup in 24 hours'), AppColors.dangerText)
             : state.health == BackupHealth.pending
                 ? (
                     trPlural(state.pendingChanges, '1 change waiting to upload',
